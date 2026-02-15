@@ -1,33 +1,77 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
 import './App.css'
+import SplashScreen from './components/SplashScreen'
+import Header from './components/Header'
+import WelcomeSection from './components/WelcomeSection'
+import Categories from './components/Categories'
+import FeaturedProduct from './components/FeaturedProduct'
+import CarouselSection from './components/CarouselSection'
+import GridSection from './components/GridSection'
+import ListSection from './components/ListSection'
+import BottomNav from './components/BottomNav'
+import WhatsAppButton from './components/WhatsAppButton'
+import { productsData } from './data/products'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [showSplash, setShowSplash] = useState(true)
+  const [activeCategory, setActiveCategory] = useState('todos')
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false)
+    }, 2200)
+    return () => clearTimeout(timer)
+  }, [])
+
+  const handleCategoryChange = (category) => {
+    setActiveCategory(category)
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      {showSplash && <SplashScreen />}
+      
+      <div className={`main-container ${showSplash ? 'hidden' : ''}`}>
+        <Header />
+        <WelcomeSection />
+        <Categories 
+          activeCategory={activeCategory}
+          onCategoryChange={handleCategoryChange}
+        />
+        
+        <div className="products-wrapper">
+          <FeaturedProduct product={productsData.featured} />
+          
+          <CarouselSection 
+            title="🎁 Sorpresas Especiales"
+            products={productsData.cajas}
+          />
+          
+          <GridSection 
+            title="🌸 Arreglos y Bouquets"
+            products={[...productsData.arreglos, ...productsData.bouquets.slice(0, 2)]}
+          />
+          
+          <ListSection 
+            title="🎓 Graduación"
+            products={productsData.graduacion}
+          />
+          
+          <CarouselSection 
+            title="🎵 Placas Spotify"
+            products={productsData.spotify}
+          />
+          
+          <GridSection 
+            title="✨ Más Regalos"
+            products={productsData.regalos}
+          />
+        </div>
+
+        <BottomNav />
       </div>
-      <h1>Inicio</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+
+      <WhatsAppButton />
     </>
   )
 }

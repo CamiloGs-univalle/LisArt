@@ -1,0 +1,42 @@
+.categories {
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.categories-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.categories-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.category-btn {
+  padding: 8px 18px;
+  background: var(--bg-primary);
+  border: none;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.category-btn.active {
+  background: linear-gradient(135deg, var(--accent-rose) 0%, var(--accent-pink) 100%);
+  color: white;
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.category-btn:hover {
+  transform: translateY(-2px);
+}

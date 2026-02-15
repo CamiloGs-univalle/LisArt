@@ -1,0 +1,116 @@
+.carousel-section {
+  margin-bottom: 24px;
+}
+
+.carousel-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.carousel-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px var(--shadow);
+  min-width: 160px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.carousel-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px var(--shadow);
+}
+
+.carousel-card:active {
+  transform: scale(0.95);
+}
+
+.carousel-image-container {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #FFE5E5 0%, #FFF0F5 100%);
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carousel-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent-rose);
+}
+
+.carousel-info {
+  padding: 12px;
+}
+
+.carousel-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.carousel-category {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.carousel-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.carousel-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-rose);
+}
+
+.carousel-add {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--accent-rose) 0%, var(--accent-pink) 100%);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  font-weight: 300;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.carousel-add:active {
+  transform: scale(0.9);
+}
