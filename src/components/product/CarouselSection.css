@@ -9,6 +9,7 @@
   padding-bottom: 12px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 .carousel-scroll::-webkit-scrollbar {
@@ -113,4 +114,31 @@
 
 .carousel-add:active {
   transform: scale(0.9);
+}
+
+/* ADMIN BUTTONS */
+
+.carousel-admin-add {
+  margin-bottom: 12px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: none;
+  background: var(--accent-rose);
+  color: white;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.carousel-delete {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: red;
+  color: white;
+  font-size: 12px;
+  cursor: pointer;
 }

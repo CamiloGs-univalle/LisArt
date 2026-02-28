@@ -152,3 +152,30 @@
 .featured-btn:active {
   transform: scale(0.95);
 }
+
+.featured-image-container {
+  position: relative;
+  cursor: pointer;
+}
+
+.featured-image-container.is-admin {
+  transition: all 0.3s ease;
+}
+
+.image-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.featured-image-container:hover .image-overlay {
+  opacity: 1;
+}

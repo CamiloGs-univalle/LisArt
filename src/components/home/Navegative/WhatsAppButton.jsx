@@ -1,5 +1,5 @@
 import './WhatsAppButton.css'
-import { WHATSAPP_NUMBER } from '../data/products'
+import { WHATSAPP_NUMBER } from '../../../data/products'
 
 function WhatsAppButton() {
   const handleClick = () => {

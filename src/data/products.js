@@ -1,3 +1,4 @@
+//src/data/products.js
 export const productsData = {
   featured: {
     id: 1,
