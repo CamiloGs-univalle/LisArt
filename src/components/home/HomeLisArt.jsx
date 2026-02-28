@@ -6,7 +6,6 @@ import { useState, useEffect } from 'react'
 import SplashScreen from './Hearder/SplashScreen'
 import Header from './Hearder/Header'
 import WelcomeSection from './Hearder/WelcomeSection'
-import AdminWelcomeEditor from '../admin/AdminWelcomeEditor'
 import { useAdmin } from '../admin/AdminContext'
 import Categories from '../Categories'
 import FeaturedProduct from '../product/FeaturedProduct'
@@ -16,6 +15,9 @@ import GridSection from '../product/GridSection'
 /* DATA */
 import { productsData } from '../../data/products'
 
+import { uploadToCloudinary } from "../../data/cloudinary/uploadToCloudinary"
+
+
 
 
 function HomeLisArt() {
@@ -24,6 +26,23 @@ function HomeLisArt() {
   const [activeCategory, setActiveCategory] = useState('todos')
 
   const { isAdmin, toggleAdmin } = useAdmin()
+
+  const handleUpload = async (e) => {
+    console.log("INPUT ACTIVADO")
+
+    const file = e.target.files[0]
+    if (!file) {
+      console.log("No hay archivo")
+      return
+    }
+
+    console.log("Archivo detectado:", file.name)
+
+    const url = await uploadToCloudinary(file)
+
+    console.log("Archivo subido:", url)
+  }
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -47,7 +66,9 @@ function HomeLisArt() {
         {/* Sección Bienvenida */}
         <WelcomeSection />
         {/* Editor SOLO visible en modo admin */}
-        {isAdmin && <AdminWelcomeEditor />}
+        {isAdmin && (
+          <input type="file" onChange={handleUpload} />
+        )}
       </div>
 
       <Categories
@@ -64,13 +85,15 @@ function HomeLisArt() {
         />
 
         <GridSection
-            title="🌸 Arreglos y Bouquets"
-            sectionId="detalles"
-            products={[
-              ...productsData.arreglos,
-              ...productsData.bouquets.slice(0, 2)
-            ]}
-          />
+          title="🌸 Arreglos y Bouquets"
+          sectionId="detalles"
+          products={[
+            ...productsData.arreglos,
+            ...productsData.bouquets.slice(0, 2)
+          ]}
+        />
+
+
 
       </div>
 

@@ -29,22 +29,23 @@ function CarouselSection({ title, products, sectionId }) {
     localStorage.setItem(storageKey, JSON.stringify(newItems))
   }
 
-  // 🔥 AUTO SCROLL INFINITO SUAVE (requestAnimationFrame)
+  // 🔥 AUTO SCROLL INFINITO PERFECTO
   useEffect(() => {
     if (isAdmin) return
 
     const container = scrollRef.current
     if (!container) return
 
-    const scrollSpeed = 1 // 🔥 velocidad (más bajo = más lento)
+    const speed = 1
 
     const animate = () => {
       if (!isPaused) {
-        container.scrollLeft += scrollSpeed
+        container.scrollLeft += speed
 
-        // Reinicio invisible cuando llega al final
-        if (container.scrollLeft >= container.scrollWidth / 2) {
-          container.scrollLeft = 0
+        const halfWidth = container.scrollWidth / 2
+
+        if (container.scrollLeft >= halfWidth) {
+          container.scrollLeft -= halfWidth
         }
       }
 
@@ -54,7 +55,7 @@ function CarouselSection({ title, products, sectionId }) {
     animationRef.current = requestAnimationFrame(animate)
 
     return () => cancelAnimationFrame(animationRef.current)
-  }, [isPaused, isAdmin])
+  }, [isPaused, isAdmin, items])
 
   const handleAddClick = (product) => {
     contactWhatsApp(product.name, product.price)
