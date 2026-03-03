@@ -9,11 +9,12 @@
   padding-bottom: 12px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
+
 }
 
 .carousel-scroll::-webkit-scrollbar {
   display: none;
+  
 }
 
 .carousel-card {

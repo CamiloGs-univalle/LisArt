@@ -1,20 +1,22 @@
 // src/components/home/HomeLisArt.jsx
 import { useState, useEffect } from 'react'
-import SplashScreen   from './Hearder/SplashScreen'
-import Header         from './Hearder/Header'
+import SplashScreen from './Hearder/SplashScreen'
+import Header from './Hearder/Header'
 import WelcomeSection from './Hearder/WelcomeSection'
-import { useAdmin }   from '../admin/AdminContext'
-import Categories     from '../Categories'
+import { useAdmin } from '../admin/AdminContext'
+import Categories from '../Categories'
 import FeaturedProduct from '../product/FeaturedProduct'
 import CarouselSection from '../product/CarouselSection'
-import GridSection     from '../product/GridSection'
+import GridSection from '../product/GridSection'
 import { ProductsProvider, useProductsCtx } from '../../contexts/ProductsContext'
+import ListSection from '../product/Listsection'
+import SocialLinks from './Navegative/Sociallinks'
 
 // Componente interno para acceder al contexto ya montado
 function HomeContent() {
-  const [showSplash, setShowSplash]         = useState(true)
+  const [showSplash, setShowSplash] = useState(true)
   const [activeCategory, setActiveCategory] = useState('todos')
-  const { isAdmin, toggleAdmin }            = useAdmin()
+  const { isAdmin, toggleAdmin } = useAdmin()
   const { loading, error, getBySection, getFeatured } = useProductsCtx()
 
   useEffect(() => {
@@ -23,7 +25,7 @@ function HomeContent() {
   }, [])
 
   const featured = getFeatured()
-  const cajas    = getBySection('carousel_cajas')
+  const cajas = getBySection('carousel_cajas')
   const arreglos = getBySection('grid_arreglos')
 
   return (
@@ -68,6 +70,14 @@ function HomeContent() {
             products={arreglos}
             sectionId="grid_arreglos"
           />
+
+          <ListSection
+            title="✨ Regalos Especiales"
+            products={getBySection('list_regalos')}
+            sectionId="list_regalos"
+          />
+
+          <SocialLinks />
 
         </div>
       )}

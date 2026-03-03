@@ -1,0 +1,65 @@
+/* src/components/shop/SocialLinks.css */
+
+.social-wrapper {
+    padding: 20px 16px 32px;
+    text-align: center;
+    border-top: 1px solid var(--border-light);
+    margin-top: 8px;
+}
+
+.social-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.social-row {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.social-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.social-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.social-circle svg {
+    width: 24px;
+    height: 24px;
+    fill: white;
+}
+
+.social-item:hover .social-circle {
+    transform: translateY(-4px) scale(1.08);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.social-item:active .social-circle {
+    transform: scale(0.92);
+}
+
+.social-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.01em;
+}

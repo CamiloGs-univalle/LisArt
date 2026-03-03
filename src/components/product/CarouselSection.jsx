@@ -1,5 +1,4 @@
 // src/components/product/CarouselSection.jsx
-// ⚠️ NO SE CAMBIA NINGUNA CLASE CSS — diseño 100% intacto
 
 import { useState, useEffect, useRef } from 'react'
 import './CarouselSection.css'
@@ -12,34 +11,50 @@ import EditableText  from '../common/editartexto/EditableText'
 function CarouselSection({ title, products, sectionId }) {
   const { isAdmin }                      = useAdmin()
   const { createProduct, deleteProduct } = useProductsCtx()
-  const [isPaused, setIsPaused]          = useState(false)
   const [creating, setCreating]          = useState(false)
   const scrollRef    = useRef(null)
   const animationRef = useRef(null)
+  const posRef       = useRef(0)
+  // ✅ isPaused como REF (no state) → cambiarla NO reinicia el useEffect
+  const isPausedRef  = useRef(false)
 
   const items = products || []
+  const COPIES = 4
+  const displayItems = items.length > 0
+    ? Array.from({ length: COPIES }, () => items).flat()
+    : []
 
-  // ── Auto-scroll infinito (igual al original) ──────────
+  // El loop se monta UNA sola vez (cuando hay items y no es admin)
+  // isPausedRef se lee dentro del loop sin necesidad de estar en dependencias
   useEffect(() => {
     if (isAdmin || items.length === 0) return
-    const container = scrollRef.current
-    if (!container) return
-    const speed = 1
+
+    const el = scrollRef.current
+    if (!el) return
+
+    el.style.scrollBehavior = 'auto'
+
+    const speed = 0.7
+
     const animate = () => {
-      if (!isPaused) {
-        container.scrollLeft += speed
-        const halfWidth = container.scrollWidth / 2
-        if (container.scrollLeft >= halfWidth) container.scrollLeft -= halfWidth
+      if (!isPausedRef.current) {
+        posRef.current += speed
+        const oneSetWidth = el.scrollWidth / COPIES
+        if (posRef.current >= oneSetWidth) {
+          posRef.current -= oneSetWidth
+        }
+        el.scrollLeft = posRef.current
       }
       animationRef.current = requestAnimationFrame(animate)
     }
+
     animationRef.current = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(animationRef.current)
-  }, [isPaused, isAdmin, items])
+
+  }, [isAdmin, items.length]) // ← isPaused NO está aquí → el loop nunca se reinicia
 
   const handleAddClick = (product) => contactWhatsApp(product.name, product.price)
 
-  // ➕ AGREGAR
   const handleAddProduct = async () => {
     if (creating) return
     setCreating(true)
@@ -47,19 +62,17 @@ function CarouselSection({ title, products, sectionId }) {
       await createProduct(sectionId)
     } catch (err) {
       console.error('❌ Error creando producto:', err)
-      alert('Error al crear el producto. Verifica las reglas de Firestore (allow read, write: if true)')
+      alert('Error al crear. Verifica las reglas de Firestore.')
     } finally {
       setCreating(false)
     }
   }
 
-  // 🗑 ELIMINAR
   const handleDelete = async (productId) => {
     if (!window.confirm('¿Eliminar este producto?')) return
     try {
       await deleteProduct(productId)
-    } catch (err) {
-      console.error('❌ Error eliminando:', err)
+    } catch {
       alert('Error al eliminar.')
     }
   }
@@ -83,12 +96,12 @@ function CarouselSection({ title, products, sectionId }) {
       <div
         className="carousel-scroll"
         ref={scrollRef}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-        onTouchStart={() => setIsPaused(true)}
-        onTouchEnd={() => setIsPaused(false)}
+        onMouseEnter={() => { isPausedRef.current = true  }}
+        onMouseLeave={() => { isPausedRef.current = false }}
+        onTouchStart={() => { isPausedRef.current = true  }}
+        onTouchEnd={()   => { isPausedRef.current = false }}
       >
-        {[...items, ...items].map((product, index) => {
+        {displayItems.map((product, index) => {
           const isReal = index < items.length
           return (
             <div
