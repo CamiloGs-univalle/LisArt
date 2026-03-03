@@ -1,96 +1,72 @@
 // src/components/common/editartexto/EditableText.jsx
+// Misma API de props que el original. Lógica corregida para guardar vía contexto.
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAdmin } from '../../admin/AdminContext'
-import { db } from '../../../data/firebase/config'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { useProductsCtx } from '../../../contexts/ProductsContext'
 
 function EditableText({
-    id,
+    id,            // conservado para compatibilidad (no se usa en Firebase)
+    productId,
+    field,
     defaultValue,
     className,
-    as = 'div',
+    as: Tag = 'span',
     type = 'text',
     format,
+    mode = 'product'
 }) {
     const { isAdmin } = useAdmin()
+    const { updateField } = useProductsCtx()
 
-    const [value, setValue] = useState(defaultValue)
-    const [isEditing, setIsEditing] = useState(false)
+    const [draft, setDraft] = useState(defaultValue)
+    const [editing, setEditing] = useState(false)
+    const [saving, setSaving] = useState(false)
 
-    // 🔥 Cargar valor desde Firestore cuando el componente monta
-    useEffect(() => {
-        const fetchValue = async () => {
-            try {
-                const docRef = doc(db, 'site_content', id)
-                const docSnap = await getDoc(docRef)
+    // Sincroniza si el padre actualiza el valor
+    if (defaultValue !== draft && !editing) setDraft(defaultValue)
 
-                if (docSnap.exists()) {
-                    const data = docSnap.data()
-                    setValue(
-                        type === 'number'
-                            ? Number(data.value)
-                            : data.value
-                    )
-                } else {
-                    // Si no existe el documento, lo crea con defaultValue
-                    await setDoc(docRef, {
-                        value: String(defaultValue)
-                    })
-                }
-            } catch (error) {
-                console.error('Error cargando texto:', error)
-            }
-        }
-
-        fetchValue()
-    }, [id, type, defaultValue])
-
-    // 💾 Guardar en Firestore
-    const saveValue = async () => {
+    const save = async () => {
+        if (saving) return
+        setSaving(true)
         try {
-            const docRef = doc(db, 'site_content', id)
-
-            await setDoc(docRef, {
-                value: String(value)
-            })
-
-            setIsEditing(false)
-        } catch (error) {
-            console.error('Error guardando texto:', error)
+            if (productId && field) {
+                const val = type === 'number' ? Number(draft) : String(draft)
+                await updateField(productId, field, val)
+            }
+        } catch {
+            alert('Error guardando. Intenta de nuevo.')
+            setDraft(defaultValue)
+        } finally {
+            setSaving(false)
+            setEditing(false)
         }
     }
 
-    const Tag = as
-
-    // 🔐 Modo edición (solo admin)
-    if (isAdmin && isEditing) {
+    if (isAdmin && editing) {
         return (
             <input
                 className={className}
-                type={type}
-                value={value}
+                type={type === 'number' ? 'number' : 'text'}
+                value={draft}
                 autoFocus
-                onChange={(e) =>
-                    setValue(
-                        type === 'number'
-                            ? Number(e.target.value)
-                            : e.target.value
-                    )
-                }
-                onBlur={saveValue}
-                onKeyDown={(e) => e.key === 'Enter' && saveValue()}
+                disabled={saving}
+                onChange={e => setDraft(e.target.value)}
+                onBlur={save}
+                onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') setEditing(false) }}
+                style={{ opacity: saving ? 0.6 : 1, width: '100%', fontSize: 'inherit', fontWeight: 'inherit', color: 'inherit', border: '1px dashed #ff69b4', borderRadius: 4, padding: '2px 4px', background: 'white' }}
             />
         )
     }
 
-    // 👁 Vista normal
     return (
         <Tag
-            className={`${className} ${isAdmin ? 'editable-text' : ''}`}
-            onClick={() => isAdmin && setIsEditing(true)}
+            className={`${className || ''} ${isAdmin ? 'editable-text' : ''}`.trim()}
+            onClick={() => isAdmin && setEditing(true)}
+            title={isAdmin ? '✏️ Click para editar' : undefined}
+            style={isAdmin ? { cursor: 'text', outline: '1px dashed rgba(255,105,180,0.4)', borderRadius: 3 } : undefined}
         >
-            {format ? format(value) : value}
+            {format ? format(type === 'number' ? Number(draft) : draft) : draft}
         </Tag>
     )
 }

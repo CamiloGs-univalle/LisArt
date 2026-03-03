@@ -1,134 +1,123 @@
-import { useState, useEffect, useRef } from 'react'
+// src/components/product/FeaturedProduct.jsx
+// ⚠️ NO SE CAMBIA NINGUNA CLASE CSS — diseño 100% intacto
+
+import { useState } from 'react'
 import './FeaturedProduct.css'
 import { formatPrice, contactWhatsApp } from '../../data/products'
 import { useAdmin } from '../admin/AdminContext'
+import { useProductsCtx } from '../../contexts/ProductsContext'
 import EditableImage from '../common/editarimagen/EditableImage'
-import EditableText from '../common/editartexto/EditableText'
+import EditableText  from '../common/editartexto/EditableText'
 
 function FeaturedProduct({ product }) {
-  const { isAdmin } = useAdmin()
+  const { isAdmin }          = useAdmin()
+  const { createProduct }    = useProductsCtx()
   const [isFavorite, setIsFavorite] = useState(false)
-  const [image, setImage] = useState(product.image)
-  const [isHovering, setIsHovering] = useState(false)
-  const fileInputRef = useRef(null)
+  const [creating, setCreating]     = useState(false)
 
-  const storageKey = `lisart_product_image_${product.id}`
-
-  useEffect(() => {
-    const savedImage = localStorage.getItem(storageKey)
-    if (savedImage) setImage(savedImage)
-
-    const onImageChanged = (e) => {
-      if (e.detail.id === product.id) {
-        setImage(e.detail.image)
-      }
-    }
-
-    window.addEventListener('lisart_product_image_changed', onImageChanged)
-    return () =>
-      window.removeEventListener('lisart_product_image_changed', onImageChanged)
-  }, [product.id])
-
-  const handleOrderClick = () => {
-    contactWhatsApp(product.name, product.price)
-  }
-
-  const handleImageClick = () => {
-    if (!isAdmin) return
-    fileInputRef.current?.click()
-  }
-
-  const handleFile = (file) => {
-    if (!file || !file.type.startsWith('image/')) return
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      localStorage.setItem(storageKey, reader.result)
-      window.dispatchEvent(
-        new CustomEvent('lisart_product_image_changed', {
-          detail: { id: product.id, image: reader.result }
-        })
-      )
-    }
-    reader.readAsDataURL(file)
+  // Sin producto: admin puede crear uno, usuario no ve nada
+  if (!product) {
+    if (!isAdmin) return null
+    return (
+      <div style={{ padding: '16px', marginBottom: '20px', textAlign: 'center' }}>
+        <p style={{ fontSize: 13, color: '#aaa', marginBottom: 8 }}>
+          Sin producto destacado aún.
+        </p>
+        <button
+          className="featured-btn"
+          disabled={creating}
+          onClick={async () => {
+            setCreating(true)
+            try { await createProduct('featured') }
+            catch { alert('Error. Verifica las reglas de Firestore.') }
+            finally { setCreating(false) }
+          }}
+        >
+          {creating ? '⏳ Creando...' : '⭐ Crear producto destacado'}
+        </button>
+      </div>
+    )
   }
 
   return (
     <div className="featured-product">
-      <div
-        className={`featured-image-container ${isAdmin ? 'is-admin' : ''}`}
-        onClick={handleImageClick}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-      >
+
+      {/* ── IMAGEN ── */}
+      <div className="featured-image-container">
         <EditableImage
           id={`featured_${product.id}`}
+          productId={product.id}
           defaultImage={product.image}
           alt={product.name}
           className="featured-image"
           containerClassName="featured-image-container"
         />
 
-        {isAdmin && isHovering && (
-          <div className="image-overlay">
-            <span>📷 Cambiar imagen</span>
-          </div>
+        {product.badge && (
+          <span className="featured-badge">{product.badge}</span>
         )}
 
-        <span className="featured-badge">{product.badge}</span>
-
-        <button
-          className="featured-favorite"
-          onClick={() => setIsFavorite(!isFavorite)}
-        >
-          {isFavorite ? '❤️' : '🤍'}
-        </button>
-
-        {isAdmin && (
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={(e) => handleFile(e.target.files[0])}
-          />
+        {!isAdmin && (
+          <button
+            className="featured-favorite"
+            onClick={() => setIsFavorite(f => !f)}
+          >
+            {isFavorite ? '❤️' : '🤍'}
+          </button>
         )}
       </div>
 
+      {/* ── INFO ── */}
       <div className="featured-info">
-        <div className="featured-category">{product.category}</div>
+        <div className="featured-category">
+          {product.category || 'Categoría'}
+        </div>
+
         <EditableText
-          id={`name_${product.id}`}
+          id={`name_featured_${product.id}`}
+          productId={product.id}
+          field="name"
           defaultValue={product.name}
           className="featured-name"
           as="h2"
+          mode="product"
         />
+
         <EditableText
-          id={`desc_${product.id}`}
-          defaultValue={product.description}
+          id={`desc_featured_${product.id}`}
+          productId={product.id}
+          field="description"
+          defaultValue={product.description || 'Descripción del producto...'}
           className="featured-description"
           as="p"
+          mode="product"
         />
 
         <div className="featured-rating">
           <div className="featured-stars">⭐⭐⭐⭐⭐</div>
+        </div>
+
+        <div className="featured-footer">
           <EditableText
-            id={`price_${product.id}`}
+            id={`price_featured_${product.id}`}
+            productId={product.id}
+            field="price"
             defaultValue={product.price}
             className="featured-price"
             as="span"
             type="number"
             format={formatPrice}
+            mode="product"
           />
-        </div>
 
-        <div className="featured-footer">
-          <span className="featured-price">
-            {formatPrice(product.price)}
-          </span>
-
-          <button className="featured-btn" onClick={handleOrderClick}>
-            Ordenar Ahora
-          </button>
+          {!isAdmin && (
+            <button
+              className="featured-btn"
+              onClick={() => contactWhatsApp(product.name, product.price)}
+            >
+              Ordenar Ahora
+            </button>
+          )}
         </div>
       </div>
     </div>

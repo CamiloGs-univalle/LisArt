@@ -1,121 +1,76 @@
-import { useState, useEffect, useRef } from 'react'
+// src/components/common/editarimagen/EditableImage.jsx
+// Mismas clases CSS que el original. Solo la lógica es nueva.
+
+import { useRef, useState } from 'react'
 import { useAdmin } from '../../admin/AdminContext'
+import { useProductsCtx } from '../../../contexts/ProductsContext'
 
-function EditableImage({
-    id,
-    defaultImage,
-    alt,
-    className,
-    containerClassName
-}) {
+function EditableImage({ productId, defaultImage, alt, className, containerClassName }) {
+  const { isAdmin }     = useAdmin()
+  const { updateImage } = useProductsCtx()
 
-    // 🔐 Saber si estamos en modo admin
-    const { isAdmin } = useAdmin()
+  const [src, setSrc]           = useState(defaultImage)
+  const [uploading, setUploading] = useState(false)
+  const [hovering, setHovering]   = useState(false)
+  const fileRef = useRef(null)
 
-    // 🖼 Estado de la imagen actual
-    const [image, setImage] = useState(defaultImage)
+  // Sincroniza si el padre cambia la imagen (ej: después de crear)
+  if (defaultImage !== src && !uploading) setSrc(defaultImage)
 
-    // 🖱 Estado para mostrar overlay cuando pasa el mouse
-    const [isHovering, setIsHovering] = useState(false)
-
-    // 📁 Referencia al input file oculto
-    const fileInputRef = useRef(null)
-
-    // 🔑 Clave única para guardar la URL en localStorage
-    const storageKey = `lisart_image_${id}`
-
-
-    // 🚀 Al montar el componente:
-    // revisa si ya hay una URL guardada en localStorage
-    useEffect(() => {
-        const saved = localStorage.getItem(storageKey)
-        if (saved) setImage(saved)
-    }, [storageKey])
-
-
-    // ☁️ Subida REAL a Cloudinary
-    const handleFile = async (file) => {
-
-        // ❌ Si no es imagen, salir
-        if (!file || !file.type.startsWith('image/')) return
-
-        try {
-
-            // 📦 Crear FormData para enviar archivo
-            const formData = new FormData()
-            formData.append("file", file)
-            formData.append("upload_preset", "LisArt-creaciones")
-
-            // 🌍 Petición a Cloudinary
-            const response = await fetch(
-                "https://api.cloudinary.com/v1_1/dc4dxizcq/image/upload",
-                {
-                    method: "POST",
-                    body: formData
-                }
-            )
-
-            // 📥 Convertir respuesta a JSON
-            const data = await response.json()
-
-            // ✅ Si se subió correctamente
-            if (data.secure_url) {
-
-                console.log("Imagen subida:", data.secure_url)
-
-                // 💾 Guardar SOLO la URL (no base64)
-                localStorage.setItem(storageKey, data.secure_url)
-
-                // 🖼 Actualizar imagen en pantalla
-                setImage(data.secure_url)
-
-            } else {
-                console.error("Error en subida:", data)
-            }
-
-        } catch (error) {
-            console.error("Error:", error)
-        }
+  const handleFile = async (file) => {
+    if (!file || !file.type.startsWith('image/')) return
+    setUploading(true)
+    setSrc(URL.createObjectURL(file)) // preview local inmediato
+    try {
+      const url = await updateImage(productId, file)
+      setSrc(url)
+    } catch {
+      setSrc(defaultImage)
+      alert('Error subiendo la imagen. Intenta de nuevo.')
+    } finally {
+      setUploading(false)
     }
+  }
 
+  return (
+    <div
+      className={`${containerClassName || ''} ${isAdmin ? 'is-admin' : ''}`}
+      style={{ position: 'relative', cursor: isAdmin ? 'pointer' : 'default' }}
+      onClick={() => isAdmin && !uploading && fileRef.current?.click()}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+    >
+      <img
+        src={src}
+        alt={alt}
+        className={className}
+        style={{ opacity: uploading ? 0.5 : 1, transition: 'opacity .3s', width: '100%', height: '100%', objectFit: 'cover' }}
+      />
 
-    // 🖱 Cuando admin hace click → abre selector
-    const handleClick = () => {
-        if (!isAdmin) return
-        fileInputRef.current?.click()
-    }
-
-
-    return (
-        <div
-            className={`${containerClassName || ''} ${isAdmin ? 'is-admin' : ''}`}
-            onClick={handleClick}
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
-        >
-
-            {/* 🖼 Imagen */}
-            <img src={image} alt={alt} className={className} />
-
-            {/* ✏️ Overlay solo visible en modo admin */}
-            {isAdmin && isHovering && (
-                <div className="editable-overlay">
-                    <span>📷 Cambiar imagen</span>
-                </div>
-            )}
-
-            {/* 📁 Input oculto solo para admin */}
-            {isAdmin && (
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={(e) => handleFile(e.target.files[0])}
-                />
-            )}
+      {/* Overlay hover admin — usa la clase CSS existente */}
+      {isAdmin && hovering && !uploading && (
+        <div className="image-overlay" style={{ opacity: 1 }}>
+          <span>📷 Cambiar imagen</span>
         </div>
-    )
+      )}
+
+      {isAdmin && uploading && (
+        <div className="image-overlay" style={{ opacity: 1 }}>
+          <span>⏳ Subiendo...</span>
+        </div>
+      )}
+
+      {isAdmin && (
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={e => handleFile(e.target.files[0])}
+        />
+      )}
+    </div>
+  )
 }
 
 export default EditableImage
