@@ -9,8 +9,9 @@ import FeaturedProduct from '../product/FeaturedProduct'
 import CarouselSection from '../product/CarouselSection'
 import GridSection from '../product/GridSection'
 import { ProductsProvider, useProductsCtx } from '../../contexts/ProductsContext'
-import SocialLinks from './Navegative/Sociallinks'
 import ListSection from '../product/Listsection'
+import SocialLinks from './Navegative/Sociallinks'
+
 
 // Componente interno para acceder al contexto ya montado
 function HomeContent() {
@@ -77,7 +78,7 @@ function HomeContent() {
             sectionId="list_regalos"
           />
 
-          <SocialLinks />
+          <SocialLinks/>
 
         </div>
       )}
