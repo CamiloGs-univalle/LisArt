@@ -9,7 +9,7 @@ import FeaturedProduct from '../product/FeaturedProduct'
 import CarouselSection from '../product/CarouselSection'
 import GridSection from '../product/GridSection'
 import { ProductsProvider, useProductsCtx } from '../../contexts/ProductsContext'
-import ListSection from '../product/Listsection'
+import ListSection from '../product/ListSection'
 import SocialLinks from './Navegative/Sociallinks'
 
 
