@@ -9,8 +9,9 @@ import FeaturedProduct from '../product/FeaturedProduct'
 import CarouselSection from '../product/CarouselSection'
 import GridSection from '../product/GridSection'
 import { ProductsProvider, useProductsCtx } from '../../contexts/ProductsContext'
-import ListSection from '../product/ListSection'
-import SocialLinks from './Navegative/Sociallinks'
+import ListSection from '../product/List_Section'
+import SocialLinks from './Navegative/Social_links'
+
 
 
 // Componente interno para acceder al contexto ya montado
