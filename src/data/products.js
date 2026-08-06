@@ -164,7 +164,7 @@ export const categories = [
   { id: 'graduacion', name: 'Graduación' }
 ]
 
-export const WHATSAPP_NUMBER = '573000000000'
+export const WHATSAPP_NUMBER = '573044955084'
 
 export const formatPrice = (price) => {
   return `$${price.toLocaleString('es-CO')}`

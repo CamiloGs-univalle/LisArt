@@ -2,21 +2,30 @@
 
 import { useState, useEffect, useRef } from 'react'
 import './CarouselSection.css'
-import { formatPrice, contactWhatsApp } from '../../data/products'
+import { formatPrice } from '../../data/products'
 import { useAdmin } from '../admin/AdminContext'
 import { useProductsCtx } from '../../contexts/ProductsContext'
+import { useCart } from '../../contexts/CartContext'
 import EditableImage from '../common/editarimagen/EditableImage'
 import EditableText  from '../common/editartexto/EditableText'
 
 function CarouselSection({ title, products, sectionId }) {
   const { isAdmin }                      = useAdmin()
   const { createProduct, deleteProduct } = useProductsCtx()
+  const { addToCart }                    = useCart()
   const [creating, setCreating]          = useState(false)
+  const [added, setAdded]                = useState({})
   const scrollRef    = useRef(null)
   const animationRef = useRef(null)
   const posRef       = useRef(0)
   // ✅ isPaused como REF (no state) → cambiarla NO reinicia el useEffect
   const isPausedRef  = useRef(false)
+
+  const handleAdd = (product) => {
+    addToCart(product)
+    setAdded(prev => ({ ...prev, [product.id]: true }))
+    setTimeout(() => setAdded(prev => ({ ...prev, [product.id]: false })), 1200)
+  }
 
   const items = products || []
   const COPIES = 4
@@ -52,8 +61,6 @@ function CarouselSection({ title, products, sectionId }) {
     return () => cancelAnimationFrame(animationRef.current)
 
   }, [isAdmin, items.length]) // ← isPaused NO está aquí → el loop nunca se reinicia
-
-  const handleAddClick = (product) => contactWhatsApp(product.name, product.price)
 
   const handleAddProduct = async () => {
     if (creating) return
@@ -107,7 +114,6 @@ function CarouselSection({ title, products, sectionId }) {
             <div
               key={`${product.id}-${index}`}
               className="carousel-card"
-              onClick={() => !isAdmin && handleAddClick(product)}
             >
               {/* ── IMAGEN ── */}
               <div className="carousel-image-container">
@@ -199,9 +205,9 @@ function CarouselSection({ title, products, sectionId }) {
                   {!isAdmin && (
                     <button
                       className="carousel-add"
-                      onClick={e => { e.stopPropagation(); handleAddClick(product) }}
+                      onClick={e => { e.stopPropagation(); handleAdd(product) }}
                     >
-                      +
+                      {added[product.id] ? '✓' : '+'}
                     </button>
                   )}
                 </div>

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import './Header.css'
 
-function Header() {
+function Header({ searchTerm = '', onSearchChange, cartCount = 0, onOpenCart }) {
   const [activeSearch, setActiveSearch] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const inputRef = useRef(null)
@@ -11,6 +11,13 @@ function Header() {
       inputRef.current?.focus()
     }
   }, [activeSearch])
+
+  const toggleSearch = () => {
+    if (activeSearch) {
+      onSearchChange?.('')
+    }
+    setActiveSearch(!activeSearch)
+  }
 
   return (
     <>
@@ -33,20 +40,23 @@ function Header() {
             type="text"
             placeholder="Buscar productos..."
             className="search-input"
+            value={searchTerm}
+            onChange={e => onSearchChange?.(e.target.value)}
           />
         </div>
 
         <div className="header-right">
           <div
             className={`header-icon search-button ${activeSearch ? 'active' : ''}`}
-            onClick={() => setActiveSearch(!activeSearch)}
+            onClick={toggleSearch}
           >
             {activeSearch ? '✕' : '🔍'}
           </div>
 
-          {!activeSearch && (
-            <div className="header-icon">🛒</div>
-          )}
+          <button className="header-icon cart-button" onClick={onOpenCart}>
+            🛒
+            {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+          </button>
         </div>
 
       </header>

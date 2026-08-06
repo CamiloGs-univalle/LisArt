@@ -3,17 +3,26 @@
 
 import { useState } from 'react'
 import './FeaturedProduct.css'
-import { formatPrice, contactWhatsApp } from '../../data/products'
+import { formatPrice } from '../../data/products'
 import { useAdmin } from '../admin/AdminContext'
 import { useProductsCtx } from '../../contexts/ProductsContext'
+import { useCart } from '../../contexts/CartContext'
 import EditableImage from '../common/editarimagen/EditableImage'
 import EditableText  from '../common/editartexto/EditableText'
 
 function FeaturedProduct({ product }) {
   const { isAdmin }          = useAdmin()
   const { createProduct }    = useProductsCtx()
+  const { addToCart }        = useCart()
   const [isFavorite, setIsFavorite] = useState(false)
   const [creating, setCreating]     = useState(false)
+  const [added, setAdded]           = useState(false)
+
+  const handleAdd = () => {
+    addToCart(product)
+    setAdded(true)
+    setTimeout(() => setAdded(false), 1200)
+  }
 
   // Sin producto: admin puede crear uno, usuario no ve nada
   if (!product) {
@@ -113,9 +122,9 @@ function FeaturedProduct({ product }) {
           {!isAdmin && (
             <button
               className="featured-btn"
-              onClick={() => contactWhatsApp(product.name, product.price)}
+              onClick={handleAdd}
             >
-              Ordenar Ahora
+              {added ? '✓ Añadido' : 'Agregar al carrito'}
             </button>
           )}
         </div>

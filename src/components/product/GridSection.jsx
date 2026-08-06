@@ -4,17 +4,20 @@
 
 import { useState } from 'react'
 import './GridSection.css'
-import { formatPrice, contactWhatsApp } from '../../data/products'
+import { formatPrice } from '../../data/products'
 import { useAdmin } from '../admin/AdminContext'
 import { useProductsCtx } from '../../contexts/ProductsContext'
+import { useCart } from '../../contexts/CartContext'
 import EditableImage from '../common/editarimagen/EditableImage'
 import EditableText  from '../common/editartexto/EditableText'
 
 function GridSection({ title, products, sectionId }) {
   const { isAdmin }                              = useAdmin()
   const { createProduct, deleteProduct }         = useProductsCtx()
+  const { addToCart }                            = useCart()
   const [favorites, setFavorites]                = useState({})
   const [creating, setCreating]                  = useState(false)
+  const [added, setAdded]                        = useState({})
 
   // "products" viene del contexto (ya filtrado por sección en HomeLisArt)
   const items = products || []
@@ -22,8 +25,11 @@ function GridSection({ title, products, sectionId }) {
   const toggleFavorite = (id) =>
     setFavorites(prev => ({ ...prev, [id]: !prev[id] }))
 
-  const handleAddClick = (product) =>
-    contactWhatsApp(product.name, product.price)
+  const handleAdd = (product) => {
+    addToCart(product)
+    setAdded(prev => ({ ...prev, [product.id]: true }))
+    setTimeout(() => setAdded(prev => ({ ...prev, [product.id]: false })), 1200)
+  }
 
   // ➕ AGREGAR — guarda en Firebase y aparece de inmediato
   const handleAddProduct = async () => {
@@ -73,7 +79,6 @@ function GridSection({ title, products, sectionId }) {
           <div
             key={product.id}
             className="grid-card"
-            onClick={() => !isAdmin && handleAddClick(product)}
           >
             {/* ── IMAGEN ── */}
             <div className="grid-image-container">
@@ -162,9 +167,9 @@ function GridSection({ title, products, sectionId }) {
                 {!isAdmin && (
                   <button
                     className="grid-add"
-                    onClick={e => { e.stopPropagation(); handleAddClick(product) }}
+                    onClick={e => { e.stopPropagation(); handleAdd(product) }}
                   >
-                    +
+                    {added[product.id] ? '✓' : '+'}
                   </button>
                 )}
               </div>

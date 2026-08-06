@@ -1,0 +1,269 @@
+.admin-dash-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px 16px;
+  overflow-y: auto;
+}
+
+.admin-dash {
+  width: 100%;
+  max-width: 1000px;
+  background: var(--bg-primary);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: adminDashIn 0.3s ease;
+}
+
+@keyframes adminDashIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-dash-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #2D2D2D, #4a4a4a);
+  color: white;
+}
+
+.admin-dash-head h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+}
+
+.admin-dash-head-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-dash-body {
+  padding: 20px 24px 32px;
+}
+
+.ad-btn {
+  padding: 9px 16px;
+  border: none;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ad-btn:hover {
+  transform: translateY(-1px);
+}
+
+.ad-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+}
+
+.ad-btn-ghost {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+.ad-btn-danger {
+  background: #e53935;
+  color: white;
+}
+
+.ad-btn-sm {
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+
+.ad-btn-primary {
+  background: linear-gradient(135deg, var(--accent-rose), var(--accent-pink));
+  color: white;
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.ad-btn-create {
+  background: var(--bg-card);
+  color: var(--accent-rose);
+  border: 1px dashed var(--accent-rose);
+}
+
+.ad-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px var(--shadow);
+}
+
+.ad-card h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.ad-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.ad-announcement-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  background: var(--bg-primary);
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  margin-bottom: 12px;
+}
+
+.ad-announcement-input:focus {
+  border-color: var(--accent-rose);
+}
+
+.ad-row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ad-message {
+  font-size: 13px;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.ad-create-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.ad-group {
+  margin-top: 18px;
+}
+
+.ad-group-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.ad-count {
+  display: inline-block;
+  background: var(--accent-pink);
+  color: white;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.ad-empty {
+  font-size: 13px;
+  color: #aaa;
+  padding: 8px 0;
+}
+
+.ad-table-wrap {
+  overflow-x: auto;
+}
+
+.ad-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.ad-table th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  padding: 8px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.ad-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+
+.ad-thumb {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #f0e5e5;
+}
+
+.ad-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ad-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 16px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.ad-thumb:hover .ad-thumb-overlay {
+  opacity: 1;
+}
+
+.ad-input {
+  width: 100%;
+  min-width: 90px;
+  padding: 7px 9px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--bg-primary);
+  outline: none;
+}
+
+.ad-input:focus {
+  border-color: var(--accent-rose);
+}
+
+.ad-input-price {
+  min-width: 90px;
+}

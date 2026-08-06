@@ -56,6 +56,29 @@
   background: var(--accent-pink);
 }
 
+.cart-button {
+  position: relative;
+  border: none;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--accent-rose);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(255, 105, 180, 0.4);
+}
+
 /* WRAPPER DEL INPUT */
 .search-wrapper {
   position: absolute;

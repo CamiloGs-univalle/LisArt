@@ -4,25 +4,31 @@
 
 import { useState } from 'react'
 import './ListSection.css'
-import { formatPrice, contactWhatsApp } from '../../data/products'
+import { formatPrice } from '../../data/products'
 import { useAdmin } from '../admin/AdminContext'
 import { useProductsCtx } from '../../contexts/ProductsContext'
+import { useCart } from '../../contexts/CartContext'
 import EditableImage from '../common/editarimagen/EditableImage'
 import EditableText from '../common/editartexto/EditableText'
 
 function ListSection({ title, products, sectionId }) {
     const { isAdmin } = useAdmin()
     const { createProduct, deleteProduct } = useProductsCtx()
+    const { addToCart } = useCart()
     const [favorites, setFavorites] = useState({})
     const [creating, setCreating] = useState(false)
+    const [added, setAdded] = useState({})
 
     const items = products || []
 
     const toggleFavorite = (id) =>
         setFavorites(prev => ({ ...prev, [id]: !prev[id] }))
 
-    const handleContact = (product) =>
-        contactWhatsApp(product.name, product.price)
+    const handleAddToCart = (product) => {
+        addToCart(product)
+        setAdded(prev => ({ ...prev, [product.id]: true }))
+        setTimeout(() => setAdded(prev => ({ ...prev, [product.id]: false })), 1200)
+    }
 
     const handleAdd = async () => {
         if (creating) return
@@ -61,7 +67,6 @@ function ListSection({ title, products, sectionId }) {
                         key={product.id}
                         className="list-card"
                         style={{ animationDelay: `${i * 0.07}s` }}
-                        onClick={() => !isAdmin && handleContact(product)}
                     >
                         {/* ── IMAGEN cuadrada izquierda ── */}
                         <div className="list-image-wrap">
@@ -144,9 +149,9 @@ function ListSection({ title, products, sectionId }) {
                                     {!isAdmin && (
                                         <button
                                             className="list-add"
-                                            onClick={e => { e.stopPropagation(); handleContact(product) }}
+                                            onClick={e => { e.stopPropagation(); handleAddToCart(product) }}
                                         >
-                                            +
+                                            {added[product.id] ? '✓' : '+'}
                                         </button>
                                     )}
                                 </div>
