@@ -4,48 +4,22 @@ import './AdminLogin.css'
 
 function AdminLogin({ open, onClose }) {
   const { login } = useAdmin()
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
 
   if (!open) return null
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
     setError('')
-    setLoading(true)
-    try {
-      const ok = await login(email.trim(), password)
-      if (ok) {
-        setEmail('')
-        setPassword('')
-        onClose()
-      } else {
-        setError('Este correo no tiene permisos de administrador.')
-      }
-    } catch (err) {
-      const code = err.code || ''
-      if (
-        code === 'auth/user-not-found' ||
-        code === 'auth/wrong-password' ||
-        code === 'auth/invalid-credential'
-      ) {
-        setError('Correo o contraseña incorrectos.')
-      } else if (code === 'auth/invalid-email') {
-        setError('Correo inválido.')
-      } else if (code === 'auth/too-many-requests') {
-        setError('Demasiados intentos. Espera un momento e inténtalo de nuevo.')
-      } else if (
-        code === 'auth/operation-not-allowed' ||
-        code === 'auth/configuration-not-found'
-      ) {
-        setError('El login de email/contraseña no está habilitado en Firebase. Actívalo en la consola.')
-      } else {
-        setError('Error al iniciar sesión. Verifica la configuración de Firebase.')
-      }
-    } finally {
-      setLoading(false)
+    const ok = login(username.trim(), password)
+    if (ok) {
+      setUsername('')
+      setPassword('')
+      onClose()
+    } else {
+      setError('Credenciales incorrectas')
     }
   }
 
@@ -60,15 +34,15 @@ function AdminLogin({ open, onClose }) {
           ✕
         </button>
 
-        <h2>🔐 Acceso Admin</h2>
-        <p className="admin-login-sub">Ingresa tus datos para administrar el catálogo.</p>
+        <h2>Iniciar sesión</h2>
+        <p className="admin-login-sub">Acceso exclusivo para administradores.</p>
 
         <input
-          type="email"
-          placeholder="Correo electrónico"
-          value={email}
+          type="text"
+          placeholder="Usuario"
+          value={username}
           autoFocus
-          onChange={e => setEmail(e.target.value)}
+          onChange={e => setUsername(e.target.value)}
           required
         />
 
@@ -82,8 +56,8 @@ function AdminLogin({ open, onClose }) {
 
         {error && <p className="admin-login-error">{error}</p>}
 
-        <button type="submit" className="admin-login-btn" disabled={loading}>
-          {loading ? 'Verificando...' : 'Entrar'}
+        <button type="submit" className="admin-login-btn">
+          Ingresar
         </button>
       </form>
     </div>

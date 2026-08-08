@@ -8,10 +8,13 @@ const SECTION_NAMES = {
   featured: '⭐ Destacado',
   carousel_cajas: '🎁 Sorpresas',
   grid_arreglos: '🌸 Arreglos',
-  list_regalos: '✨ Regalos'
+  list_regalos: '✨ Regalos',
+  promos_grande: '🖼 Tarjetas Grandes',
+  promos_mediano: '📋 Tarjetas Medianas',
+  promos_circulo: '⭕ Círculos'
 }
 
-const SECTION_ORDER = ['featured', 'carousel_cajas', 'grid_arreglos', 'list_regalos']
+const SECTION_ORDER = ['featured', 'carousel_cajas', 'grid_arreglos', 'list_regalos', 'promos_grande', 'promos_mediano', 'promos_circulo']
 
 function AdminDashboard({ open, onClose }) {
   const { logout } = useAdmin()

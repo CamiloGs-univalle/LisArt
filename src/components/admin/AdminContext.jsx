@@ -1,40 +1,37 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from 'firebase/auth'
-import app from '../../data/firebase/config'
 
 const AdminContext = createContext()
 
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || null
+const ADMIN_USER = import.meta.env.VITE_ADMIN_USER || 'admin'
+const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASSWORD || ''
+
+const STORAGE_KEY = 'lisart_admin_session'
 
 export function AdminProvider({ children }) {
-  const auth = getAuth(app)
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [authLoading, setAuthLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY) === 'true'
+    } catch {
+      return false
+    }
+  })
+  const [authLoading] = useState(false)
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      const allowed = user && (!ADMIN_EMAIL || user.email === ADMIN_EMAIL)
-      setIsAdmin(Boolean(allowed))
-      setAuthLoading(false)
-    })
-    return unsub
-  }, [auth])
+    try {
+      localStorage.setItem(STORAGE_KEY, isAdmin ? 'true' : 'false')
+    } catch {}
+  }, [isAdmin])
 
-  const login = async (email, password) => {
-    const cred = await signInWithEmailAndPassword(auth, email, password)
-    const allowed = !ADMIN_EMAIL || cred.user.email === ADMIN_EMAIL
-    setIsAdmin(allowed)
-    if (!allowed) await signOut(auth)
-    return allowed
+  const login = (username, password) => {
+    if (username === ADMIN_USER && password === ADMIN_PASS && ADMIN_PASS !== '') {
+      setIsAdmin(true)
+      return true
+    }
+    return false
   }
 
-  const logout = async () => {
-    await signOut(auth)
+  const logout = () => {
     setIsAdmin(false)
   }
 

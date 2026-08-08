@@ -18,6 +18,7 @@ import { useCart } from '../../contexts/CartContext'
 import ListSection from '../product/List_Section'
 import CartDrawer from '../cart/CartDrawer'
 import SocialLinks from './Navegative/Social_links'
+import MockupSection from '../common/MockupSection'
 
 const matchesCategory = (p, cat) => {
   const haystack = `${p.section || ''} ${p.name || ''} ${p.category || ''}`.toLowerCase()
@@ -37,7 +38,7 @@ function HomeContent() {
   const [showLogin, setShowLogin] = useState(false)
   const [showDashboard, setShowDashboard] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
-  const { isAdmin, authLoading, logout } = useAdmin()
+  const { isAdmin } = useAdmin()
   const { loading, error, products, getBySection, getFeatured } = useProductsCtx()
   const { announcement } = useSettingsCtx()
   const { count } = useCart()
@@ -73,6 +74,8 @@ function HomeContent() {
           onSearchChange={setSearchTerm}
           cartCount={count}
           onOpenCart={() => setCartOpen(true)}
+          onOpenLogin={() => setShowLogin(true)}
+          onOpenDashboard={() => setShowDashboard(true)}
         />
         {announcement && (
           <div className="announcement-bar">📢 {announcement}</div>
@@ -120,6 +123,8 @@ function HomeContent() {
             sectionId="list_regalos"
           />
 
+          <MockupSection />
+
           <SocialLinks/>
 
         </div>
@@ -131,20 +136,8 @@ function HomeContent() {
             products={filtered}
             title={searchTerm.trim() ? `Resultados para "${searchTerm.trim()}"` : 'Resultados'}
           />
+          <MockupSection />
           <SocialLinks/>
-        </div>
-      )}
-
-      {!authLoading && (
-        <div className="admin-fab">
-          {isAdmin ? (
-            <>
-              <button onClick={() => setShowDashboard(true)}>✦ Panel</button>
-              <button onClick={() => logout()}>🔴 Salir</button>
-            </>
-          ) : (
-            <button onClick={() => setShowLogin(true)}>🔑 Admin</button>
-          )}
         </div>
       )}
 

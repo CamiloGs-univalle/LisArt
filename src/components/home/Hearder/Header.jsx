@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
+import { useAdmin } from '../../admin/AdminContext'
 import './Header.css'
 
-function Header({ searchTerm = '', onSearchChange, cartCount = 0, onOpenCart }) {
+function Header({ searchTerm = '', onSearchChange, cartCount = 0, onOpenCart, onOpenLogin, onOpenDashboard }) {
   const [activeSearch, setActiveSearch] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const inputRef = useRef(null)
+  const { isAdmin, logout } = useAdmin()
 
   useEffect(() => {
     if (activeSearch) {
@@ -57,6 +59,16 @@ function Header({ searchTerm = '', onSearchChange, cartCount = 0, onOpenCart }) 
             🛒
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </button>
+
+          {isAdmin ? (
+            <button className="header-icon admin-active-button" onClick={onOpenDashboard} title="Panel de administración">
+              ⚙️
+            </button>
+          ) : (
+            <button className="header-icon login-button" onClick={onOpenLogin} title="Iniciar sesión">
+              👤
+            </button>
+          )}
         </div>
 
       </header>

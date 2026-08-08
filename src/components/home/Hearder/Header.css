@@ -152,3 +152,19 @@
   transform: translateX(-50%) translateY(0);
   opacity: 1;
 }
+
+/* BOTÓN LOGIN / ADMIN */
+.login-button,
+.admin-active-button {
+  border: none;
+}
+
+.login-button:hover {
+  background: var(--accent-pink);
+}
+
+.admin-active-button {
+  background: linear-gradient(135deg, var(--accent-rose) 0%, var(--accent-pink) 100%);
+  color: white;
+  box-shadow: 0 2px 8px var(--shadow);
+}
