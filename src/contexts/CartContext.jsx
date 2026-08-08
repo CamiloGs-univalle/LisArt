@@ -63,7 +63,7 @@ export function CartProvider({ children }) {
   const checkout = () => {
     if (items.length === 0) return
     const lines = items.map(
-      i => `• ${i.name} x${i.qty} = ${formatPrice(i.price * i.qty)}`
+      i => `• ${i.name} x${i.qty} = ${formatPrice(i.price * i.qty)}\n  📷 ${i.image}`
     )
     const msg = `Hola LisArt! Quiero ordenar:\n${lines.join('\n')}\n\nTotal: ${formatPrice(total)} 🎁`
     window.open(
