@@ -1,0 +1,37 @@
+.page { min-height: 100vh; animation: page-in .6s var(--ease) both; }
+@keyframes page-in { from { opacity: 0; } to { opacity: 1; } }
+
+.catalog { padding-bottom: 40px; }
+
+.state-msg {
+  max-width: 520px;
+  margin: 48px auto;
+  padding: 0 var(--gutter);
+  text-align: center;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+.state-msg--error { color: var(--rose-deep); }
+
+/* Esqueleto de carga */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  padding-block: 32px;
+}
+.skeleton-card { border-radius: var(--r-lg); overflow: hidden; }
+.skeleton-card .sk-img { aspect-ratio: 4 / 5; }
+.skeleton-card .sk-line { height: 12px; margin-top: 12px; border-radius: 6px; width: 70%; }
+.skeleton-card .sk-line.short { width: 40%; }
+.sk-img, .sk-line {
+  background: linear-gradient(100deg, var(--paper-2) 30%, #fff 50%, var(--paper-2) 70%);
+  background-size: 300% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+@media (min-width: 720px) { .skeleton-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; } }
+
+/* Evita desbordes horizontales (cinta inclinada, brillos decorativos) */
+main, .foot { overflow-x: clip; }

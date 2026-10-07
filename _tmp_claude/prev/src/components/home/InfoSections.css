@@ -1,0 +1,126 @@
+/* ── Cinta ─────────────────────────────────── */
+.ribbon {
+  margin-block: clamp(48px, 8vw, 96px);
+  padding: 18px 0;
+  background: var(--blush);
+  color: var(--ink);
+  overflow: hidden;
+  transform: rotate(-1.5deg);
+  width: 104%;
+  margin-left: -2%;
+}
+.ribbon__track { display: inline-flex; white-space: nowrap; animation: marquee 34s linear infinite; }
+.ribbon__track span {
+  display: inline-flex; align-items: center; gap: 22px;
+  padding-right: 22px;
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 96;
+  font-size: clamp(26px, 5vw, 44px);
+  font-weight: 420;
+  letter-spacing: -0.02em;
+}
+.ribbon__track span.is-italic { font-style: italic; color: var(--rose-deep); }
+.ribbon__track svg { color: var(--gold); fill: var(--gold); stroke: none; }
+
+/* ── Cómo pedir ───────────────────────────── */
+.how {
+  margin-top: clamp(56px, 9vw, 112px);
+  padding-block: clamp(56px, 9vw, 104px);
+  background: var(--card);
+  border-block: 1px solid var(--line);
+}
+.how__steps {
+  list-style: none;
+  display: grid;
+  gap: 14px;
+  counter-reset: s;
+}
+.how__step {
+  position: relative;
+  padding: 26px 24px 28px;
+  border-radius: var(--r-lg);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.how__num {
+  display: block;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-variation-settings: 'opsz' 144;
+  font-size: 64px;
+  line-height: .9;
+  color: var(--rose);
+  margin-bottom: 14px;
+}
+.how__step h3 { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+.how__step p { color: var(--ink-2); font-size: 15px; }
+.how__cta { display: flex; justify-content: center; margin-top: 32px; }
+
+@media (min-width: 760px) {
+  .how__steps { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .how__step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 52px; right: -1px;
+    width: 30px; height: 1px;
+    background: var(--line-strong);
+  }
+}
+
+/* ── Historia ─────────────────────────────── */
+.story { margin-block: clamp(56px, 9vw, 112px); }
+.story__card {
+  display: grid;
+  gap: 0;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  background: var(--blush-2);
+}
+.story__media { aspect-ratio: 4 / 3; }
+.story__media img { width: 100%; height: 100%; object-fit: cover; }
+.story__copy { padding: clamp(28px, 5vw, 64px); display: flex; flex-direction: column; justify-content: center; gap: 16px; }
+.story__title { font-size: clamp(32px, 6vw, 56px); }
+.story__title em { color: var(--rose); }
+.story__text { color: var(--ink-2); font-size: 16px; max-width: 52ch; }
+.story__sign { font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--rose-deep); }
+@media (min-width: 860px) {
+  .story__card { grid-template-columns: .9fr 1.1fr; }
+  .story__media { aspect-ratio: auto; min-height: 480px; }
+}
+
+/* ── Preguntas ───────────────────────────── */
+.faq { margin-block: clamp(56px, 9vw, 112px); }
+.faq__grid { display: grid; gap: 12px; }
+.faq__aside { color: var(--ink-2); margin-top: -8px; margin-bottom: 12px; }
+.faq__list { border-top: 1px solid var(--line-strong); }
+.faq__item { border-bottom: 1px solid var(--line-strong); }
+.faq__item h3 { font: inherit; }
+.faq__q {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  min-height: 64px;
+  padding: 16px 0;
+  text-align: left;
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 36;
+  font-size: 19px;
+  font-weight: 480;
+}
+.faq__icon {
+  flex: none;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  transition: transform .35s var(--ease), background-color .25s, color .25s;
+}
+.faq__item.is-open .faq__icon { transform: rotate(45deg); background: var(--ink); color: var(--paper); box-shadow: none; }
+.faq__a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s var(--ease); }
+.faq__a > div { overflow: hidden; }
+.faq__a p { padding: 0 48px 22px 0; color: var(--ink-2); }
+.faq__item.is-open .faq__a { grid-template-rows: 1fr; }
+
+@media (min-width: 900px) {
+  .faq__grid { grid-template-columns: .8fr 1.2fr; gap: 64px; align-items: start; }
+}

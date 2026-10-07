@@ -1,6 +1,5 @@
 // src/components/home/HomeLisArt.jsx
-import { useState, useEffect, useMemo } from 'react'
-import SplashScreen from './Hearder/SplashScreen'
+import { useState, useMemo } from 'react'
 import Header from './Hearder/Header'
 import WelcomeSection from './Hearder/WelcomeSection'
 import { useAdmin } from '../admin/AdminContext'
@@ -8,145 +7,151 @@ import AdminLogin from '../admin/AdminLogin'
 import AdminDashboard from '../admin/AdminDashboard'
 import AdminWelcomeEditor from '../admin/AdminWelcomeEditor'
 import Categories from '../Categories'
-import FeaturedProduct from '../product/FeaturedProduct'
-import CarouselSection from '../product/CarouselSection'
-import GridSection from '../product/GridSection'
 import ResultsSection from '../product/ResultsSection'
+import ProductSheet from '../product/ProductSheet'
+import CatalogSections from '../layouts/CatalogSections'
+import StoryViewer from '../layouts/StoryViewer'
+import { PhotoManager } from '../layouts/AdminTools'
+import { Highlights, HowToOrder, Story, Faq } from './InfoSections'
 import { ProductsProvider, useProductsCtx } from '../../contexts/ProductsContext'
 import { useSettingsCtx } from '../../contexts/SettingsContext'
 import { useCart } from '../../contexts/CartContext'
-import ListSection from '../product/List_Section'
 import CartDrawer from '../cart/CartDrawer'
+import CartBar from '../cart/CartBar'
 import SocialLinks from './Navegative/Social_links'
-import MockupSection from '../common/MockupSection'
+import { useCatalog, GALLERY_ID } from '../layouts/useCatalog'
+import { SectionsPicker } from '../layouts/AdminTools'
 
-const matchesCategory = (p, cat) => {
-  const haystack = `${p.section || ''} ${p.name || ''} ${p.category || ''}`.toLowerCase()
-  if (cat === 'bouquets') return haystack.includes('bouquet')
-  if (cat === 'cajas') return haystack.includes('caja')
-  if (cat === 'arreglos') return haystack.includes('arreglo')
-  if (cat === 'spotify') return haystack.includes('spotify')
-  if (cat === 'graduacion') return haystack.includes('graduac') || haystack.includes('birrete')
-  return true
+const scrollToCatalog = () =>
+  document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+function SkeletonGrid() {
+  return (
+    <div className="container skeleton-grid" aria-label="Cargando productos">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div className="skeleton-card" key={i}>
+          <div className="sk-img" />
+          <div className="sk-line" />
+          <div className="sk-line short" />
+        </div>
+      ))}
+    </div>
+  )
 }
 
-// Componente interno para acceder al contexto ya montado
 function HomeContent() {
-  const [showSplash, setShowSplash] = useState(true)
-  const [activeCategory, setActiveCategory] = useState('todos')
+  const [showAll, setShowAll] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [showLogin, setShowLogin] = useState(false)
   const [showDashboard, setShowDashboard] = useState(false)
-  const [cartOpen, setCartOpen] = useState(false)
   const { isAdmin } = useAdmin()
-  const { loading, error, products, getBySection, getFeatured } = useProductsCtx()
+  const { loading, error } = useProductsCtx()
+  const { sections, publicSections, visibleProducts: products } = useCatalog()
   const { announcement } = useSettingsCtx()
   const { count } = useCart()
 
-  useEffect(() => {
-    const t = setTimeout(() => setShowSplash(false), 2200)
-    return () => clearTimeout(t)
-  }, [])
+  // Fotos del inicio: primero las de Destacados
+  const heroImages = useMemo(() => {
+    const dest = sections.find(x => x.id === 'destacados')?.items || []
+    const pool = [...dest, ...products].map(p => p.image).filter(u => u && !String(u).includes('placehold.co'))
+    return [...new Set(pool)].slice(0, 3)
+  }, [sections, products])
 
-  const featured = getFeatured()
-  const cajas = getBySection('carousel_cajas')
-  const arreglos = getBySection('grid_arreglos')
+  const storyImage = useMemo(() => {
+    const pool = products.filter(p => p.image && !String(p.image).includes('placehold.co'))
+    return pool[Math.min(3, pool.length - 1)]?.image
+  }, [products])
 
-  const isFiltering = activeCategory !== 'todos' || searchTerm.trim() !== ''
+  // Secciones para la barra de navegación (sin la galería)
+  const navSections = (isAdmin ? sections.filter(x => !x.hidden) : publicSections).filter(x => x.id !== GALLERY_ID && !x.special && x.items.length > 0)
+
+  const goToSection = (id) => {
+    setShowAll(false); setSearchTerm('')
+    setTimeout(() => document.getElementById(`sec-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30)
+  }
+
+  const isFiltering = showAll || searchTerm.trim() !== ''
 
   const filtered = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()
     return products.filter(p => {
-      if (!matchesCategory(p, activeCategory)) return false
       if (!term) return true
-      const haystack = `${p.name || ''} ${p.category || ''} ${p.description || ''} ${p.badge || ''}`.toLowerCase()
+      const haystack = `${p.name || ''} ${p.category || ''} ${p.description || ''} ${p.personalizacion || ''} ${p.badge || ''}`.toLowerCase()
       return haystack.includes(term)
     })
-  }, [products, searchTerm, activeCategory])
+  }, [products, searchTerm])
+
+  const resultsTitle = searchTerm.trim()
+    ? `“${searchTerm.trim()}”`
+    : 'Todo el catálogo'
+
+  const clearFilters = () => { setSearchTerm(''); setShowAll(false) }
 
   return (
-    <>
-      {showSplash && <SplashScreen />}
+    <div className="page">
+      <a href="#catalogo" className="sr-only">Saltar al catálogo</a>
 
-      <div className={`main-container ${showSplash ? 'hidden' : ''}`}>
-        <Header
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          cartCount={count}
-          onOpenCart={() => setCartOpen(true)}
-          onOpenLogin={() => setShowLogin(true)}
-          onOpenDashboard={() => setShowDashboard(true)}
+      <Header
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        cartCount={count}
+        announcement={announcement}
+        onOpenLogin={() => setShowLogin(true)}
+        onOpenDashboard={() => setShowDashboard(true)}
+      />
+
+      <main>
+        {!isFiltering && <WelcomeSection images={heroImages} onExplore={scrollToCatalog} />}
+
+        {!isFiltering && <Highlights onCatalog={scrollToCatalog} />}
+
+        <div id="catalogo" />
+        <Categories
+          sections={navSections}
+          showAll={showAll}
+          onGo={goToSection}
+          onShowAll={() => { setShowAll(true); scrollToCatalog() }}
         />
-        {announcement && (
-          <div className="announcement-bar">📢 {announcement}</div>
+
+        {loading && <SkeletonGrid />}
+
+        {error && (
+          <p className="state-msg state-msg--error" role="alert">
+            No pudimos cargar el catálogo en este momento. Intenta de nuevo en unos segundos.
+            {isAdmin && <><br /><small>Firebase: {error}</small></>}
+          </p>
         )}
-        <WelcomeSection />
-      </div>
 
-      <Categories activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
+        {!loading && !isFiltering && (
+          <div className="catalog">
+            <CatalogSections />
+            <HowToOrder onStart={scrollToCatalog} />
+            <Story image={storyImage} />
+            <Faq />
+          </div>
+        )}
 
-      {loading && (
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <p>✨ Cargando...</p>
-        </div>
-      )}
+        {!loading && isFiltering && (
+          <div className="catalog">
+            <ResultsSection products={filtered} title={resultsTitle} onClear={clearFilters} />
+            <HowToOrder onStart={clearFilters} />
+          </div>
+        )}
+      </main>
 
-      {error && (
-        <div style={{ padding: '1rem', color: 'red', fontSize: 13 }}>
-          ❌ Error Firebase: {error} — Verifica las reglas de Firestore.
-        </div>
-      )}
-
-      {!loading && !isFiltering && (
-        <div className="products-wrapper">
-
-          {/* Producto destacado */}
-          <FeaturedProduct product={featured} />
-
-          {/* Carrusel — recibe products del contexto */}
-          <CarouselSection
-            title="🎁 Sorpresas Especiales"
-            products={cajas}
-            sectionId="carousel_cajas"
-          />
-
-          {/* Grid */}
-          <GridSection
-            title="🌸 Arreglos y Bouquets"
-            products={arreglos}
-            sectionId="grid_arreglos"
-          />
-
-          <ListSection
-            title="✨ Regalos Especiales"
-            products={getBySection('list_regalos')}
-            sectionId="list_regalos"
-          />
-
-          <MockupSection />
-
-          <SocialLinks/>
-
-        </div>
-      )}
-
-      {!loading && isFiltering && (
-        <div className="products-wrapper">
-          <ResultsSection
-            products={filtered}
-            title={searchTerm.trim() ? `Resultados para "${searchTerm.trim()}"` : 'Resultados'}
-          />
-          <MockupSection />
-          <SocialLinks/>
-        </div>
-      )}
+      <SocialLinks />
 
       <AdminWelcomeEditor />
-
       <AdminLogin open={showLogin} onClose={() => setShowLogin(false)} />
       <AdminDashboard open={showDashboard} onClose={() => setShowDashboard(false)} />
-      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
-    </>
+
+      <ProductSheet />
+      <StoryViewer />
+      <PhotoManager />
+      <SectionsPicker />
+      <CartDrawer />
+      <CartBar />
+    </div>
   )
 }
 

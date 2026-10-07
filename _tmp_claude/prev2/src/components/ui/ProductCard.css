@@ -1,0 +1,166 @@
+/* ── Tarjeta de producto ───────────────────── */
+.pc {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 8px;
+  border-radius: var(--r-lg);
+  background: var(--card);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  cursor: pointer;
+  outline: none;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.pc:hover { transform: translate(-3px, -3px); box-shadow: 7px 7px 0 var(--c); }
+.pc:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+.pc--admin { cursor: default; }
+.pc--admin:hover { transform: none; box-shadow: 4px 4px 0 var(--ink); }
+.pc:focus-visible { outline: 3px solid var(--c-blue); outline-offset: 3px; }
+
+.pc__media {
+  position: relative;
+  border-radius: calc(var(--r-lg) - 8px);
+  overflow: hidden;
+  background: var(--paper-2);
+  isolation: isolate;
+}
+.pc__img-wrap { aspect-ratio: 4 / 5; overflow: hidden; }
+.pc__img { transition: transform .9s var(--ease), opacity .5s var(--ease); }
+.pc__img-wrap:not(.is-loaded) .pc__img { opacity: 0; }
+.pc:hover .pc__img { transform: scale(1.06); }
+
+.pc__badge {
+  position: absolute;
+  top: 8px; left: 8px;
+  z-index: 3;
+  max-width: calc(100% - 16px);
+  padding: 4px 10px 5px;
+  border-radius: var(--r-pill);
+  background: var(--c);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  font-family: var(--font-hand);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1;
+  rotate: -4deg;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pc__delete {
+  position: absolute;
+  top: 8px; right: 8px;
+  z-index: 4;
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--primary-deep);
+  border: 2px solid var(--ink);
+}
+.pc__delete:hover { background: var(--c-red); color: #fff; }
+
+.pc__body { padding: 12px 4px 2px; display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.pc__cat {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pc__name {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 92, 'opsz' 24;
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.pc__desc {
+  font-size: 14px;
+  color: var(--ink-2);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.pc--admin .pc__name, .pc--admin .pc__desc { -webkit-line-clamp: unset; display: block; }
+
+.pc__foot { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin-top: auto; padding-top: 6px; }
+.pc__price {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 90;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.pc__rating {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 12px; font-weight: 800; color: var(--ink-2);
+}
+.pc__rating svg { color: var(--c-yellow); fill: var(--c-yellow); stroke: var(--ink); stroke-width: 1.4; }
+
+/* Botón "Lo quiero" */
+.pc__cta {
+  margin-top: 10px;
+  width: 100%;
+  min-height: 44px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  border-radius: var(--r-pill);
+  background: var(--primary);
+  color: #fff;
+  border: 2px solid var(--ink);
+  font-size: 14.5px;
+  font-weight: 800;
+  transition: background-color .2s, transform .15s;
+}
+.pc__cta:hover { background: var(--primary-deep); }
+.pc__cta:active { transform: scale(.96); }
+.pc__cta.is-added { background: var(--c-green); animation: pop .45s var(--ease-spring); }
+.pc__cta svg { flex: none; }
+
+/* ── Variante lista (horizontal) ─────────── */
+.pc--list {
+  display: grid;
+  grid-template-columns: 116px 1fr;
+  grid-template-rows: 1fr auto;
+  column-gap: 14px;
+}
+.pc--list .pc__media { grid-row: span 2; border-radius: var(--r-md); }
+.pc--list .pc__img-wrap { aspect-ratio: auto; height: 100%; min-height: 130px; }
+.pc--list .pc__badge { font-size: 16px; top: 6px; left: 6px; }
+.pc--list .pc__body { padding: 4px 4px 0 0; min-width: 0; }
+.pc--list .pc__desc { -webkit-line-clamp: 2; font-size: 13px; }
+.pc--list .pc__cta { margin-top: 8px; min-height: 40px; }
+
+/* ── Variante editorial ancha ────────────── */
+.pc--wide .pc__name { font-size: clamp(22px, 3vw, 28px); }
+.pc--wide .pc__price { font-size: 22px; }
+.pc--wide .pc__body { padding-top: 14px; gap: 6px; }
+
+/* ── Variante compacta ───────────────────── */
+.pc--compact .pc__name { font-size: 15.5px; }
+.pc--compact .pc__price { font-size: 17px; }
+
+@media (min-width: 720px) {
+  .pc { padding: 10px; }
+  .pc__name { font-size: 19px; }
+  .pc__price { font-size: 21px; }
+  .pc--list { grid-template-columns: 150px 1fr; }
+}

@@ -3,24 +3,18 @@ import './AdminDashboard.css'
 import { useAdmin } from './AdminContext'
 import { useProductsCtx } from '../../contexts/ProductsContext'
 import { useSettingsCtx } from '../../contexts/SettingsContext'
+import { CATALOG_SECTIONS, productSections } from '../../data/catalog'
 
-const SECTION_NAMES = {
-  featured: '⭐ Destacado',
-  carousel_cajas: '🎁 Sorpresas',
-  grid_arreglos: '🌸 Arreglos',
-  list_regalos: '✨ Regalos',
-  promos_grande: '🖼 Tarjetas Grandes',
-  promos_mediano: '📋 Tarjetas Medianas',
-  promos_circulo: '⭕ Círculos'
-}
-
-const SECTION_ORDER = ['featured', 'carousel_cajas', 'grid_arreglos', 'list_regalos', 'promos_grande', 'promos_mediano', 'promos_circulo']
+// Secciones del catálogo (mapa LisArt)
+const SECTION_NAMES = Object.fromEntries(CATALOG_SECTIONS.map(c => [c.id, `${c.emoji} ${c.name}`]))
+const SECTION_ORDER = CATALOG_SECTIONS.map(c => c.id)
 
 function AdminDashboard({ open, onClose }) {
   const { logout } = useAdmin()
   const { products, createProduct, deleteProduct, updateField, updateImage } =
     useProductsCtx()
-  const { announcement, updateAnnouncement } = useSettingsCtx()
+  const { announcement, updateAnnouncement, customSections = [] } = useSettingsCtx()
+  const allSections = [...SECTION_ORDER, ...customSections.map(c => c.id)]
 
   const [announcementDraft, setAnnouncementDraft] = useState(announcement)
   const [savingAnnouncement, setSavingAnnouncement] = useState(false)
@@ -36,7 +30,7 @@ function AdminDashboard({ open, onClose }) {
 
   if (!open) return null
 
-  const sectionName = (s) => SECTION_NAMES[s] || s
+  const sectionName = (s) => SECTION_NAMES[s] || (() => { const c = customSections.find(x => x.id === s); return c ? `✨ ${[c.title, c.emphasis].filter(Boolean).join(' ')}` : s })()
 
   const handleSaveAnnouncement = async () => {
     setSavingAnnouncement(true)
@@ -88,9 +82,9 @@ function AdminDashboard({ open, onClose }) {
     }
   }
 
-  const grouped = SECTION_ORDER.map(sectionId => ({
+  const grouped = allSections.map(sectionId => ({
     sectionId,
-    items: products.filter(p => p.section === sectionId)
+    items: products.filter(p => productSections(p).includes(sectionId))
   }))
 
   return (
@@ -142,7 +136,7 @@ function AdminDashboard({ open, onClose }) {
           <section className="ad-card">
             <h2>🛍️ Productos</h2>
             <div className="ad-create-row">
-              {SECTION_ORDER.map(sectionId => (
+              {allSections.map(sectionId => (
                 <button
                   key={sectionId}
                   className="ad-btn ad-btn-create"
