@@ -4,11 +4,14 @@ import { useUI } from '../../contexts/UIContext'
 import { formatPrice } from '../../data/products'
 import Icon from '../ui/Icon'
 import './CartDrawer.css'
+import { useSiteContent } from '../../hooks/useSiteContent'
+import EditText from '../ui/EditText'
 
 function CartDrawer() {
   const { cartOpen: open, closeCart: onClose } = useUI()
   const { items, setQty, removeFromCart, clearCart, total, count, checkoutUrl, info, updateInfo } = useCart()
   const closeRef = useRef(null)
+  const { cartNote } = useSiteContent()
 
   useEffect(() => {
     if (!open) return
@@ -27,7 +30,7 @@ function CartDrawer() {
         <header className="cart__head">
           <div>
             <p className="eyebrow">{count} {count === 1 ? 'pieza' : 'piezas'}</p>
-            <h2 id="cart-title" className="display cart__title">Tu <em>pedido</em></h2>
+            <h2 id="cart-title" className="display cart__title"><EditText path="cart.title" fallback="Tu" /> <em><EditText path="cart.emphasis" fallback="pedido" /></em></h2>
           </div>
           <button ref={closeRef} className="cart__close" onClick={onClose} aria-label="Cerrar pedido">
             <Icon name="close" />
@@ -98,9 +101,9 @@ function CartDrawer() {
                 <span>Total productos</span>
                 <strong>{formatPrice(total)}</strong>
               </div>
-              <p className="cart__note">Envíos a todo Cali. El domicilio y la personalización se confirman por WhatsApp.</p>
+              {cartNote && <p className="cart__note">{cartNote}</p>}
               <a className="btn btn--wa btn--block cart__cta" href={checkoutUrl()} target="_blank" rel="noopener noreferrer">
-                <Icon name="whatsapp" /> Enviar pedido por WhatsApp
+                <Icon name="whatsapp" /> <EditText path="cart.cta" fallback="Enviar pedido por WhatsApp" inButton />
               </a>
             </footer>
           </>

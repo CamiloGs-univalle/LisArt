@@ -6,6 +6,7 @@ import { useCart } from '../../contexts/CartContext'
 import { formatPrice, contactWhatsApp } from '../../data/products'
 import Icon from '../ui/Icon'
 import { getImages, optimizeImg } from '../../data/images'
+import { useSiteContent } from '../../hooks/useSiteContent'
 
 // Galería deslizable con puntos y miniaturas
 function Gallery({ p }) {
@@ -47,6 +48,7 @@ function Gallery({ p }) {
 export default function ProductSheet() {
   const { product: p, closeProduct, notify, openCart } = useUI()
   const { addToCart } = useCart()
+  const { perks } = useSiteContent()
   const [qty, setQty] = useState(1)
   const [closing, setClosing] = useState(false)
   const closeRef = useRef(null)
@@ -121,9 +123,9 @@ export default function ProductSheet() {
           )}
 
           <ul className="sheet__perks">
-            <li><Icon name="hand" size={18} /> Hecho a mano para ti</li>
-            <li><Icon name="sparkle" size={18} /> Personalízalo con fotos, nombres o frases</li>
-            <li><Icon name="truck" size={18} /> Envíos a todo Cali · Pide con anticipación</li>
+            {perks.filter(x => String(x).trim()).map((txt, k) => (
+              <li key={k}><Icon name={['hand', 'sparkle', 'truck', 'card', 'heart'][k % 5]} size={18} /> {txt}</li>
+            ))}
           </ul>
 
           <div className="sheet__actions">

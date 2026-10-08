@@ -10,7 +10,8 @@ const HOME_DOC = 'home'
 //  · layouts      → estilo visual elegido para cada sección { sectionId: 'mosaico' }
 //  · sections     → secciones nuevas creadas por la administradora
 //  · order        → orden de las secciones en el catálogo
-const EMPTY = { announcement: '', layouts: {}, sections: [], order: [], hidden: [] }
+//  · content      → textos editables de la página (título, preguntas, pagos…)
+const EMPTY = { announcement: '', layouts: {}, sections: [], order: [], hidden: [], content: {} }
 
 export function useSettings() {
   const [data, setData] = useState(EMPTY)
@@ -86,8 +87,13 @@ export function useSettings() {
     return save({ hidden: h.includes(id) ? h.filter(x => x !== id) : [...h, id] })
   }, [save])
 
+  // Textos de la página editados por la admin (se guardan completos)
+  const updateContent = useCallback((content) => save({ content }), [save])
+
   return {
     announcement: data.announcement,
+    content: data.content || {},
+    updateContent,
     layouts: data.layouts || {},
     customSections: data.sections || [],
     order: data.order || [],

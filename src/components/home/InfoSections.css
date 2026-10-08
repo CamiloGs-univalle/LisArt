@@ -228,3 +228,5 @@
 
 .faq__item.is-open .faq__icon { background: var(--rose); color: #fff; }
 .how__note { font-size: var(--fs-h3); }
+.faq__del { margin: 0 20px 16px; }
+.faq__add { margin-top: 8px; }

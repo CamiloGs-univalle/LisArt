@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAdmin } from '../../admin/AdminContext'
 import { useUI } from '../../../contexts/UIContext'
-import { BRAND, ANNOUNCEMENTS } from '../../../data/siteContent'
+import { BRAND } from '../../../data/siteContent'
+import { useSiteContent } from '../../../hooks/useSiteContent'
 import { useLogo } from './useLogo'
 import Icon from '../../ui/Icon'
 import './Header.css'
 
 function AnnounceBar({ announcement }) {
+  const { announcements: ANNOUNCEMENTS } = useSiteContent()
   const items = [
     ...(announcement ? [{ icon: 'sparkle', text: announcement, hot: true }] : []),
     ...ANNOUNCEMENTS,

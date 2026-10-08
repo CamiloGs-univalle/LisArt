@@ -300,3 +300,51 @@ input, textarea { font: inherit; color: inherit; }
 @media (min-width: 900px) {
   :root { --fs-label: 13.5px; --fs-small: 15px; --fs-body: 17px; }
 }
+
+/* ── Edición rápida de textos (solo administradora) ── */
+.edit-me {
+  cursor: text;
+  outline: 1.5px dashed rgba(207, 74, 126, .55);
+  outline-offset: 3px;
+  border-radius: 4px;
+  transition: outline-color .2s, background-color .2s;
+}
+.edit-me:hover, .edit-me:focus-visible { outline-color: var(--rose); background-color: rgba(249, 220, 228, .35); }
+.edit-me.is-saving { opacity: .55; }
+.edit-me.is-empty { opacity: .6; }
+.edit-ph { font-style: italic; font-weight: 500; }
+.edit-field {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  line-height: inherit;
+  background: #fff;
+  color: var(--ink);
+  border: 2px solid var(--rose);
+  border-radius: 8px;
+  padding: 2px 8px;
+  max-width: 100%;
+  width: auto;
+  box-shadow: 0 0 0 4px rgba(207, 74, 126, .15);
+}
+textarea.edit-field { display: block; width: 100%; resize: vertical; }
+.edit-menu-name { margin: -8px 0 16px; font-size: var(--fs-label); color: var(--ink-3); }
+.edit-menu-name .edit-me { color: var(--rose-deep); font-weight: 700; }
+
+.edit-banner {
+  position: fixed;
+  left: 50%; bottom: calc(16px + env(safe-area-inset-bottom));
+  translate: -50% 0;
+  z-index: 95;
+  width: min(calc(100% - 24px), 520px);
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: #fff;
+  font-size: var(--fs-small);
+  box-shadow: var(--shadow-lg);
+}
+.edit-banner strong { color: var(--rose-soft); }
+.edit-banner button { margin-left: auto; flex: none; width: 32px; height: 32px; border-radius: 50%; color: #fff; background: rgba(255,255,255,.15); }

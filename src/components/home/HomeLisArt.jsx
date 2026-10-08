@@ -39,6 +39,20 @@ function SkeletonGrid() {
   )
 }
 
+// Aviso flotante del modo edición
+function EditBanner() {
+  const [show, setShow] = useState(() => {
+    try { return localStorage.getItem('lisart_edit_tip') !== 'off' } catch { return true }
+  })
+  if (!show) return null
+  return (
+    <div className="edit-banner" role="status">
+      <span>✏️ <strong>Modo edición:</strong> toca cualquier texto con línea punteada para cambiarlo. Enter guarda, Esc cancela.</span>
+      <button onClick={() => { setShow(false); try { localStorage.setItem('lisart_edit_tip', 'off') } catch { /* noop */ } }} aria-label="Cerrar aviso">✕</button>
+    </div>
+  )
+}
+
 function HomeContent() {
   const [showAll, setShowAll] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -149,6 +163,7 @@ function HomeContent() {
       <StoryViewer />
       <PhotoManager />
       <SectionsPicker />
+      {isAdmin && <EditBanner />}
       <CartDrawer />
       <CartBar />
     </div>

@@ -1,16 +1,20 @@
 // Secciones informativas: historias destacadas, cinta, cómo pedir, historia y preguntas
 import { useEffect, useRef, useState } from 'react'
+import { useAdmin } from '../admin/AdminContext'
 import './InfoSections.css'
-import { MARQUEE_WORDS, HOW_TO_ORDER, STORY, FAQ, HIGHLIGHTS, SOCIALS } from '../../data/siteContent'
+import { MARQUEE_WORDS, HOW_TO_ORDER, STORY, SOCIALS } from '../../data/siteContent'
+import { useSiteContent, highlightTextPath } from '../../hooks/useSiteContent'
 import { WHATSAPP_NUMBER } from '../../data/products'
 import Reveal from '../ui/Reveal'
 import Icon from '../ui/Icon'
 import SectionHeader from '../ui/SectionHeader'
+import EditText, { useEditableText } from '../ui/EditText'
 
 const waLink = (text) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`
 
 /* ── Historias destacadas (como en Instagram) ── */
 export function Highlights({ onCatalog }) {
+  const { highlights: HIGHLIGHTS } = useSiteContent()
   const [active, setActive] = useState(null)
   const closeRef = useRef(null)
 
@@ -41,7 +45,7 @@ export function Highlights({ onCatalog }) {
               <span className="hl__ring">
                 <span className="hl__bubble"><Icon name={h.icon} size={28} strokeWidth={1.9} /></span>
               </span>
-              <span className="hl__label">{h.label}</span>
+              <EditText path={`highlights.${h.id}.label`} fallback={h.label} className="hl__label" inButton />
             </button>
           </li>
         ))}
@@ -62,17 +66,17 @@ export function Highlights({ onCatalog }) {
               <Icon name="close" size={20} />
             </button>
             <span className="hl-modal__icon"><Icon name={active.icon} size={34} strokeWidth={1.8} /></span>
-            <p className="hand hl-modal__label">{active.label}</p>
-            <h2 id="hl-title" className="display hl-modal__title">{active.title}</h2>
-            {active.text && <p className="hl-modal__text">{active.text}</p>}
+            <EditText path={`highlights.${active.id}.label`} fallback={active.label} as="p" className="hand hl-modal__label" />
+            <h2 id="hl-title" className="display hl-modal__title"><EditText path={`highlights.${active.id}.title`} fallback={active.title} /></h2>
+            {(active.text || !active.steps) && <EditText path={highlightTextPath(active.id)} fallback={active.text} as="p" className="hl-modal__text" multiline />}
             {active.steps && (
               <ol className="hl-modal__steps">
-                {active.steps.map((s, i) => <li key={i}><span>{i + 1}</span>{s}</li>)}
+                {active.steps.map((s, i) => <li key={i}><span>{i + 1}</span><EditText path={`highlights.${active.id}.steps.${i}`} fallback={s} /></li>)}
               </ol>
             )}
             <button className="btn btn--primary btn--block" onClick={() => runAction(active)}>
               {active.action === 'whatsapp' ? <Icon name="whatsapp" /> : active.action === 'catalog' ? <Icon name="gift" /> : <Icon name="instagram" />}
-              {active.cta}
+              <EditText path={`highlights.${active.id}.cta`} fallback={active.cta} inButton />
             </button>
           </div>
         </div>
@@ -83,9 +87,13 @@ export function Highlights({ onCatalog }) {
 
 /* ── Cinta de colores ── */
 export function Ribbon() {
-  const words = [...MARQUEE_WORDS, ...MARQUEE_WORDS]
+  const { read } = useEditableText()
+  const list = read('ribbon', MARQUEE_WORDS).filter(w => String(w).trim())
+  const words = [...list, ...list]
   const colors = ['var(--c-blue)', 'var(--c-magenta)', 'var(--c-orange)', 'var(--c-green)', 'var(--c-purple)', 'var(--c-red)']
   return (
+    <>
+    <RibbonEditor />
     <div className="ribbon" aria-hidden="true">
       <div className="ribbon__track">
         {words.map((w, i) => (
@@ -95,6 +103,26 @@ export function Ribbon() {
           </span>
         ))}
       </div>
+    </div>
+    </>
+  )
+}
+
+// Editar las palabras de la cinta (solo admin): separadas por comas
+function RibbonEditor() {
+  const { read, write } = useEditableText()
+  const { isAdmin } = useAdmin()
+  if (!isAdmin) return null
+  const list = read('ribbon', MARQUEE_WORDS)
+  return (
+    <div className="container">
+      <button
+        className="admin-chip"
+        onClick={() => {
+          const v = window.prompt('Palabras de la cinta, separadas por comas:', list.join(', '))
+          if (v !== null) write('ribbon', v.split(',').map(x => x.trim()).filter(Boolean))
+        }}
+      >✏️ Editar palabras de la cinta</button>
     </div>
   )
 }
@@ -108,6 +136,7 @@ export function HowToOrder({ onStart }) {
           <SectionHeader
             id="how-title"
             align="center"
+            editKey="howHead"
             copy={{ eyebrow: 'Sin complicaciones', title: 'Pedir es', emphasis: 'facilísimo', subtitle: 'Sin registros ni pagos en línea: todo lo coordinamos contigo por WhatsApp.' }}
           />
         </Reveal>
@@ -115,16 +144,16 @@ export function HowToOrder({ onStart }) {
           {HOW_TO_ORDER.map((s, i) => (
             <Reveal as="li" key={s.title} className="how__step" delay={i * 90} style={{ '--c': s.color }}>
               <span className="how__num">{i + 1}</span>
-              <h3>{s.title}</h3>
-              <p>{s.text}</p>
+              <EditText path={`how.${i}.title`} fallback={s.title} as="h3" />
+              <EditText path={`how.${i}.text`} fallback={s.text} as="p" multiline />
             </Reveal>
           ))}
         </ol>
         <div className="how__cta">
           <button className="btn btn--primary" onClick={onStart}>
-            <Icon name="gift" /> Empezar a elegir
+            <Icon name="gift" /> <EditText path="howCta.button" fallback="Empezar a elegir" inButton />
           </button>
-          <span className="hand how__note">¡toma menos de 2 minutos!</span>
+          <EditText path="howCta.note" fallback="¡toma menos de 2 minutos!" className="hand how__note" />
         </div>
       </div>
     </section>
@@ -139,17 +168,17 @@ export function Story({ image }) {
         {image && (
           <div className="story__media">
             <img src={image} alt="" loading="lazy" decoding="async" />
-            <span className="sticker story__sticker">Hecho con amor ♥</span>
+            <EditText path="story.sticker" fallback="Hecho con amor ♥" className="sticker story__sticker" />
           </div>
         )}
         <div className="story__copy">
           <h2 id="story-title" className="display story__title">
-            {STORY.title} <em>{STORY.titleEmphasis}</em>
+            <EditText path="story.title" fallback={STORY.title} /> <em><EditText path="story.titleEmphasis" fallback={STORY.titleEmphasis} /></em>
           </h2>
-          <p className="story__text">{STORY.text}</p>
-          <p className="hand story__sign">— {STORY.sign}</p>
+          <EditText path="story.text" fallback={STORY.text} as="p" className="story__text" multiline />
+          <p className="hand story__sign">— <EditText path="story.sign" fallback={STORY.sign} /></p>
           <a className="btn btn--ghost story__ig" href={SOCIALS.instagram} target="_blank" rel="noopener noreferrer">
-            <Icon name="instagram" /> Ver más en Instagram
+            <Icon name="instagram" /> <EditText path="story.cta" fallback="Ver más en Instagram" inButton />
           </a>
         </div>
       </Reveal>
@@ -159,22 +188,25 @@ export function Story({ image }) {
 
 /* ── Preguntas frecuentes ── */
 export function Faq() {
+  const { faq: FAQ } = useSiteContent()
+  const { isAdmin } = useAdmin()
+  const { write } = useEditableText()
   const [open, setOpen] = useState(0)
   return (
     <section className="faq container" id="preguntas" aria-labelledby="faq-title">
       <div className="faq__grid">
         <Reveal>
-          <SectionHeader id="faq-title" copy={{ eyebrow: 'Preguntas frecuentes', title: '¿Tienes', emphasis: 'dudas?', color: 'var(--c-blue)' }} />
-          <p className="faq__aside">Si no encuentras tu respuesta, escríbenos: respondemos con gusto.</p>
+          <SectionHeader id="faq-title" editKey="faqHead" copy={{ eyebrow: 'Preguntas frecuentes', title: '¿Tienes', emphasis: 'dudas?', color: 'var(--c-blue)' }} />
+          <EditText path="faqHead.aside" fallback="Si no encuentras tu respuesta, escríbenos: respondemos con gusto." as="p" className="faq__aside" multiline />
           <a className="btn btn--wa faq__wa" href={waLink('¡Hola LisArt! 👋 Tengo una pregunta.')} target="_blank" rel="noopener noreferrer">
-            <Icon name="whatsapp" /> Preguntar ahora
+            <Icon name="whatsapp" /> <EditText path="faqHead.cta" fallback="Preguntar ahora" inButton />
           </a>
         </Reveal>
         <div className="faq__list">
           {FAQ.map((f, i) => {
             const isOpen = open === i
             return (
-              <div key={f.q} className={`faq__item ${isOpen ? 'is-open' : ''}`}>
+              <div key={i} className={`faq__item ${isOpen || isAdmin ? 'is-open' : ''}`}>
                 <h3>
                   <button
                     className="faq__q"
@@ -183,16 +215,28 @@ export function Faq() {
                     id={`faq-q-${i}`}
                     onClick={() => setOpen(isOpen ? -1 : i)}
                   >
-                    {f.q}
+                    <EditText path={`faq.${i}.q`} fallback={f.q} inButton />
                     <span className="faq__icon" aria-hidden="true"><Icon name="plus" size={18} strokeWidth={2.4} /></span>
                   </button>
                 </h3>
                 <div className="faq__a" id={`faq-a-${i}`} role="region" aria-labelledby={`faq-q-${i}`}>
-                  <div><p>{f.a}</p></div>
+                  <div>
+                    <EditText path={`faq.${i}.a`} fallback={f.a} as="p" multiline />
+                    {isAdmin && (
+                      <button className="admin-chip faq__del" onClick={() => { if (window.confirm('¿Eliminar esta pregunta?')) write('faq', FAQ.filter((_, j) => j !== i)) }}>
+                        <Icon name="trash" size={14} /> Eliminar pregunta
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )
           })}
+          {isAdmin && (
+            <button className="admin-chip faq__add" onClick={() => write('faq', [...FAQ, { q: 'Nueva pregunta', a: 'Escribe aquí la respuesta.' }])}>
+              <Icon name="plus" size={14} /> Agregar pregunta
+            </button>
+          )}
         </div>
       </div>
     </section>

@@ -13,6 +13,7 @@ import { SectionToolbar, NewSection } from './AdminTools'
 import { Ribbon } from '../home/InfoSections'
 import { useCatalog } from './useCatalog'
 import FeaturedProduct from '../product/FeaturedProduct'
+import EditText from '../ui/EditText'
 
 function Section({ s, toolbar }) {
   const { isAdmin } = useAdmin()
@@ -20,10 +21,7 @@ function Section({ s, toolbar }) {
   const { add, added } = useAddToCart()
   const Layout = (LAYOUTS[s.style] || LAYOUTS.catalogo).C
   const isGallery = s.special === 'gallery'
-  const copy = {
-    eyebrow: `${s.emoji ? s.emoji + ' ' : ''}${s.eyebrow || ''}`,
-    title: s.title, emphasis: s.emphasis, subtitle: s.subtitle,
-  }
+  const copy = { emoji: s.emoji, eyebrow: s.eyebrow, title: s.title, emphasis: s.emphasis, subtitle: s.subtitle, note: s.note }
 
   return (
     <section
@@ -35,8 +33,13 @@ function Section({ s, toolbar }) {
       {toolbar}
       <div className="container">
         <Reveal>
-          <SectionHeader id={`h-${s.id}`} copy={copy} admin={isAdmin && !isGallery ? admin : null} />
+          <SectionHeader id={`h-${s.id}`} copy={copy} editKey={`sec.${s.id}`} admin={isAdmin && !isGallery ? admin : null} />
         </Reveal>
+        {isAdmin && !isGallery && (
+          <p className="edit-menu-name">
+            Nombre en el menú de arriba: <EditText path={`sec.${s.id}.name`} fallback={s.baseName || s.name} />
+          </p>
+        )}
         {isAdmin && s.items.length === 0 && !isGallery && (
           <p className="admin-empty">Sin productos. Usa “Agregar producto” o asigna productos existentes con el botón “Secciones” de cada foto.</p>
         )}

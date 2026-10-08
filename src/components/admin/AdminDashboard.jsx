@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './AdminDashboard.css'
+import AdminContentEditor from './AdminContentEditor'
 import { useAdmin } from './AdminContext'
 import { useProductsCtx } from '../../contexts/ProductsContext'
 import { useSettingsCtx } from '../../contexts/SettingsContext'
@@ -132,6 +133,8 @@ function AdminDashboard({ open, onClose }) {
               </button>
             </div>
           </section>
+
+          <AdminContentEditor />
 
           <section className="ad-card">
             <h2>🛍️ Productos</h2>

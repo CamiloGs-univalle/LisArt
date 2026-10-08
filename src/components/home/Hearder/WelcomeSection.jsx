@@ -1,10 +1,12 @@
 // Hero de LisArt — colorido, con collage tipo polaroid y stickers
 import './WelcomeSection.css'
 import { useAdmin } from '../../admin/AdminContext'
-import { HERO, STATS, BRAND } from '../../../data/siteContent'
+import { STATS, BRAND } from '../../../data/siteContent'
+import { useSiteContent } from '../../../hooks/useSiteContent'
 import { WHATSAPP_NUMBER } from '../../../data/products'
 import { useLogo } from './useLogo'
 import Icon from '../../ui/Icon'
+import EditText from '../../ui/EditText'
 
 function CircleText({ text }) {
   return (
@@ -21,6 +23,7 @@ function CircleText({ text }) {
 
 function WelcomeSection({ images = [], onExplore }) {
   const { isAdmin } = useAdmin()
+  const { hero: HERO } = useSiteContent()
   const logo = useLogo()
   const shots = images.filter(Boolean).slice(0, 3)
   const waHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('¡Hola LisArt! 👋 Quiero cotizar un regalo personalizado.')}`
@@ -40,35 +43,35 @@ function WelcomeSection({ images = [], onExplore }) {
 
       <div className="container hero__grid">
         <div className="hero__copy">
-          <span className="sticker hero__sticker">{HERO.sticker}</span>
+          <EditText path="hero.sticker" fallback={HERO.sticker} className="sticker hero__sticker" />
 
           <h1 id="hero-title" className="display hero__title">
-            {HERO.titleStart}{' '}
+            <EditText path="hero.titleStart" fallback={HERO.titleStart} />{' '}
             <em>
-              {HERO.titleEmphasis}
+              <EditText path="hero.titleEmphasis" fallback={HERO.titleEmphasis} />
               <svg className="hero__heart" viewBox="0 0 40 36" aria-hidden="true">
                 <path d="M20 33S3 22.5 3 11.5A8.5 8.5 0 0 1 20 7a8.5 8.5 0 0 1 17 4.5C37 22.5 20 33 20 33Z" />
               </svg>
             </em>{' '}
-            <span className="hero__end">{HERO.titleEnd}</span>
+            <EditText path="hero.titleEnd" fallback={HERO.titleEnd} className="hero__end" />
           </h1>
 
-          <p className="hero__sub">{HERO.subtitle}</p>
+          <EditText path="hero.subtitle" fallback={HERO.subtitle} as="p" className="hero__sub" multiline />
 
           <div className="hero__ctas">
             <button className="btn btn--primary" onClick={onExplore}>
-              <Icon name="gift" /> {HERO.primaryCta}
+              <Icon name="gift" /> <EditText path="hero.primaryCta" fallback={HERO.primaryCta} inButton />
             </button>
             <a className="btn btn--ghost" href={waHref} target="_blank" rel="noopener noreferrer">
-              <Icon name="whatsapp" /> {HERO.secondaryCta}
+              <Icon name="whatsapp" /> <EditText path="hero.secondaryCta" fallback={HERO.secondaryCta} inButton />
             </a>
           </div>
 
           <ul className="hero__stats">
             {STATS.map((s, i) => (
-              <li key={s.label} style={{ '--c': ['var(--c-blue)', 'var(--c-magenta)', 'var(--c-green)'][i % 3] }}>
-                <strong>{s.value}</strong>
-                <span>{s.label}</span>
+              <li key={i} style={{ '--c': ['var(--c-blue)', 'var(--c-magenta)', 'var(--c-green)'][i % 3] }}>
+                <EditText path={`stats.${i}.value`} fallback={s.value} as="strong" />
+                <EditText path={`stats.${i}.label`} fallback={s.label} />
               </li>
             ))}
           </ul>
@@ -84,7 +87,7 @@ function WelcomeSection({ images = [], onExplore }) {
           )}
         </div>
 
-        <div className={`hero__art hero__art--${shots.length || 0}`} aria-hidden="true">
+        <div className={`hero__art hero__art--${shots.length || 0}`} aria-hidden={isAdmin ? undefined : 'true'}>
           {shots.length > 0 ? (
             shots.map((src, i) => (
               <figure key={i} className={`hero__shot hero__shot--${i + 1}`}>
@@ -99,8 +102,8 @@ function WelcomeSection({ images = [], onExplore }) {
             </>
           )}
 
-          <span className="sticker hero__tag hero__tag--a">¡Personalizado!</span>
-          <span className="sticker hero__tag hero__tag--b"><Icon name="truck" size={18} /> Envíos en Cali</span>
+          <EditText path="hero.tagA" fallback="¡Personalizado!" className="sticker hero__tag hero__tag--a" />
+          <span className="sticker hero__tag hero__tag--b"><Icon name="truck" size={18} /> <EditText path="hero.tagB" fallback="Envíos en Cali" /></span>
 
           <div className="hero__seal">
             <CircleText text={`HECHO A MANO ✦ CON AMOR ✦ ${BRAND.name.toUpperCase()} ✦ `} />

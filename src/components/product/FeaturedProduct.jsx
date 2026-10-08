@@ -9,6 +9,7 @@ import EditableText from '../common/editartexto/EditableText'
 import { useAddToCart } from '../ui/useAddToCart'
 import Reveal from '../ui/Reveal'
 import Icon from '../ui/Icon'
+import EditText from '../ui/EditText'
 import { PriceTag, Personalization, ctaLabel } from '../layouts/parts'
 
 function FeaturedProduct({ product }) {
@@ -51,11 +52,11 @@ function FeaturedProduct({ product }) {
             className="feat__img"
             containerClassName="feat__img-wrap"
           />
-          <span className="sticker feat__stamp" aria-hidden="true">★ Destacado</span>
+          <span className="sticker feat__stamp">★ <EditText path="feat.stamp" fallback="Destacado" /></span>
         </div>
 
         <div className="feat__info">
-          <p className="eyebrow feat__eyebrow">El favorito del momento</p>
+          <EditText path="feat.eyebrow" fallback="El favorito del momento" as="p" className="eyebrow feat__eyebrow" />
 
           {(product.badge || isAdmin) && (
             <EditableText productId={product.id} field="badge" defaultValue={product.badge || ''} className="feat__badge" as="span" placeholder="+ etiqueta" />

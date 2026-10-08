@@ -21,7 +21,7 @@ const DEFAULT_ORDER = ['destacados', FEATURED_ID, 'parejas', 'personalizados', G
 export function useCatalog() {
   const { isAdmin } = useAdmin()
   const { products, getBySection, getFeatured } = useProductsCtx()
-  const { layouts, customSections, order, hidden } = useSettingsCtx()
+  const { layouts, customSections, order, hidden, content = {} } = useSettingsCtx()
 
   const all = [
     ...CATALOG_SECTIONS,
@@ -44,8 +44,11 @@ export function useCatalog() {
       : s.special === 'featured'
       ? (feat && (isAdmin || !isDraft(feat)) ? [feat] : [])
       : (isAdmin ? getBySection(id) : getBySection(id).filter(p => !isDraft(p)))
+    const ov = (content.sec || {})[id] || {}
     return {
       ...s,
+      baseName: s.name,
+      name: ov.name || s.name,
       style: layouts[id] || s.style || 'catalogo',
       items,
       hidden: hidden.includes(id),

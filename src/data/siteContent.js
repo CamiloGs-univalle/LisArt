@@ -1,7 +1,9 @@
 // src/data/siteContent.js
 // ─────────────────────────────────────────────────────────────
-// Textos de la página en un solo lugar.
-// Cambia aquí lo que quieras sin tocar los componentes.
+// Textos POR DEFECTO de la página.
+// La administradora puede cambiarlos sin tocar código desde:
+//   Panel de administración → "Textos de la página".
+// Lo que guarde ahí reemplaza estos valores.
 // ─────────────────────────────────────────────────────────────
 
 export const BRAND = {
@@ -20,18 +22,19 @@ export const SOCIALS = {
 // Barra superior de anuncios. El anuncio del panel admin aparece primero.
 export const ANNOUNCEMENTS = [
   { icon: 'truck', text: 'Envíos a todo Cali' },
-  { icon: 'calendar', text: 'Pedidos con anticipación · ¡Separa tu fecha!' },
+  { icon: 'calendar', text: 'Pedidos con mínimo 1 día de anticipación · ¡Separa tu fecha!' },
+  { icon: 'card', text: 'Pagos por Nequi y Bancolombia · Inicia con el 50%' },
   { icon: 'sparkle', text: 'Personalizamos tu idea con fotos, nombres y frases' },
   { icon: 'chat', text: 'Pide fácil por WhatsApp' },
 ]
 
 export const HERO = {
   sticker: '¡Hecho a mano en Cali!',
-  titleStart: 'Regalos que',
-  titleEmphasis: 'enamoran',
-  titleEnd: 'a primera vista',
+  titleStart: 'Sorprende de',
+  titleEmphasis: 'maneras únicas',
+  titleEnd: 'y creativas',
   subtitle:
-    'Bouquets, cajas sorpresa, cuadros y detalles personalizados creados para sorprender de formas únicas. Elige el tuyo y lo hacemos realidad.',
+    'Bouquets, cajas sorpresa, cuadros y detalles personalizados hechos a mano en Cali. Elige el tuyo y lo hacemos realidad.',
   primaryCta: 'Quiero mi regalo',
   secondaryCta: 'Cotizar por WhatsApp',
 }
@@ -84,7 +87,7 @@ export const HIGHLIGHTS = [
   {
     id: 'pagos', label: 'Medios de pago', color: 'var(--c-berry)', icon: 'card',
     title: 'Medios de pago',
-    text: 'Al confirmar tu pedido te compartimos los medios de pago disponibles. Recuerda: los pedidos se hacen con anticipación.',
+    text: 'Recibimos transferencias por Nequi y Bancolombia. Trabajamos con abonos: pagas la mitad del valor para iniciar tu pedido y el resto cuando lo entregamos.',
     cta: 'Preguntar por WhatsApp', action: 'whatsapp',
   },
 ]
@@ -119,7 +122,7 @@ export const FAQ = [
   },
   {
     q: '¿Con cuánta anticipación debo pedir?',
-    a: 'Trabajamos con pedidos con anticipación para que todo quede perfecto. Escríbenos con la fecha que necesitas y te confirmamos disponibilidad.',
+    a: 'Trabajamos con mínimo 1 día de anticipación. El tiempo puede variar según el tipo de detalle, así que escríbenos con la fecha que necesitas y te confirmamos disponibilidad.',
   },
   {
     q: '¿Hacen envíos?',
@@ -127,9 +130,16 @@ export const FAQ = [
   },
   {
     q: '¿Cuáles son los medios de pago?',
-    a: 'Te compartimos los medios de pago disponibles por WhatsApp al confirmar tu pedido.',
+    a: 'Recibimos transferencias por Nequi y Bancolombia.',
+  },
+  {
+    q: '¿Puedo pagar por abonos?',
+    a: 'Sí. Para iniciar tu pedido abonas la mitad del valor y, cuando te lo entregamos, pagas el resto.',
   },
 ]
+
+// Nota que aparece en el pedido, encima del botón de WhatsApp
+export const CART_NOTE = 'Pagas el 50% para iniciar (Nequi o Bancolombia) y el resto al recibir. Envíos a todo Cali: el domicilio se confirma por WhatsApp.'
 
 // Etiquetas públicas de las secciones (el panel admin usa los ids internos)
 // color: color del arcoíris que identifica la sección
