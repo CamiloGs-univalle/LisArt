@@ -1,0 +1,42 @@
+/* Páginas de la plataforma: login y super administrador */
+.pf { min-height: 100dvh; background: var(--paper); color: var(--ink); }
+.pf-center { min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px; }
+.pf-card {
+  width: min(100%, 420px);
+  display: grid; gap: 14px;
+  padding: clamp(22px, 5vw, 36px);
+  border-radius: var(--r-xl);
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-lg);
+}
+.pf-card--hero { width: min(100%, 560px); text-align: center; justify-items: center; }
+.pf-title { font-size: var(--fs-h3l); }
+.pf-muted { color: var(--ink-2); }
+.pf-field { display: grid; gap: 6px; }
+.pf-field > span:first-child { font-size: var(--fs-label); font-weight: 700; color: var(--ink-2); }
+.pf-field input, .pf-field select, .pf-field textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  font-size: 16px;
+  color: var(--ink);
+}
+.pf-field textarea { padding: 12px 14px; min-height: 90px; }
+.pf-field input:focus, .pf-field select:focus, .pf-field textarea:focus { outline: none; border-color: var(--rose); background: #fff; box-shadow: 0 0 0 3px color-mix(in srgb, var(--rose) 20%, transparent); }
+.pf-field small { color: var(--ink-3); font-size: 12.5px; }
+.pf-pass { position: relative; display: block; }
+.pf-pass input { padding-right: 48px; }
+.pf-pass button { position: absolute; right: 4px; top: 50%; translate: 0 -50%; width: 40px; height: 40px; display: grid; place-items: center; color: var(--ink-3); border-radius: 50%; }
+.pf-error { padding: 10px 12px; border-radius: 10px; background: #fdecea; color: #8a1c13; font-size: 14px; }
+.pf-info { padding: 10px 12px; border-radius: 10px; background: #e8f5ec; color: #1d5b33; font-size: 14px; }
+.pf-alert { padding: 10px 12px; border-radius: 10px; background: #fff3cd; color: #6b4e00; font-size: 14px; }
+.pf-sep { display: flex; align-items: center; gap: 10px; color: var(--ink-3); font-size: 13px; }
+.pf-sep::before, .pf-sep::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.pf-links { display: grid; gap: 8px; justify-items: center; font-size: 14px; }
+.pf-links button, .pf-links a { color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; min-height: 32px; }
+.pf-actions { display: grid; gap: 10px; }
+.pf-big-icon { font-size: 40px; line-height: 1; }

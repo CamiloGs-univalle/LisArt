@@ -1,0 +1,90 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────
+// Reglas de seguridad de la plataforma de catálogos
+//
+//  · Cualquiera puede VER un catálogo (productos, textos, diseño).
+//  · Solo el dueño de ese catálogo (o el super administrador) puede EDITARLO.
+//  · Solo el super administrador crea catálogos, cuentas y cambia el estado/plan.
+//
+// Publicar: Consola de Firebase → Firestore Database → Reglas → pegar → Publicar
+// (o con la CLI: firebase deploy --only firestore:rules)
+// ─────────────────────────────────────────────────────────────
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+
+    // ⚠️ Mismo correo que VITE_SUPERADMIN_EMAILS
+    function isSuper() {
+      return signedIn()
+        && request.auth.token.email == 'camilo13369@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+
+    function isOwnerOf(tenantId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && profile().tenantId == tenantId;
+    }
+
+    function canEdit(tenantId) { return isSuper() || isOwnerOf(tenantId); }
+
+    // ── Negocios ───────────────────────────────────────────
+    match /tenants/{tenantId} {
+      allow get: if true;                // ver un catálogo
+      allow list: if isSuper();          // la lista completa solo la ve el super admin
+      allow create, delete: if isSuper();
+      // El dueño edita su negocio, pero no su estado, plan ni a quién pertenece
+      allow update: if isSuper() || (
+        isOwnerOf(tenantId) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'plan', 'ownerUid', 'ownerEmail', 'createdAt'])
+      );
+
+      match /products/{productId} {
+        allow read: if true;
+        allow write: if canEdit(tenantId);
+      }
+
+      match /settings/{docId} {
+        allow read: if true;
+        allow write: if canEdit(tenantId);
+      }
+    }
+
+    // ── Cuentas ────────────────────────────────────────────
+    match /users/{uid} {
+      allow read: if isSuper() || (signedIn() && request.auth.uid == uid);
+      // Las cuentas de clientes las crea el super admin. El super admin
+      // puede registrar su propio perfil de super administrador.
+      allow create, update: if isSuper();
+      allow delete: if isSuper();
+    }
+
+    // ── Solicitudes de ayuda ("olvidé mi contraseña") ───────
+    // Cualquiera puede crear una (sin sesión), con campos limitados.
+    // Solo el super administrador las ve y las resuelve.
+    match /tickets/{ticketId} {
+      allow create: if request.resource.data.keys().hasOnly(['type', 'email', 'phone', 'message', 'status', 'createdAt'])
+        && request.resource.data.type == 'password'
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.email is string && request.resource.data.email.size() > 4 && request.resource.data.email.size() <= 120
+        && request.resource.data.phone is string && request.resource.data.phone.size() <= 30
+        && request.resource.data.message is string && request.resource.data.message.size() <= 500;
+      allow read, update, delete: if isSuper();
+    }
+
+    // ── Datos de la primera versión (solo lectura, para importarlos) ──
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isSuper();
+    }
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isSuper();
+    }
+  }
+}

@@ -1,0 +1,10 @@
+.status { min-height: 100dvh; display: grid; place-items: center; padding: 24px; background: var(--paper); }
+.status__card { max-width: 440px; text-align: center; display: grid; gap: 12px; justify-items: center; }
+.status__title { font-size: var(--fs-h3l); }
+.status__text { color: var(--ink-2); }
+.status__spinner {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 3px solid var(--line-strong); border-top-color: var(--rose);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
