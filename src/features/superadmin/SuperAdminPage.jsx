@@ -146,7 +146,7 @@ export default function SuperAdminPage() {
 
           <div className="sa-grid">
             {visible.map(t => (
-              <TenantCard key={t.id} tenant={t} onToggle={() => toggleStatus(t)} onChangePassword={() => setPwTarget({ email: t.ownerEmail, name: t.name, phone: t.whatsapp })} />
+              <TenantCard key={t.id} tenant={t} onToggle={() => toggleStatus(t)} onChangePassword={() => setPwTarget({ email: t.ownerEmail, name: t.name, phone: t.whatsapp, tenantId: t.id })} />
             ))}
           </div>
         </section>

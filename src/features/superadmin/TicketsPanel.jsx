@@ -53,7 +53,7 @@ export default function TicketsPanel({ tickets, tenants, onChangePassword, onToa
               <p className="sa-ticket__time">{timeAgo(t.createdAt)}</p>
             </div>
             <div className="sa-ticket__actions">
-              <button className="btn btn--ink" onClick={() => onChangePassword({ email: t.email, name: tenant?.name, phone, ticketId: t.id })}>Asignar contraseña</button>
+              <button className="btn btn--ink" onClick={() => onChangePassword({ email: t.email, name: tenant?.name, phone, ticketId: t.id, tenantId: tenant?.id })}>Asignar contraseña</button>
               {phone && <a className="btn btn--ghost" href={waLink(phone, `Hola 👋 Recibimos tu solicitud para recuperar la contraseña de ${tenant?.name || 'tu catálogo'}.`)} target="_blank" rel="noopener noreferrer">Escribirle</a>}
               <button className="btn btn--ghost" onClick={() => discard(t)}>Descartar</button>
             </div>

@@ -11,7 +11,7 @@ import { createTicket } from '@/services/tickets.service'
 import Icon from '@/shared/ui/Icon'
 
 export default function LoginPage() {
-  const { user, profile, isSuper, loading, logout } = useAuth()
+  const { user, isSuper, loading, logout, tenantId } = useAuth()
   const [mode, setMode] = useState('login') // login | reset | register
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -28,8 +28,8 @@ export default function LoginPage() {
   useEffect(() => {
     if (!justLogged || loading || !user) return
     if (isSuper) navigate('/super', { replace: true })
-    else if (profile?.tenantId) navigate(catalogPath(profile.tenantId), { replace: true })
-  }, [justLogged, loading, user, isSuper, profile])
+    else if (tenantId) navigate(catalogPath(tenantId), { replace: true })
+  }, [justLogged, loading, user, isSuper, tenantId])
 
   const run = async (fn) => {
     setBusy(true); setError(''); setInfo('')
@@ -69,14 +69,14 @@ export default function LoginPage() {
           <div className="pf-card">
             <h1 className="display pf-title">Hola 👋</h1>
             <p className="pf-muted">Iniciaste sesión como <strong>{user.email}</strong>.</p>
-            {!isSuper && !profile?.tenantId && (
+            {!isSuper && !tenantId && (
               <p className="pf-alert">Tu cuenta todavía no tiene un catálogo asignado. Escríbele a quien te dio el acceso.</p>
             )}
             {isSuper && !user.emailVerified && !user.providerData?.some(p => p.providerId === 'google.com') && (
               <p className="pf-alert">Verifica tu correo (revisa tu bandeja) para activar los permisos de super administrador.</p>
             )}
             <div className="pf-actions">
-              {profile?.tenantId && <button className="btn btn--primary btn--block" onClick={() => navigate(catalogPath(profile.tenantId))}>Ir a mi catálogo</button>}
+              {tenantId && <button className="btn btn--primary btn--block" onClick={() => navigate(catalogPath(tenantId))}>Ir a mi catálogo</button>}
               {isSuper && <button className="btn btn--primary btn--block" onClick={() => navigate('/super')}>Panel de super administrador</button>}
               <button className="btn btn--ghost btn--block" onClick={logout}>Cerrar sesión</button>
             </div>

@@ -2,14 +2,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { tempPassword, waLink } from '@/lib/format'
 import { setUserPassword } from '@/services/admin.service'
+import { linkOwnerProfile } from '@/services/users.service'
+import { updateTenant } from '@/services/tenants.service'
 
 const newPassword = () => tempPassword() + Math.floor(Math.random() * 90 + 10) // 12 caracteres
 
-export default function PasswordDialog({ email, name, phone, onClose, onDone }) {
+export default function PasswordDialog({ email, name, phone, tenantId, onClose, onDone }) {
   const [password, setPassword] = useState(newPassword)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
+  const [missing, setMissing] = useState(false) // el correo aún no tiene cuenta
+  const [created, setCreated] = useState(false)
   const [copied, setCopied] = useState(false)
   const ref = useRef(null)
 
@@ -20,22 +24,31 @@ export default function PasswordDialog({ email, name, phone, onClose, onDone }) 
   }, [])
 
   const loginUrl = `${window.location.origin}/admin`
-  const message = `Hola${name ? ` ${name}` : ''} 👋 Tu contraseña fue cambiada.\n\n🔐 Entra en: ${loginUrl}\nCorreo: ${email}\nContraseña nueva: ${password}\n\nTe recomendamos no compartirla con nadie.`
+  const message = created
+    ? `Hola${name ? ` ${name}` : ''} 👋 Ya tienes acceso para editar tu catálogo.\n\n🔐 Entra en: ${loginUrl}\nCorreo: ${email}\nContraseña: ${password}\n\nTe recomendamos no compartirla con nadie.`
+    : `Hola${name ? ` ${name}` : ''} 👋 Tu contraseña fue cambiada.\n\n🔐 Entra en: ${loginUrl}\nCorreo: ${email}\nContraseña nueva: ${password}\n\nTe recomendamos no compartirla con nadie.`
 
-  const submit = async (e) => {
-    e.preventDefault()
+  const save = async (createIfMissing = false) => {
     if (password.length < 8) return setError('Mínimo 8 caracteres.')
     setBusy(true); setError('')
     try {
-      await setUserPassword(email, password)
+      const res = await setUserPassword(email, password, { createIfMissing })
+      // La cuenta queda vinculada como dueña del catálogo (repara perfiles incompletos)
+      if (res.uid && tenantId) {
+        await linkOwnerProfile({ uid: res.uid, email, tenantId, name })
+        await updateTenant(tenantId, { ownerUid: res.uid })
+      }
+      setCreated(!!res.created)
       setDone(true)
       onDone?.(password)
     } catch (err) {
+      if (err.code === 'user-not-found') setMissing(true)
       setError(err.message)
     } finally {
       setBusy(false)
     }
   }
+  const submit = (e) => { e.preventDefault(); save(false) }
 
   const copy = async () => {
     try { await navigator.clipboard.writeText(message); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch { /* sin permiso */ }
@@ -46,8 +59,12 @@ export default function PasswordDialog({ email, name, phone, onClose, onDone }) 
       {done ? (
         <div className="sa-dialog__body">
           <p className="sa-done__icon" aria-hidden="true">🔐</p>
-          <h2 className="display">Contraseña cambiada</h2>
-          <p className="pf-muted">Las sesiones abiertas de <strong>{email}</strong> se cerraron. Envíale los nuevos datos:</p>
+          <h2 className="display">{created ? 'Cuenta creada' : 'Contraseña cambiada'}</h2>
+          <p className="pf-muted">
+            {created
+              ? <>Creamos la cuenta de <strong>{email}</strong>{tenantId && <> y quedó como dueña de <strong>/{tenantId}</strong></>}. Envíale los datos:</>
+              : <>Las sesiones abiertas de <strong>{email}</strong> se cerraron. Envíale los nuevos datos:</>}
+          </p>
           <pre className="sa-msg">{message}</pre>
           <div className="sa-form__actions sa-form__actions--wrap">
             <button className="btn btn--ink" onClick={copy}>{copied ? '¡Copiado!' : 'Copiar mensaje'}</button>
@@ -70,10 +87,19 @@ export default function PasswordDialog({ email, name, phone, onClose, onDone }) 
             </div>
             <small>Al guardar se cerrará la sesión en todos sus dispositivos.</small>
           </label>
-          {error && <p className="pf-error" role="alert">{error}</p>}
+          {error && !missing && <p className="pf-error" role="alert">{error}</p>}
+          {missing && (
+            <div className="pf-alert" role="alert">
+              <p><strong>{email}</strong> todavía no tiene cuenta para entrar.</p>
+              <p>¿Quieres crearla con esta contraseña{tenantId ? <> y dejarla como dueña de <strong>/{tenantId}</strong></> : ''}?</p>
+              <button type="button" className="btn btn--ink sa-create-acc" disabled={busy} onClick={() => save(true)}>
+                {busy ? 'Creando…' : 'Crear cuenta'}
+              </button>
+            </div>
+          )}
           <div className="sa-form__actions">
             <button type="button" className="btn btn--ghost" onClick={onClose}>Cancelar</button>
-            <button className="btn btn--primary" disabled={busy}>{busy ? 'Guardando…' : 'Guardar contraseña'}</button>
+            {!missing && <button className="btn btn--primary" disabled={busy}>{busy ? 'Guardando…' : 'Guardar contraseña'}</button>}
           </div>
         </form>
       )}

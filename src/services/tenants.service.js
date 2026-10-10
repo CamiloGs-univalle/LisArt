@@ -1,6 +1,6 @@
 // Negocios (cada uno tiene su propio catálogo)
 import { P } from './paths'
-import { watchDoc, watchCollection, readDoc, patchDoc, createDocIfMissing, writeDoc, removeDoc, now } from './repo'
+import { watchDoc, watchCollection, readDoc, patchDoc, createDocIfMissing, writeDoc, removeDoc, findWhere, now } from './repo'
 
 export const RESERVED_SLUGS = ['admin', 'super', 'login', 'api', 'app', 'assets', 'static', 'ayuda', 'soporte']
 
@@ -30,4 +30,10 @@ export const updateTenant = (slug, patch) => patchDoc(P.tenant(slug), { ...patch
 export async function deleteTenant(slug) {
   await removeDoc(P.settings(slug)).catch(() => {})
   await removeDoc(P.tenant(slug))
+}
+
+// Negocio cuyo dueño es esta cuenta (respaldo si el perfil no tiene negocio asignado)
+export async function findTenantOwnedBy(uid) {
+  const [t] = await findWhere(P.tenants(), 'ownerUid', uid)
+  return t?.id || null
 }

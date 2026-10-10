@@ -18,14 +18,15 @@ export default async function handler(req, res) {
     if (password.length < 8) throw httpError(400, 'La contraseña debe tener al menos 8 caracteres.')
     if (superEmails().includes(email)) throw httpError(400, 'La contraseña del super administrador se cambia desde "¿Olvidaste tu contraseña?".')
 
-    await setPasswordByEmail(email, password)
-    return res.status(200).json({ ok: true })
+    const result = await setPasswordByEmail(email, password, { createIfMissing: body.createIfMissing === true })
+    return res.status(200).json({ ok: true, ...result })
   } catch (e) {
     const status = e.status || 500
     if (!e.status) console.error('[set-password]', e)
     // Errores conocidos se muestran tal cual; los inesperados solo en desarrollo
     const showRaw = e.status || process.env.NODE_ENV !== 'production'
     return res.status(status).json({
+      code: e.code,
       error: showRaw ? (e.status ? e.message : `Error del servidor: ${e.message}`) : 'Error en el servidor. Revisa los registros (Logs) en Vercel.',
     })
   }

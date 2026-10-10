@@ -27,3 +27,7 @@ export async function createOwnerAccount({ email, password, tenantId, name }) {
 
 export const ensureSuperProfile = (uid, email) =>
   writeDoc(P.user(uid), { email, role: ROLES.SUPER }, { merge: true })
+
+// Vincula una cuenta existente (creada desde el servidor) como dueña de un negocio
+export const linkOwnerProfile = ({ uid, email, tenantId, name }) =>
+  writeDoc(P.user(uid), { email, name: name || '', role: ROLES.OWNER, tenantId, createdAt: now() }, { merge: true })

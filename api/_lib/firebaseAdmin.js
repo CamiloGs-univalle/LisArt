@@ -154,7 +154,8 @@ export async function requireSuper(req) {
 /* ── Firebase Authentication (Identity Toolkit) ───────────── */
 async function identityToolkit(action, body) {
   const projectId = serviceAccount().project_id
-  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/projects/${projectId}/accounts:${action}`, {
+  const url = `https://identitytoolkit.googleapis.com/v1/projects/${projectId}/accounts${action ? `:${action}` : ''}`
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await accessToken()}` },
     body: JSON.stringify(body),
@@ -164,16 +165,27 @@ async function identityToolkit(action, body) {
     const msg = data?.error?.message || `HTTP ${res.status}`
     if (/PERMISSION_DENIED|insufficient/i.test(msg)) throw httpError(500, 'La cuenta de servicio no tiene permiso sobre Authentication.')
     if (/WEAK_PASSWORD/.test(msg)) throw httpError(400, 'La contraseña es muy débil.')
+    if (/EMAIL_EXISTS/.test(msg)) throw httpError(409, 'Ese correo ya tiene una cuenta.')
+    if (/INVALID_EMAIL/.test(msg)) throw httpError(400, 'El correo no es válido.')
     throw httpError(500, `Firebase respondió: ${msg}`)
   }
   return data
 }
 
-// Cambia la contraseña y cierra todas las sesiones abiertas de esa cuenta
-export async function setPasswordByEmail(email, password) {
+// Cambia la contraseña y cierra todas las sesiones abiertas de esa cuenta.
+// Con createIfMissing, si el correo no tiene cuenta se crea con esa contraseña.
+export async function setPasswordByEmail(email, password, { createIfMissing = false } = {}) {
   const found = await identityToolkit('lookup', { email: [email] })
   const user = found.users?.[0]
-  if (!user) throw httpError(404, 'No existe una cuenta con ese correo en Firebase Authentication.')
+  if (!user) {
+    if (!createIfMissing) {
+      const e = httpError(404, 'Ese correo no tiene cuenta en Firebase Authentication. Puedes crearla con esta contraseña.')
+      e.code = 'user-not-found'
+      throw e
+    }
+    const created = await identityToolkit('', { email, password, emailVerified: false })
+    return { uid: created.localId, created: true }
+  }
   await identityToolkit('update', { localId: user.localId, password, validSince: String(nowSec()) })
-  return user.localId
+  return { uid: user.localId, created: false }
 }

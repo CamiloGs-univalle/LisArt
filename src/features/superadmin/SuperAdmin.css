@@ -128,3 +128,5 @@
 .sa-dialog .sa-form__actions:not(.sa-form__actions--wrap) { flex-wrap: wrap; }
 .sa-dialog .sa-form__actions:not(.sa-form__actions--wrap) > * { flex: 1 1 auto; }
 .pf-field .sa-dialog .sa-slug input, .sa-dialog .pf-field .sa-slug input { padding-left: 14px; }
+.sa-create-acc { margin-top: 10px; min-height: 42px; }
+.pf-alert p + p { margin-top: 4px; }

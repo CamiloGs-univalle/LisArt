@@ -24,10 +24,13 @@ service cloud.firestore {
 
     function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
 
+    // Dueño = su perfil apunta a este negocio, o el negocio lo tiene como ownerUid
     function isOwnerOf(tenantId) {
-      return signedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && profile().tenantId == tenantId;
+      return signedIn() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+          && profile().tenantId == tenantId)
+        || get(/databases/$(database)/documents/tenants/$(tenantId)).data.ownerUid == request.auth.uid
+      );
     }
 
     function canEdit(tenantId) { return isSuper() || isOwnerOf(tenantId); }
@@ -35,7 +38,8 @@ service cloud.firestore {
     // ── Negocios ───────────────────────────────────────────
     match /tenants/{tenantId} {
       allow get: if true;                // ver un catálogo
-      allow list: if isSuper();          // la lista completa solo la ve el super admin
+      // La lista completa solo la ve el super admin; cada dueño puede buscar el suyo
+      allow list: if isSuper() || (signedIn() && resource.data.ownerUid == request.auth.uid);
       allow create, delete: if isSuper();
       // El dueño edita su negocio, pero no su estado, plan ni a quién pertenece
       allow update: if isSuper() || (

@@ -7,7 +7,7 @@
 // ─────────────────────────────────────────────────────────────
 import {
   doc, collection, onSnapshot, getDoc, getDocs, setDoc, updateDoc, addDoc, deleteDoc,
-  serverTimestamp, runTransaction, writeBatch,
+  serverTimestamp, runTransaction, writeBatch, query, where, limit,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { demo, isDemo } from './demo'
@@ -37,6 +37,13 @@ export async function readDoc(path, source = db) {
 export async function readCollection(path, source = db) {
   if (isDemo()) return demo.list(path)
   const q = await getDocs(collection(source, path))
+  return q.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
+// Busca documentos de una colección donde campo == valor
+export async function findWhere(path, field, value, max = 1) {
+  if (isDemo()) return demo.list(path).filter(d => d[field] === value).slice(0, max)
+  const q = await getDocs(query(collection(db, path), where(field, '==', value), limit(max)))
   return q.docs.map(d => ({ id: d.id, ...d.data() }))
 }
 
