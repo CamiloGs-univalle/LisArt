@@ -16,8 +16,14 @@ async function callAdmin(path, body) {
   } catch {
     throw new Error('Sin conexión. Revisa tu internet.')
   }
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.error || (res.status === 404 ? 'El servidor no está disponible. Reinicia "npm run dev".' : 'No se pudo completar.'))
+  const text = await res.text()
+  let data = {}
+  try { data = text ? JSON.parse(text) : {} } catch { /* respuesta que no es JSON (ej. la función falló al arrancar) */ }
+  if (!res.ok) {
+    if (data.error) throw new Error(data.error)
+    if (res.status === 404) throw new Error('El servidor no está disponible. Reinicia "npm run dev".')
+    throw new Error(`El servidor falló (${res.status}): ${text.slice(0, 160) || 'sin detalle'}. Revisa Vercel → Logs.`)
+  }
   return data
 }
 
