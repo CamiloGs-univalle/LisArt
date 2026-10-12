@@ -1,0 +1,61 @@
+/* ── Panel «Vender más» ─────────────────────────────── */
+.mt { display: grid; gap: 12px; }
+.mt .ad-card { margin-bottom: 0; }
+.ms { border-radius: 16px; background: var(--bg-card, #fff); box-shadow: 0 0 0 1px var(--line), 0 4px 16px var(--shadow, rgba(0,0,0,.04)); overflow: hidden; }
+.ms[open] { box-shadow: 0 0 0 1.5px var(--rose), 0 12px 30px -18px rgba(0,0,0,.3); }
+.ms summary { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; list-style: none; }
+.ms summary::-webkit-details-marker { display: none; }
+.ms summary:hover { background: color-mix(in srgb, var(--text-primary, #222) 3%, transparent); }
+.ms summary:focus-visible { outline: 2px solid var(--rose); outline-offset: -2px; }
+.ms__icon { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border-radius: 12px; background: color-mix(in srgb, var(--rose) 10%, transparent); font-size: 20px; }
+.ms__title { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.ms__title strong { font-size: 15px; color: var(--text-primary); }
+.ms__title small { font-size: 12.5px; line-height: 1.4; color: var(--ink-2); }
+.ms__state { flex: none; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 800; background: color-mix(in srgb, var(--text-primary, #222) 6%, transparent); color: var(--ink-2); }
+.ms__state.is-on { background: #e3f5ea; color: #16683a; }
+.ms__chev { flex: none; font-size: 18px; color: var(--ink-2); transition: transform .2s; }
+.ms[open] .ms__chev { transform: rotate(180deg); }
+.ms__body { display: grid; gap: 14px; padding: 4px 16px 18px; border-top: 1px dashed var(--line); padding-top: 16px; }
+
+.ms-toggle { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.ms-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.ms-toggle__ui { position: relative; width: 44px; height: 26px; flex: none; border-radius: 99px; background: color-mix(in srgb, var(--text-primary, #222) 18%, transparent); transition: background .2s; }
+.ms-toggle__ui::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .2s cubic-bezier(.2,.8,.2,1); }
+.ms-toggle input:checked + .ms-toggle__ui { background: #1f9d55; }
+.ms-toggle input:checked + .ms-toggle__ui::after { transform: translateX(18px); }
+.ms-toggle input:focus-visible + .ms-toggle__ui { outline: 2px solid var(--rose); outline-offset: 2px; }
+
+.ms-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; align-items: end; }
+.ms-inline { grid-template-columns: auto 80px auto; align-items: center; justify-content: start; gap: 8px; }
+.ms-inline em { font-style: normal; font-weight: 500; }
+.ms-preview { padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--gold, #c9a227) 12%, transparent); font-size: 13.5px; color: var(--text-primary); }
+
+.ms-goals { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ms-goals li { display: grid; grid-template-columns: 28px repeat(auto-fit, minmax(130px, 1fr)) 34px; gap: 10px; align-items: end; padding: 10px; border-radius: 12px; background: color-mix(in srgb, var(--text-primary, #222) 4%, transparent); }
+.ms-goals__n { width: 28px; height: 28px; margin-bottom: 6px; border-radius: 50%; display: grid; place-items: center; background: var(--text-primary); color: #fff; font-weight: 800; font-size: 13px; }
+
+.ms-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.ms-list li, .ms-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: color-mix(in srgb, var(--text-primary, #222) 4%, transparent); }
+.ms-list img { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; }
+.ms-list li > span, .ms-item > span { flex: 1; min-width: 0; display: grid; }
+.ms-list strong, .ms-item strong { font-size: 13.5px; }
+.ms-list small, .ms-item small { font-size: 12px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.ms-stock { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px; max-height: 340px; overflow: auto; }
+.ms-stock li { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 10px; background: color-mix(in srgb, var(--text-primary, #222) 4%, transparent); font-size: 13px; }
+.ms-stock img { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; }
+.ms-stock span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ms-stock input { width: 72px; text-align: center; }
+
+.ms-form { display: grid; gap: 12px; padding: 14px; border-radius: 14px; box-shadow: inset 0 0 0 1.5px var(--line-strong, #e4c9d0); }
+.ms-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.ms-col { display: grid; gap: 8px; padding: 12px; border-radius: 12px; background: color-mix(in srgb, var(--text-primary, #222) 4%, transparent); transition: box-shadow .2s; }
+.ms-col.is-rec { box-shadow: inset 0 0 0 2px var(--rose); background: color-mix(in srgb, var(--rose) 6%, transparent); }
+.ms-col__lbl { font-size: 11.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.ms-radio { display: flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--ink-2); }
+.ms-feats { display: grid; gap: 6px; overflow-x: auto; }
+.ms-feats__row { display: grid; grid-template-columns: minmax(140px, 1.3fr) repeat(3, minmax(90px, 1fr)) 34px; gap: 6px; align-items: center; min-width: 520px; }
+.ms-feats__row--head span { font-size: 11.5px; font-weight: 800; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ms-combo-items { display: grid; gap: 8px; }
+.ms-combo-items .ad-input { flex: 1; }
+@media (max-width: 600px) { .ms-cols { grid-template-columns: 1fr; } .ms-goals li { grid-template-columns: 28px 1fr 34px; } .ms-goals li .bz-field { grid-column: 2; } }

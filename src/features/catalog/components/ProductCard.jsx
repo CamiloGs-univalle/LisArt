@@ -7,6 +7,8 @@ import { ProductMedia, PriceTag, Personalization, ctaLabel } from '@/features/ca
 import EditableText from '@/features/editor/EditableField'
 import Icon from '@/shared/ui/Icon'
 import { ACCENTS } from '@/features/catalog/constants'
+import { useSettingsCtx } from '@/features/catalog/data/SettingsProvider'
+import { stockInfo } from '@/lib/marketing'
 
 export default function ProductCard({
   product: p,
@@ -27,10 +29,12 @@ export default function ProductCard({
     if (!isAdmin && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); open() }
   }
   const rating = Number(p.rating)
+  const { marketing } = useSettingsCtx()
+  const out = stockInfo(p, marketing)?.out
 
   return (
     <article
-      className={`pc pc--${variant} ${isAdmin ? 'pc--admin' : ''}`}
+      className={`pc pc--${variant} ${isAdmin ? 'pc--admin' : ''} ${p.highlight ? `pc--hl-${p.highlight}` : ''}`}
       onClick={open}
       onKeyDown={onKey}
       tabIndex={isAdmin ? undefined : 0}
@@ -81,10 +85,11 @@ export default function ProductCard({
           <button
             className={`pc__cta ${added ? 'is-added' : ''}`}
             onClick={e => { e.stopPropagation(); onAdd?.(p) }}
-            aria-label={`${ctaLabel(p)} ${p.name}`}
+            disabled={out}
+            aria-label={out ? `${p.name} agotado` : `${ctaLabel(p)} ${p.name}`}
           >
-            <Icon name={added ? 'check' : 'bag'} size={18} strokeWidth={2} />
-            <span>{added ? '¡Agregado!' : ctaLabel(p)}</span>
+            <Icon name={added ? 'check' : 'cart'} size={18} strokeWidth={2} />
+            <span>{out ? 'Agotado' : added ? '¡Agregado!' : ctaLabel(p)}</span>
           </button>
         )}
       </div>

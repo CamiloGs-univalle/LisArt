@@ -52,7 +52,7 @@
   display: inline-flex; align-items: center; gap: 4px;
   min-height: 34px; padding: 0 10px;
   border-radius: var(--r-pill);
-  background: #fff;
+  background: var(--card);
   color: var(--rose-deep);
   font-size: var(--fs-label); font-weight: 800;
   box-shadow: var(--shadow-md);
@@ -70,7 +70,7 @@
 }
 .lx-add--round {
   width: var(--ctl); height: var(--ctl);
-  background: #fff;
+  background: var(--card);
   color: var(--rose-deep);
   box-shadow: var(--shadow-md);
 }
@@ -194,7 +194,7 @@
   position: relative;
   margin: 0;
   padding: 8px 8px 12px;
-  background: #fff;
+  background: var(--card);
   border-radius: 4px;
   box-shadow: var(--shadow-md);
   rotate: var(--tilt);
@@ -377,7 +377,7 @@
   margin: -54px 16px 0;
   padding: 20px 20px 18px;
   border-radius: var(--r-lg);
-  background: rgba(255, 255, 255, .94);
+  background: color-mix(in srgb, var(--card) 94%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: var(--shadow-lg);

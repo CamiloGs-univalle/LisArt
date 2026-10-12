@@ -1,7 +1,7 @@
 // Sesión del usuario + su perfil (rol y negocio asignado)
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { watchAuth, logout as doLogout } from '@/services/auth.service'
-import { watchUserProfile, ensureSuperProfile, ROLES } from '@/services/users.service'
+import { watchUserProfile, ensureSuperProfile } from '@/services/users.service'
 import { PLATFORM } from '@/config/platform'
 import { findTenantOwnedBy } from '@/services/tenants.service'
 
@@ -41,7 +41,9 @@ export function AuthProvider({ children }) {
   }, [user, profile])
 
   const value = useMemo(() => {
-    const isSuper = isSuperEmail(user) || profile?.role === ROLES.SUPER
+    // Solo el correo del dueño de la plataforma (verificado) es super administrador.
+    // Nunca se decide por datos que vengan de la base de datos.
+    const isSuper = isSuperEmail(user)
     return {
       user,
       profile,

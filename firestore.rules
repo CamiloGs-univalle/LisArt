@@ -44,7 +44,7 @@ service cloud.firestore {
       // El dueño edita su negocio, pero no su estado, plan ni a quién pertenece
       allow update: if isSuper() || (
         isOwnerOf(tenantId) &&
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'plan', 'ownerUid', 'ownerEmail', 'createdAt'])
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'plan', 'ownerUid', 'ownerEmail', 'createdAt', 'billing', 'suspendedReason'])
       );
 
       match /products/{productId} {
@@ -56,6 +56,25 @@ service cloud.firestore {
         allow read: if true;
         allow write: if canEdit(tenantId);
       }
+
+      // Cuentas del negocio: costos, ventas y cotizaciones. PRIVADO (solo el dueño y el super).
+      match /private/{docId} {
+        allow read, write: if canEdit(tenantId);
+      }
+      match /sales/{saleId} {
+        allow read, write: if canEdit(tenantId);
+      }
+      match /quotes/{quoteId} {
+        allow read, write: if canEdit(tenantId);
+      }
+    }
+
+    // ── Datos privados de cada negocio ─────────────────────
+    // Correo del dueño y plan completo (precio, modelo). El documento público
+    // del negocio solo guarda el vencimiento (billing.paidUntil).
+    match /accounts/{tenantId} {
+      allow read: if canEdit(tenantId);
+      allow write: if isSuper();
     }
 
     // ── Cuentas ────────────────────────────────────────────
@@ -65,6 +84,20 @@ service cloud.firestore {
       // puede registrar su propio perfil de super administrador.
       allow create, update: if isSuper();
       allow delete: if isSuper();
+    }
+
+    // ── Portafolio (página principal): público para leer, solo el super lo edita ──
+    match /platform/{docId} {
+      allow read: if true;
+      allow write: if isSuper();
+    }
+
+    // ── Pagos de los planes ─────────────────────────────────
+    // Cada dueño ve los pagos de su catálogo; solo el super los registra.
+    // (Los pagos de Wompi los confirma el servidor con la cuenta de servicio.)
+    match /payments/{paymentId} {
+      allow read: if isSuper() || (signedIn() && isOwnerOf(resource.data.tenantId));
+      allow write: if isSuper();
     }
 
     // ── Solicitudes de ayuda ("olvidé mi contraseña") ───────

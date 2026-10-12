@@ -1,0 +1,83 @@
+/* ── Estructura "Mesa de productos" (mz-*) ─────────────────── */
+.mz { --mz-table: color-mix(in srgb, var(--paper) 86%, var(--gold)); }
+
+.mz-head { position: sticky; top: 0; z-index: 60; transition: background .4s, box-shadow .4s; }
+.mz-head.is-scrolled { background: color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter: blur(12px); box-shadow: 0 1px 0 var(--line); }
+.mz-head__in { display: flex; align-items: center; gap: 16px; min-height: 66px; }
+.mz-brand { font: 600 clamp(24px, 3vw, 32px)/1 var(--font-script); color: var(--rose-deep); white-space: nowrap; }
+.mz-nav { display: flex; gap: 4px; margin-inline: auto; }
+.mz-nav button { min-height: 38px; padding: 0 14px; border-radius: var(--r-pill); font-size: 14px; font-weight: 600; color: var(--ink-2); transition: background .2s, color .2s, transform .2s; }
+.mz-nav button:hover { background: var(--card); color: var(--ink); transform: rotate(-2deg); }
+.mz-head__actions { display: flex; gap: 2px; margin-left: auto; }
+@media (max-width: 760px) { .mz-nav { display: none; } }
+
+/* La mesa */
+.mz-table {
+  --sy: 0;
+  position: relative; height: clamp(720px, 112svh, 1040px); margin-top: -66px; overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 20%, color-mix(in srgb, #fff 40%, transparent) 0, transparent 40%),
+    radial-gradient(color-mix(in srgb, var(--ink) 7%, transparent) 1px, transparent 1.4px) 0 0 / 18px 18px,
+    var(--mz-table);
+  touch-action: pan-y;
+}
+.mz-pol {
+  --pw: clamp(130px, 17vw, 230px);
+  position: absolute; width: var(--pw); padding: 10px 10px 12px; background: #fff; border-radius: 3px; cursor: grab;
+  box-shadow: 0 1px 2px rgba(0,0,0,.15), 0 18px 36px -18px rgba(0,0,0,.45);
+  transform: translate(var(--ox), calc(var(--oy) - var(--sy) * var(--v) * 1px)) rotate(var(--r)) scale(var(--s));
+  transition: left .9s cubic-bezier(.2, .8, .2, 1), top .9s cubic-bezier(.2, .8, .2, 1), transform .5s cubic-bezier(.2, .8, .2, 1), box-shadow .3s;
+  touch-action: none; user-select: none;
+}
+.mz-table.is-tidy .mz-pol { margin-left: calc(var(--pw) / -2); }
+.mz-pol:hover { --r: 0deg; box-shadow: 0 1px 2px rgba(0,0,0,.15), 0 30px 50px -18px rgba(0,0,0,.5); }
+.mz-pol.is-drag { cursor: grabbing; transition: box-shadow .3s; --r: 0deg; box-shadow: 0 40px 70px -20px rgba(0,0,0,.55); }
+.mz-pol__img { display: block; aspect-ratio: 1; overflow: hidden; background: #eee; }
+.mz-pol__img img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.mz-pol__cap { display: block; padding-top: 8px; font: 500 clamp(15px, 1.6vw, 19px)/1.1 var(--font-script); color: #333; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 760px) { .mz-pol { --pw: 30vw; padding: 7px 7px 9px; } .mz-pol:nth-child(n+7) { display: none; } }
+
+.mz-note {
+  position: absolute; left: 50%; top: 50%; z-index: 40; width: min(88vw, 520px); translate: -50% -50%;
+  display: grid; gap: 14px; padding: clamp(24px, 3.4vw, 40px); background: var(--card); rotate: -1.5deg;
+  box-shadow: 0 2px 4px rgba(0,0,0,.08), 0 40px 80px -30px rgba(0,0,0,.45);
+  background-image: repeating-linear-gradient(transparent 0 31px, color-mix(in srgb, var(--rose) 14%, transparent) 31px 32px);
+}
+.mz-note__k { font: 600 clamp(20px, 2.2vw, 26px)/1 var(--font-script); color: var(--rose-deep); }
+.mz-note__title { font: 600 clamp(32px, 4.6vw, 58px)/1 var(--font-display); letter-spacing: -.025em; text-wrap: balance; }
+.mz-note__title em { font-style: italic; color: var(--rose); }
+.mz-note__sub { color: var(--ink-2); font-size: 15.5px; line-height: 1.55; }
+.mz-note__ctas { display: flex; flex-wrap: wrap; gap: 10px; }
+.mz-tape { position: absolute; top: -14px; left: 50%; width: 120px; height: 30px; translate: -50% 0; rotate: var(--tr, -4deg); background: color-mix(in srgb, var(--gold) 35%, rgba(255,255,255,.55)); backdrop-filter: blur(2px); box-shadow: 0 2px 6px rgba(0,0,0,.08); clip-path: polygon(3% 0, 97% 4%, 100% 50%, 96% 100%, 4% 96%, 0 50%); }
+.mz-tape--sm { width: 74px; height: 22px; top: -10px; z-index: 2; }
+.mz-tidy { position: absolute; z-index: 45; left: 50%; bottom: 26px; translate: -50% 0; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: var(--r-pill); background: var(--inv); color: var(--on-inv); font: 700 14px/1 var(--font-ui); box-shadow: 0 12px 30px -12px rgba(0,0,0,.5); transition: transform .25s; }
+.mz-tidy:hover { transform: translateY(-2px) rotate(-1deg); }
+.mz-hint { position: absolute; z-index: 45; right: 18px; bottom: 34px; font: 500 18px/1 var(--font-script); color: var(--ink-2); }
+@media (max-width: 760px) { .mz-hint { display: none; } }
+.mz-table.is-tidy .mz-note { opacity: 0; pointer-events: none; transform: scale(.94); transition: opacity .4s, transform .4s; }
+.mz-note { transition: opacity .5s .2s, transform .5s .2s; }
+
+/* Categorías como notas y tablero de fotos */
+.mz-sec { padding: clamp(64px, 9vw, 120px) 0 0; scroll-margin-top: 70px; }
+.mz-sec__head { display: flex; justify-content: center; margin-bottom: clamp(28px, 4vw, 48px); }
+.mz-sticky { display: grid; justify-items: center; gap: 4px; padding: 18px 28px; background: color-mix(in srgb, var(--gold) 30%, #fff9d6); color: #2b2416; rotate: var(--rot); box-shadow: 0 16px 30px -18px rgba(0,0,0,.4); text-align: center; }
+.mz-sticky strong { font: 600 clamp(26px, 3.4vw, 40px)/1 var(--font-script); }
+.mz-sticky small { font-size: 13.5px; opacity: .8; }
+.mz-board { columns: 2 160px; column-gap: clamp(14px, 2vw, 28px); }
+@media (min-width: 760px) { .mz-board { columns: 3 220px; } }
+@media (min-width: 1100px) { .mz-board { columns: 4 240px; } }
+.mz-pin { position: relative; break-inside: avoid; margin-bottom: clamp(22px, 3vw, 36px); padding: 10px 10px 14px; background: #fff; color: #222; rotate: var(--rot); box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 16px 30px -18px rgba(0,0,0,.4); transition: rotate .4s var(--kt-ease), transform .4s var(--kt-ease), box-shadow .3s; }
+.mz-pin:hover { rotate: 0deg; transform: translateY(-4px) scale(1.02); box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 28px 50px -20px rgba(0,0,0,.45); z-index: 2; }
+.mz-pin__img { position: relative; display: block; width: 100%; aspect-ratio: var(--ar, 4 / 5); overflow: hidden; background: #eee; }
+.mz-pin:nth-child(3n) .mz-pin__img { --ar: 1; }
+.mz-pin:nth-child(4n+1) .mz-pin__img { --ar: 3 / 4; }
+.mz-pin__img img { width: 100%; height: 100%; object-fit: cover; }
+.mz-pin__cap { display: grid; gap: 2px; padding: 10px 46px 0 2px; }
+.mz-pin__name { font: 500 clamp(18px, 1.8vw, 22px)/1.1 var(--font-script); }
+.mz-pin__price { font: 800 14px/1 var(--font-ui); font-variant-numeric: tabular-nums; }
+.mz-pin__price s { margin-left: 6px; font-weight: 500; color: #999; }
+.mz-pin__add { position: absolute; right: 10px; bottom: 12px; }
+.mz-stamp { position: absolute; right: 10px; top: 10px; display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%; border: 2px dashed currentColor; color: #fff; background: var(--rose); font: 800 13px/1 var(--font-ui); rotate: 12deg; box-shadow: 0 0 0 4px var(--rose); }
+.mz-faq { padding: clamp(48px, 7vw, 90px) 0 0; max-width: 900px; }
+.mz-faq h2 { font: 600 clamp(28px, 3.6vw, 42px)/1 var(--font-script); color: var(--rose-deep); }
+@media (prefers-reduced-motion: reduce) { .mz-pol { transition: none; } }

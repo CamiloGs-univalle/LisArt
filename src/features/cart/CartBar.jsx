@@ -6,10 +6,11 @@ import { useAdmin } from '@/features/editor/EditorProvider'
 import { formatPrice } from '@/lib/format'
 import { useWhatsApp } from '@/features/tenant/useWhatsApp'
 import Icon from '@/shared/ui/Icon'
+import { GoalBar } from '@/features/marketing/Boost'
 
 export default function CartBar() {
   const wa = useWhatsApp()
-  const { count, total, items } = useCart()
+  const { count, finalTotal: total, items, progress } = useCart()
   const { openCart, toast, cartOpen, product } = useUI()
   const { isAdmin } = useAdmin()
 
@@ -31,10 +32,11 @@ export default function CartBar() {
       )}
 
       {count > 0 ? (
-        <div className={`cartbar ${hidden ? 'is-hidden' : ''}`}>
+        <div className={`cartbar ${hidden ? 'is-hidden' : ''} ${progress ? 'has-goal' : ''}`}>
+          {progress && <GoalBar compact />}
           <button className="cartbar__btn" onClick={openCart} aria-label={`Ver pedido: ${count} piezas, total ${formatPrice(total)}`}>
             <span className="cartbar__thumbs" aria-hidden="true">
-              {thumbs.map(i => <img key={i.id} src={i.image} alt="" />)}
+              {thumbs.map(i => (i.image ? <img key={i.key || i.id} src={i.image} alt="" /> : <span key={i.key || i.id} className="cartbar__ph" />))}
             </span>
             <span className="cartbar__txt">
               <small>{count} {count === 1 ? 'pieza' : 'piezas'}</small>

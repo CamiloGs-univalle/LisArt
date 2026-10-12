@@ -6,6 +6,8 @@ import { getImages } from '@/lib/images'
 import EditableImage from '@/features/editor/EditableImage'
 import EditableText from '@/features/editor/EditableField'
 import Icon from '@/shared/ui/Icon'
+import { productDiscount } from '@/lib/catalog'
+import { StockNote } from '@/features/marketing/Boost'
 
 // Devuelve una función que da las props para abrir el detalle del producto (solo clientes)
 export function useOpener() {
@@ -98,7 +100,7 @@ export function AddButton({ p, add, added, variant = 'round', className = '' }) 
       onClick={e => { e.stopPropagation(); add(p) }}
       aria-label={`Agregar ${p.name} al pedido`}
     >
-      <Icon name={isAdded ? 'check' : variant === 'round' ? 'plus' : 'bag'} size={variant === 'round' ? 20 : 17} strokeWidth={2.2} />
+      <Icon name={isAdded ? 'check' : variant === 'round' ? 'plus' : 'cart'} size={variant === 'round' ? 20 : 17} strokeWidth={2.2} />
       {variant !== 'round' && <span>{isAdded ? '¡Agregado!' : ctaLabel(p)}</span>}
     </button>
   )
@@ -117,10 +119,14 @@ export function PriceTag({ p, className = 'lx-price' }) {
     )
   }
   if (n <= 0) return <span className={`price-tag price-tag--quote ${className}`}>Precio a cotizar</span>
+  const d = productDiscount(p)
   return (
     <span className={`price-tag ${className}`}>
       {p.pricePrefix && <small className="price-tag__prefix">{p.pricePrefix}</small>}
       <span className="price-tag__value">{formatPrice(n)}</span>
+      {d && <s className="price-tag__before">{formatPrice(d.before)}</s>}
+      {d && <em className="price-tag__off">-{d.percent}%</em>}
+      <StockNote p={p} compact />
     </span>
   )
 }

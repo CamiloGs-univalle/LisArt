@@ -2,12 +2,15 @@
 // El super administrador cambia la contraseña de un dueño de catálogo.
 // Además cierra todas las sesiones abiertas de esa cuenta.
 //
-// GET /api/admin/set-password → diagnóstico (sin datos secretos) para revisar la configuración.
+// GET /api/admin/set-password → diagnóstico (solo super administrador, con su token).
 import { requireSuper, superEmails, httpError, serviceAccount, accessToken, setPasswordByEmail } from '../_lib/firebaseAdmin.js'
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store')
-  if (req.method === 'GET') return diagnose(res)
+  if (req.method === 'GET') {
+    try { await requireSuper(req) } catch (e) { return res.status(e.status || 401).json({ error: e.message || 'No autorizado' }) }
+    return diagnose(res)
+  }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' })
   try {
     await requireSuper(req)

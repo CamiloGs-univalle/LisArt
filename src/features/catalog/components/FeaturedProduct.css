@@ -6,8 +6,8 @@
   display: grid;
   border-radius: var(--r-xl);
   overflow: hidden;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--inv);
+  color: var(--on-inv);
   box-shadow: var(--shadow-lg);
   isolation: isolate;
 }

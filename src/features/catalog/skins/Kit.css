@@ -1,0 +1,95 @@
+/* ── Kit común de las estructuras nuevas (kt-*) ───────────────
+   Todo usa las variables del tema (--paper, --ink, --rose…), así
+   cada estructura se ve bien con cualquier combinación de colores. */
+.kt { --kt-ease: cubic-bezier(.2, .75, .2, 1); --kt-ease-out: cubic-bezier(.16, 1, .3, 1); --kt-wrap: min(100% - 32px, 1240px); min-height: 100dvh; background: var(--paper); color: var(--ink); font-family: var(--font-ui); overflow-x: clip; }
+.kt-wrap { width: var(--kt-wrap); margin-inline: auto; }
+:where(.kt) button { color: inherit; }
+:where(.kt) :focus-visible { outline: 2px solid var(--rose); outline-offset: 3px; border-radius: 6px; }
+
+/* Aparición al hacer scroll */
+.kt [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity .8s var(--kt-ease-out), transform .8s var(--kt-ease-out); transition-delay: var(--d, 0s); }
+.kt [data-reveal].is-in { opacity: 1; transform: none; }
+.kt [data-reveal="fade"] { transform: none; }
+.kt [data-reveal="zoom"] { transform: scale(.96); }
+.kt [data-reveal="left"] { transform: translateX(-28px); }
+.kt [data-reveal="right"] { transform: translateX(28px); }
+
+/* Botones redondos de la cabecera */
+.kt-ic { position: relative; width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; transition: background .2s, transform .2s; }
+.kt-ic:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+.kt-ic:active { transform: scale(.94); }
+.kt-count { position: absolute; top: 3px; right: 1px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px; display: grid; place-items: center; background: var(--rose); color: #fff; font: 800 11px/1 var(--font-ui); box-shadow: 0 0 0 2px var(--paper); }
+.kt-cart.is-bump svg { animation: kt-bump .5s var(--kt-ease-out); }
+.kt-cart.is-bump .kt-count { animation: kt-pop .5s var(--kt-ease-out); }
+@keyframes kt-bump { 30% { transform: translateY(-3px) rotate(-8deg); } 60% { transform: translateY(1px) rotate(4deg); } }
+@keyframes kt-pop { 40% { transform: scale(1.35); } }
+
+/* Botones */
+.kt-btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 52px; padding: 0 24px; border-radius: var(--r-pill); font: 700 15px/1 var(--font-ui); letter-spacing: .01em; transition: transform .25s var(--kt-ease), background .25s, color .25s, box-shadow .25s; white-space: nowrap; }
+.kt-btn:hover { transform: translateY(-2px); }
+.kt-btn:active { transform: translateY(0) scale(.98); }
+.kt-btn--solid { background: var(--inv); color: var(--on-inv); box-shadow: 0 12px 28px -14px color-mix(in srgb, var(--shade) 60%, transparent); }
+.kt-btn--accent { background: var(--rose); color: #fff; box-shadow: 0 12px 28px -14px var(--rose); }
+.kt-btn--accent:hover { background: var(--rose-deep); }
+.kt-btn--ghost { box-shadow: inset 0 0 0 1.5px var(--line-strong); }
+.kt-btn--ghost:hover { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.kt-btn--wa { background: var(--wa, #25d366); color: #fff; box-shadow: 0 12px 28px -14px var(--wa, #25d366); }
+
+/* Agregar rápido */
+.kt-add { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 40px; height: 40px; padding: 0 10px; border-radius: var(--r-pill); background: var(--inv); color: var(--on-inv); font: 700 13.5px/1 var(--font-ui); transition: transform .2s var(--kt-ease), background .25s; box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--shade) 70%, transparent); }
+.kt-add:hover { transform: scale(1.06); }
+.kt-add:active { transform: scale(.94); }
+.kt-add.is-ok { background: #1f9d55; color: #fff; }
+.kt-add:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.kt-add__n { position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; display: grid; place-items: center; background: var(--rose); color: #fff; font-size: 11px; box-shadow: 0 0 0 2px var(--paper); animation: kt-pop .4s var(--kt-ease-out); }
+
+/* Imágenes: aparecen suave cuando cargan */
+.kt-img { opacity: 0; transition: opacity .6s ease, transform .9s var(--kt-ease-out); }
+.kt-img.is-ok { opacity: 1; }
+.kt-img--empty { display: block; width: 100%; height: 100%; background: linear-gradient(135deg, var(--paper-2), var(--blush)); }
+
+/* Preguntas frecuentes */
+.kt-faq { display: grid; }
+.kt-faq details { border-bottom: 1px solid var(--line); }
+.kt-faq summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 2px; cursor: pointer; list-style: none; font-weight: 600; font-size: clamp(15px, 1.4vw, 17px); }
+.kt-faq summary::-webkit-details-marker { display: none; }
+.kt-faq summary i { position: relative; width: 28px; height: 28px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-strong); transition: transform .35s var(--kt-ease), background .3s; }
+.kt-faq summary i::before, .kt-faq summary i::after { content: ''; position: absolute; left: 50%; top: 50%; width: 11px; height: 1.6px; background: currentColor; translate: -50% -50%; transition: transform .35s var(--kt-ease); }
+.kt-faq summary i::after { transform: rotate(90deg); }
+.kt-faq details[open] summary i { background: var(--inv); color: var(--on-inv); box-shadow: none; transform: rotate(180deg); }
+.kt-faq details[open] summary i::after { transform: rotate(0deg); }
+.kt-faq__a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s var(--kt-ease); }
+.kt-faq details[open] .kt-faq__a { grid-template-rows: 1fr; animation: kt-open .4s var(--kt-ease); }
+.kt-faq__a p { overflow: hidden; padding: 0 2px 20px; color: var(--ink-2); max-width: 70ch; line-height: 1.6; }
+@keyframes kt-open { from { opacity: 0; transform: translateY(-6px); } }
+
+/* Esqueleto de carga */
+.kt-skel { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+.kt-skel span { aspect-ratio: 4 / 5; border-radius: var(--r-md); background: linear-gradient(100deg, var(--paper-2) 30%, color-mix(in srgb, var(--paper-2) 50%, var(--card)) 50%, var(--paper-2) 70%); background-size: 250% 100%; animation: kt-shine 1.3s linear infinite; }
+@keyframes kt-shine { to { background-position: -150% 0; } }
+
+/* Pie de página */
+.kt-foot { padding: clamp(56px, 8vw, 110px) 0 28px; border-top: 1px solid var(--line); }
+.kt-foot > * { width: var(--kt-wrap); margin-inline: auto; }
+.kt-foot__cta { display: grid; justify-items: center; gap: 14px; text-align: center; padding-bottom: clamp(44px, 6vw, 80px); }
+.kt-foot__eyebrow { font: 700 12px/1 var(--font-ui); letter-spacing: .18em; text-transform: uppercase; color: var(--rose-deep); }
+.kt-foot__title { font-family: var(--font-display); font-weight: 500; font-size: clamp(32px, 5.6vw, 68px); line-height: 1.02; letter-spacing: -.02em; max-width: 16ch; text-wrap: balance; }
+.kt-foot__title em { font-style: italic; color: var(--rose); }
+.kt-foot__grid { display: grid; gap: 28px; grid-template-columns: 1.4fr repeat(2, 1fr); padding: 28px 0; border-top: 1px solid var(--line); }
+.kt-foot__brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+.kt-foot__brand img { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; }
+.kt-foot__muted { display: flex; align-items: center; gap: 6px; color: var(--ink-2); font-size: 14px; margin-top: 4px; }
+.kt-foot__links { display: grid; gap: 4px; align-content: start; font-size: 14px; }
+.kt-foot__links strong { font: 700 11.5px/1 var(--font-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; }
+.kt-foot__links button, .kt-foot__links a { display: inline-flex; align-items: center; gap: 6px; justify-self: start; min-height: 32px; color: var(--ink-2); transition: color .2s; text-align: left; }
+.kt-foot__links button:hover, .kt-foot__links a:hover { color: var(--ink); }
+.kt-foot__legal { padding-top: 20px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-3); }
+.kt-foot__legal a { text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 720px) { .kt-foot__grid { grid-template-columns: 1fr 1fr; } .kt-foot__grid > :first-child { grid-column: 1 / -1; } }
+
+/* Cabecera pegajosa: se oculta la barra de anuncios del panel cuando hay barra de edición */
+body:has(.eb) .kt-foot { padding-bottom: 150px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kt [data-reveal] { opacity: 1; transform: none; transition: none; }
+}

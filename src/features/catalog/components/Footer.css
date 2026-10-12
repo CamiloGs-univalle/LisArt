@@ -1,8 +1,8 @@
 .foot {
   position: relative;
   margin-top: var(--space-section);
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--inv);
+  color: var(--on-inv);
   padding: clamp(64px, 10vw, 120px) 0 calc(110px + env(safe-area-inset-bottom));
   overflow: hidden;
   isolation: isolate;

@@ -2,13 +2,13 @@
 import { auth } from '@/lib/firebase'
 import { isDemo } from './demo'
 
-async function callAdmin(path, body) {
-  if (isDemo()) { await new Promise(r => setTimeout(r, 300)); return { ok: true, uid: `demo-${Date.now()}`, created: !!body.createIfMissing } }
+export async function callApi(path, body) {
+  if (isDemo()) { await new Promise(r => setTimeout(r, 300)); return { ok: true, uid: `demo-${Date.now()}`, created: !!body.createIfMissing, demo: true } }
   const token = await auth.currentUser?.getIdToken()
   if (!token) throw new Error('Inicia sesión de nuevo.')
   let res
   try {
-    res = await fetch(`/api/admin/${path}`, {
+    res = await fetch(`/api/${path}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
@@ -30,4 +30,4 @@ async function callAdmin(path, body) {
 // Cambia la contraseña de un dueño de catálogo y cierra sus sesiones abiertas
 // Con { createIfMissing: true } crea la cuenta si ese correo aún no tiene una.
 export const setUserPassword = (email, password, { createIfMissing = false } = {}) =>
-  callAdmin('set-password', { email, password, createIfMissing })
+  callApi('admin/set-password', { email, password, createIfMissing })

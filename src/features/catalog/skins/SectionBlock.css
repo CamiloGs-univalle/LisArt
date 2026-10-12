@@ -1,0 +1,18 @@
+/* Selector de diseño de sección (modo edición) y estilos compartidos dentro de las estructuras */
+.sb-bar { position: relative; z-index: 6; width: min(100% - 32px, 1240px); margin: 0 auto 14px; }
+.sb-bar__btn { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border-radius: var(--r-pill, 999px); background: var(--card, #fff); color: var(--ink); font: 600 13.5px/1 var(--font-ui); box-shadow: 0 0 0 1.5px var(--rose), 0 8px 20px -12px rgba(0,0,0,.4); }
+.sb-bar__btn strong { color: var(--rose-deep); }
+.sb-panel { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; margin-top: 8px; padding: 12px; border-radius: 16px; background: var(--card, #fff); color: var(--ink); box-shadow: 0 0 0 1px var(--line), 0 20px 40px -20px rgba(0,0,0,.35); animation: sb-in .2s ease; }
+@keyframes sb-in { from { opacity: 0; transform: translateY(-6px); } }
+.sb-opt { display: grid; gap: 6px; padding: 8px; border-radius: 12px; font: 600 12.5px/1.2 var(--font-ui); text-align: center; box-shadow: inset 0 0 0 1px var(--line); transition: box-shadow .2s, background .2s; }
+.sb-opt:hover { background: var(--paper-2); }
+.sb-opt.is-on { box-shadow: inset 0 0 0 2px var(--rose); background: color-mix(in srgb, var(--rose) 8%, transparent); }
+.sb-opt__auto { display: grid; place-items: center; height: 54px; border-radius: 8px; background: linear-gradient(135deg, var(--paper-2), var(--blush)); color: var(--rose-deep); }
+
+/* Los estilos compartidos usan .container: dentro de las estructuras se alinean con su ancho */
+.kt-lx { padding: 4px 0 8px; }
+.kt-lx .container { width: min(100% - 32px, 1240px); margin-inline: auto; padding-inline: 0; }
+.kt-lx .lx-rail { padding-inline: max(16px, (100% - 1240px) / 2); }
+.kt-wrap .kt-lx .container { width: 100%; }
+.kt-wrap .kt-lx .lx-rail { padding-inline: 0; }
+.kt-wrap .sb-bar { width: 100%; }

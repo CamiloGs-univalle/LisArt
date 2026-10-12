@@ -9,6 +9,7 @@ import Reveal from '@/shared/ui/Reveal'
 import Icon from '@/shared/ui/Icon'
 import SectionHeader from '@/features/catalog/components/SectionHeader'
 import EditText, { useEditableText } from '@/features/editor/EditText'
+import ChipEditor from '@/features/editor/ChipEditor'
 
 const STEP_COLORS = ['var(--c-berry)', 'var(--c-rose)', 'var(--c-gold)']
 
@@ -94,11 +95,12 @@ export function Ribbon() {
   const { ribbon } = useSiteContent()
   const list = (read('ribbon', ribbon) || []).filter(w => String(w).trim())
   const words = [...list, ...list]
+  const hidden = list.length === 0
   const colors = ['var(--c-blue)', 'var(--c-magenta)', 'var(--c-orange)', 'var(--c-green)', 'var(--c-purple)', 'var(--c-red)']
   return (
     <>
     <RibbonEditor />
-    <div className="ribbon" aria-hidden="true">
+    {!hidden && <div className="ribbon" aria-hidden="true">
       <div className="ribbon__track">
         {words.map((w, i) => (
           <span key={i} className="ribbon__word" style={{ '--c': colors[i % colors.length] }}>
@@ -107,27 +109,34 @@ export function Ribbon() {
           </span>
         ))}
       </div>
-    </div>
+    </div>}
     </>
   )
 }
 
-// Editar las palabras de la cinta (solo admin): separadas por comas
+// Editar las palabras de la cinta (solo admin), directamente sobre la página
 function RibbonEditor() {
   const { read, write } = useEditableText()
   const { isAdmin } = useAdmin()
   const { ribbon } = useSiteContent()
+  const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState([])
   if (!isAdmin) return null
   const list = read('ribbon', ribbon) || []
   return (
-    <div className="container">
-      <button
-        className="admin-chip"
-        onClick={() => {
-          const v = window.prompt('Palabras de la cinta, separadas por comas:', list.join(', '))
-          if (v !== null) write('ribbon', v.split(',').map(x => x.trim()).filter(Boolean))
-        }}
-      >✏️ Editar palabras de la cinta</button>
+    <div className="container ribbon-edit">
+      {!open ? (
+        <button className="admin-chip" onClick={() => { setDraft([...list]); setOpen(true) }}>✏️ Editar palabras de la cinta</button>
+      ) : (
+        <div className="ribbon-edit__box">
+          <strong>Palabras de la cinta</strong>
+          <ChipEditor value={draft} onChange={setDraft} placeholder="Escribe una palabra y presiona Enter" />
+          <div className="ribbon-edit__actions">
+            <button className="ad-btn ad-btn-ghost ad-btn-sm" onClick={() => setOpen(false)}>Cancelar</button>
+            <button className="ad-btn ad-btn-primary ad-btn-sm" onClick={() => { write('ribbon', draft); setOpen(false) }}>Guardar</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

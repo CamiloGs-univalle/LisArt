@@ -115,7 +115,7 @@
   box-shadow: inset 0 0 0 1px var(--line-strong);
   transition: transform .35s var(--ease), background-color .25s, color .25s;
 }
-.faq__item.is-open .faq__icon { transform: rotate(45deg); background: var(--ink); color: var(--paper); box-shadow: none; }
+.faq__item.is-open .faq__icon { transform: rotate(45deg); background: var(--inv); color: var(--on-inv); box-shadow: none; }
 .faq__a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s var(--ease); }
 .faq__a > div { overflow: hidden; }
 .faq__a p { padding: 0 48px 22px 0; color: var(--ink-2); }
@@ -230,3 +230,11 @@
 .how__note { font-size: var(--fs-h3); }
 .faq__del { margin: 0 20px 16px; }
 .faq__add { margin-top: 8px; }
+
+/* Editor de la cinta sobre la página (solo dueño) */
+.ribbon-edit { margin-top: 10px; margin-bottom: 10px; }
+.ribbon-edit__box { display: grid; gap: 12px; max-width: 720px; padding: 16px; border-radius: 16px; background: var(--card, #fff); box-shadow: 0 0 0 1.5px var(--rose), 0 18px 40px -22px rgba(0,0,0,.35); animation: ribbon-edit-in .25s ease; }
+.ribbon-edit__box > strong { font-size: 15px; }
+.ribbon-edit__actions { display: flex; justify-content: flex-end; gap: 8px; }
+.ribbon-edit .ad-btn-ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-strong); }
+@keyframes ribbon-edit-in { from { opacity: 0; transform: translateY(-6px); } }

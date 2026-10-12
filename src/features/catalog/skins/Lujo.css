@@ -1,0 +1,139 @@
+/* ── Estructura "Boutique de lujo" (lj-*) ──────────────────────
+   Siempre oscura: toma el tono oscuro del tema (--inv) como fondo y
+   el dorado (--gold) como acento. Se definen en dos niveles para que
+   las variables no se refieran a sí mismas. */
+.lj-root { --lj-bg: var(--inv); --lj-fg: var(--on-inv); --lj-gold: var(--gold); --lj-champ: var(--champagne); }
+.lj {
+  --paper: var(--lj-bg);
+  --paper-2: color-mix(in srgb, var(--lj-bg) 90%, #fff);
+  --card: color-mix(in srgb, var(--lj-bg) 94%, #fff);
+  --blush: color-mix(in srgb, var(--lj-bg) 84%, var(--lj-gold));
+  --ink: var(--lj-fg);
+  --ink-2: color-mix(in srgb, var(--lj-fg) 70%, var(--lj-bg));
+  --ink-3: color-mix(in srgb, var(--lj-fg) 48%, var(--lj-bg));
+  --line: color-mix(in srgb, var(--lj-fg) 11%, transparent);
+  --line-strong: color-mix(in srgb, var(--lj-fg) 22%, transparent);
+  --rose: var(--lj-gold);
+  --rose-deep: var(--lj-gold);
+  --rose-soft: var(--lj-champ);
+  --inv: var(--lj-gold);
+  --on-inv: var(--lj-bg);
+  --shade: #000;
+  --lj-ease: cubic-bezier(.22, .61, .36, 1);
+  background: var(--paper); color: var(--ink);
+}
+.lj ::selection { background: var(--lj-gold); color: var(--lj-bg); }
+.lj-kicker { font: 500 11.5px/1 var(--font-ui); letter-spacing: .38em; text-transform: uppercase; color: var(--lj-gold); }
+.lj-h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(34px, 5vw, 64px); line-height: 1.02; letter-spacing: -.01em; text-wrap: balance; }
+.lj-h2 em { font-style: italic; color: var(--lj-champ); }
+.lj-sec__head { display: grid; gap: 16px; justify-items: center; text-align: center; margin-bottom: clamp(32px, 5vw, 64px); }
+.lj-empty { text-align: center; color: var(--ink-2); padding: 32px 0; }
+.lj [data-reveal] { transition-duration: 1.3s; }
+
+/* Botones finos */
+.lj-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 30px; border-radius: 0; font: 500 12.5px/1 var(--font-ui); letter-spacing: .24em; text-transform: uppercase; box-shadow: inset 0 0 0 1px var(--line-strong); color: var(--ink); transition: background .5s var(--lj-ease), color .5s, box-shadow .5s; }
+.lj-btn:hover { box-shadow: inset 0 0 0 1px var(--lj-gold); color: var(--lj-gold); }
+.lj-btn--gold { background: var(--lj-gold); color: var(--lj-bg); box-shadow: none; }
+.lj-btn--gold:hover { background: transparent; color: var(--lj-gold); box-shadow: inset 0 0 0 1px var(--lj-gold); }
+.lj .kt-add { border-radius: 0; background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.lj .kt-add:hover { box-shadow: inset 0 0 0 1px var(--lj-gold); color: var(--lj-gold); transform: none; }
+
+/* Cabecera centrada */
+.lj-head { position: sticky; top: 0; z-index: 50; transition: background .6s, box-shadow .6s; }
+.lj-head.is-scrolled { background: color-mix(in srgb, var(--lj-bg) 88%, transparent); backdrop-filter: blur(12px); box-shadow: 0 1px 0 var(--line); }
+.lj-head__in { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 84px; padding: 0 clamp(14px, 3vw, 44px); }
+.lj-nav { display: flex; gap: 28px; font: 500 11.5px/1 var(--font-ui); letter-spacing: .26em; text-transform: uppercase; color: var(--ink-2); }
+.lj-nav button { min-height: 40px; transition: color .3s; }
+.lj-nav button:hover { color: var(--lj-gold); }
+.lj-brand { font: 400 clamp(22px, 2.8vw, 34px)/1 var(--font-display); letter-spacing: .28em; text-transform: uppercase; text-align: center; white-space: nowrap; padding-left: .28em; }
+.lj-brand img { height: 44px; width: auto; }
+.lj-head__actions { justify-self: end; display: flex; gap: 2px; }
+.lj .kt-count { background: var(--lj-gold); color: var(--lj-bg); box-shadow: 0 0 0 2px var(--lj-bg); }
+.lj-search { padding: 0 clamp(14px, 3vw, 44px) 16px; }
+.lj-search input { width: 100%; min-height: 54px; border: 0; border-bottom: 1px solid var(--line-strong); background: none; color: var(--ink); text-align: center; font: italic 400 clamp(22px, 2.6vw, 32px)/1 var(--font-display); outline: none; }
+.lj-search input:focus { border-color: var(--lj-gold); }
+@media (max-width: 820px) { .lj-nav { display: none; } .lj-head__in { grid-template-columns: 1fr auto; min-height: 68px; } .lj-brand { justify-self: start; text-align: left; padding-left: 0; font-size: 18px; letter-spacing: .18em; overflow: hidden; text-overflow: ellipsis; } .lj-arch__cap { left: 0; } .lj-arch__line { inset: -10px -10px 10px 10px; } }
+
+/* Portada */
+.lj-hero { display: grid; gap: clamp(36px, 6vw, 80px); align-items: center; width: min(100% - 32px, 1280px); margin: 0 auto; padding: clamp(24px, 5vw, 64px) 0 clamp(64px, 9vw, 120px); }
+@media (min-width: 900px) { .lj-hero { grid-template-columns: 1.1fr .9fr; } }
+.lj-hero__text { display: grid; gap: 22px; animation: lj-in 1.6s var(--lj-ease) both; }
+.lj-hero__title { font-family: var(--font-display); font-weight: 400; font-size: clamp(46px, 7.6vw, 108px); line-height: .96; letter-spacing: -.02em; text-wrap: balance; }
+.lj-hero__title em { font-style: italic; color: var(--lj-champ); }
+.lj-rule { width: 84px; height: 1px; background: var(--lj-gold); transform-origin: left; animation: lj-rule 1.6s var(--lj-ease) .6s both; }
+.lj-hero__sub { color: var(--ink-2); font-size: clamp(15px, 1.4vw, 17px); line-height: 1.75; max-width: 42ch; }
+.lj-hero__ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+@keyframes lj-in { from { opacity: 0; transform: translateY(30px); } }
+@keyframes lj-rule { from { transform: scaleX(0); } }
+
+.lj-arch { position: relative; justify-self: center; width: min(82vw, 440px); aspect-ratio: 3 / 4.1; animation: lj-in 1.8s var(--lj-ease) .25s both; }
+.lj-arch__frame { position: absolute; inset: 0; border-radius: 999px 999px 0 0; overflow: hidden; background: var(--paper-2); }
+.lj-arch__frame img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.04); transition: transform 2.4s var(--lj-ease); }
+.lj-arch:hover .lj-arch__frame img { transform: scale(1.1); }
+.lj-arch__line { position: absolute; inset: -14px -14px 14px 14px; border-radius: 999px 999px 0 0; border: 1px solid color-mix(in srgb, var(--lj-gold) 70%, transparent); pointer-events: none; }
+.lj-arch__cap { position: absolute; left: -18px; bottom: 36px; display: grid; gap: 4px; padding: 16px 20px; background: var(--lj-bg); box-shadow: 0 0 0 1px var(--line-strong); font: italic 400 19px/1.2 var(--font-display); text-align: left; max-width: 80%; }
+.lj-arch__cap small { font: 500 10px/1 var(--font-ui); letter-spacing: .3em; text-transform: uppercase; font-style: normal; color: var(--lj-gold); }
+
+/* Piezas icónicas en zigzag */
+.lj-icons { width: min(100% - 32px, 1180px); margin: 0 auto; padding: clamp(48px, 7vw, 96px) 0; border-top: 1px solid var(--line); }
+.lj-zig { display: grid; gap: clamp(24px, 4vw, 64px); align-items: center; padding: clamp(20px, 3vw, 40px) 0; }
+@media (min-width: 860px) { .lj-zig { grid-template-columns: 1fr 1fr; } .lj-zig.is-rev .lj-zig__img { order: 2; } }
+.lj-zig__img { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--paper-2); }
+.lj-zig__img img { width: 100%; height: 100%; object-fit: cover; transition: transform 2s var(--lj-ease); }
+.lj-zig__img:hover img { transform: scale(1.06); }
+.lj-zig__text { display: grid; gap: 16px; justify-items: start; max-width: 460px; }
+.lj-zig.is-rev .lj-zig__text { justify-self: end; }
+.lj-zig__n { font: italic 400 clamp(54px, 6vw, 84px)/.9 var(--font-display); color: color-mix(in srgb, var(--lj-gold) 70%, transparent); }
+.lj-zig h3 { font: 400 clamp(30px, 3.4vw, 46px)/1.05 var(--font-display); letter-spacing: -.01em; }
+.lj-zig p { color: var(--ink-2); line-height: 1.75; }
+.lj-zig__ctas { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+.lj-zig__ctas .kt-add { width: 52px; height: 52px; }
+.lj-price { font: 400 22px/1 var(--font-ui); letter-spacing: .08em; }
+.lj-price b { font-weight: 500; }
+.lj-price--sm { font-size: 14px; letter-spacing: .12em; color: var(--ink-2); }
+.lj .sk-off { background: var(--lj-gold); color: var(--lj-bg); }
+
+/* Colección */
+.lj-col { width: min(100% - 32px, 1280px); margin: 0 auto; padding: clamp(64px, 9vw, 120px) 0; border-top: 1px solid var(--line); scroll-margin-top: 84px; }
+.lj-tabs { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 28px; margin: -24px 0 clamp(32px, 4vw, 52px); }
+.lj-tabs button { position: relative; min-height: 40px; font: 500 11.5px/1 var(--font-ui); letter-spacing: .26em; text-transform: uppercase; color: var(--ink-3); transition: color .4s; }
+.lj-tabs button::after { content: ''; position: absolute; left: 50%; bottom: 6px; width: 0; height: 1px; background: var(--lj-gold); transition: width .5s var(--lj-ease), left .5s var(--lj-ease); }
+.lj-tabs button.is-on, .lj-tabs button:hover { color: var(--ink); }
+.lj-tabs button.is-on::after { width: 100%; left: 0; }
+.lj-grid { display: grid; gap: clamp(28px, 4vw, 56px) clamp(14px, 2.4vw, 32px); grid-template-columns: repeat(2, minmax(0, 1fr)); animation: kt-open .8s var(--lj-ease); }
+@media (min-width: 900px) { .lj-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.lj-card { display: grid; gap: 10px; justify-items: center; text-align: center; }
+.lj-card__img { position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; background: var(--paper-2); }
+.lj-card__img img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.8s var(--lj-ease), filter 1s; }
+.lj-card:hover .lj-card__img img { transform: scale(1.06); filter: brightness(.82); }
+.lj-card__hover { position: absolute; left: 50%; top: 50%; translate: -50% -40%; padding: 14px 22px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.8); color: #fff; font: 500 11px/1 var(--font-ui); letter-spacing: .3em; text-transform: uppercase; opacity: 0; transition: opacity .8s var(--lj-ease), translate .8s var(--lj-ease); }
+.lj-card:hover .lj-card__hover { opacity: 1; translate: -50% -50%; }
+.lj-card__badge { position: absolute; top: 12px; left: 12px; padding: 6px 10px; background: var(--lj-bg); color: var(--lj-gold); font: 500 10px/1 var(--font-ui); letter-spacing: .22em; text-transform: uppercase; }
+.lj-card__name { font: 400 clamp(17px, 1.7vw, 22px)/1.2 var(--font-display); margin-top: 6px; }
+
+/* La experiencia */
+.lj-house { width: min(100% - 32px, 1180px); margin: 0 auto; padding: clamp(64px, 9vw, 120px) 0; border-top: 1px solid var(--line); scroll-margin-top: 84px; }
+.lj-house ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.lj-house li { display: grid; gap: 12px; justify-items: center; text-align: center; padding: clamp(24px, 3vw, 40px); }
+.lj-house li + li { border-left: 1px solid var(--line); }
+@media (max-width: 760px) { .lj-house li + li { border-left: 0; border-top: 1px solid var(--line); } }
+.lj-house li > span { font: italic 400 32px/1 var(--font-display); color: var(--lj-gold); }
+.lj-house strong { font: 500 12px/1.4 var(--font-ui); letter-spacing: .26em; text-transform: uppercase; }
+.lj-house p { color: var(--ink-2); line-height: 1.7; max-width: 30ch; }
+
+/* Cita */
+.lj-quote { position: relative; width: min(100% - 32px, 900px); margin: 0 auto; padding: clamp(64px, 9vw, 120px) 0; display: grid; gap: 22px; justify-items: center; text-align: center; border-top: 1px solid var(--line); }
+.lj-quote__mark { font: 400 120px/.5 var(--font-display); color: var(--lj-gold); height: 50px; }
+.lj-quote blockquote { margin: 0; font: italic 400 clamp(24px, 3.2vw, 40px)/1.35 var(--font-display); text-wrap: balance; }
+.lj-quote cite { font: 500 11px/1 var(--font-ui); font-style: normal; letter-spacing: .32em; text-transform: uppercase; color: var(--ink-3); }
+
+/* Asesoría */
+.lj-advice { width: min(100% - 32px, 1180px); margin: 0 auto clamp(48px, 7vw, 96px); padding: clamp(32px, 5vw, 64px); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 28px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lj-gold) 50%, transparent); background: radial-gradient(80% 140% at 100% 0%, color-mix(in srgb, var(--lj-gold) 12%, transparent), transparent 60%); }
+.lj-advice > div { display: grid; gap: 14px; max-width: 560px; }
+.lj-advice p:last-child { color: var(--ink-2); line-height: 1.7; }
+
+.lj-faq { width: min(100% - 32px, 900px); margin: 0 auto; padding: 0 0 clamp(32px, 5vw, 64px); display: grid; gap: 18px; }
+.lj-faq .lj-h2 { text-align: center; }
+.lj .kt-faq details[open] summary i { background: var(--lj-gold); color: var(--lj-bg); }
+.lj .kt-foot .kt-btn--wa { border-radius: 0; letter-spacing: .14em; text-transform: uppercase; font-size: 12.5px; }
+.lj .mk-plan, .lj .mk-combo, .lj .mk-review { border-radius: 0; }

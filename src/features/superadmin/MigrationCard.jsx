@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { PLATFORM } from '@/config/platform'
 import { legacyDataSummary, importLegacyData } from '@/services/migration.service'
-import { createTenant, updateTenant } from '@/services/tenants.service'
+import { createTenant, updateTenant, writeAccount } from '@/services/tenants.service'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { uploadImage, dataUrlToFile } from '@/lib/cloudinary'
 import { normalizePhone, tempPassword } from '@/lib/format'
@@ -11,7 +11,7 @@ import { createOwnerAccount } from '@/services/users.service'
 import { friendlyError } from '@/services/auth.service'
 import { hasLegacyProject, legacyProjectId } from '@/lib/firebase'
 
-const SLUG = PLATFORM.defaultTenant || 'lisart'
+const SLUG = PLATFORM.legacyTenant || 'lisart'
 
 export default function MigrationCard({ onDone }) {
   const { user } = useAuth()
@@ -33,8 +33,9 @@ export default function MigrationCard({ onDone }) {
       await createTenant(SLUG, {
         name: form.name.trim(), whatsapp: normalizePhone(form.whatsapp), city: form.city.trim(),
         template: 'regalos', theme: { preset: 'rosa' },
-        ownerUid, ownerEmail: ownerEmail || user.email,
+        ownerUid,
       })
+      await writeAccount(SLUG, { ownerEmail: ownerEmail || user.email })
       const res = await importLegacyData(SLUG)
       // El logo antes se guardaba solo en el navegador; si está en este equipo, se sube a la nube
       const localLogo = localStorage.getItem('lisart_logo')

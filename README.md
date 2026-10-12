@@ -6,6 +6,9 @@ y recibe pedidos por WhatsApp. El primer catálogo es **Creaciones LisArt** (`/`
 
 ## Cómo funciona
 
+La página principal (`/`) es el **portafolio** del dueño de la plataforma (estilo editorial,
+editable en `/super` → *Mi portafolio*). Cada catálogo vive en `/nombre-del-negocio`.
+
 | Quién | Dónde entra | Qué puede hacer |
 |---|---|---|
 | Visitantes | `/` o `/nombre` | Ver el catálogo y pedir por WhatsApp |
@@ -18,7 +21,7 @@ en un dispositivo aparece al instante en todos los demás.
 ## Estructura del código
 
 ```
-api/              Funciones de servidor en Vercel (Firebase Admin): cambiar contraseñas
+api/              Funciones de servidor en Vercel (sin dependencias): cambiar contraseñas y crear cuentas
 src/
   app/            Punto de entrada y rutas (/, /admin, /super, /:negocio)
   config/         Configuración de la plataforma (nombre, super admin, catálogo por defecto)
@@ -30,7 +33,8 @@ src/
     catalog/      El catálogo público: secciones, productos, diseños de fotos
     cart/         Pedido y envío por WhatsApp
     editor/       Edición en línea + panel del dueño (Mi negocio, Productos, Diseño, Textos)
-    superadmin/   Panel del super administrador
+    superadmin/   Panel del super administrador (clientes, solicitudes y editor del portafolio)
+    portfolio/    Página principal: portafolio editorial con animaciones
     platform/     Páginas propias de la plataforma
   shared/ui/      Componentes visuales reutilizables
   styles/         Estilos globales y tokens de diseño
@@ -44,7 +48,12 @@ tenants/{negocio}/products/{id}    productos
 tenants/{negocio}/settings/home    secciones, estilos de fotos, textos editados, anuncio
 users/{uid}                        rol (superadmin | owner) y negocio asignado
 tickets/{id}                       solicitudes de ayuda (olvidé mi contraseña)
+platform/portfolio                 contenido del portafolio (página principal)
 ```
+
+Plantillas para clientes (al crear un catálogo): Regalos, Tienda general, Editorial (boutique),
+Moda urbana, Tecnología (modo oscuro) y Tienda minimal. Cada una trae sus secciones, textos y
+colores; el cliente puede cambiar todo después desde su panel.
 
 ## Puesta en marcha (una sola vez)
 
@@ -70,8 +79,48 @@ tickets/{id}                       solicitudes de ayuda (olvidé mi contraseña)
 - **Cambiar contraseña** de cualquier cliente: botón *Contraseña* en su tarjeta. Al cambiarla se
   cierran sus sesiones abiertas en todos los dispositivos.
 - Esto usa la función de servidor `api/admin/set-password.js` (Vercel), que verifica que quien
-  la llama sea el super administrador. En local funciona con `npx vercel dev` (no con `npm run dev`).
+  la llama sea el super administrador. En local también funciona con `npm run dev` si `.env.local`
+  tiene `FIREBASE_SERVICE_ACCOUNT_FILE` apuntando al archivo .json de la llave.
 - El super administrador recupera su propia contraseña por correo (enlace de Firebase).
+
+## El plus de cada catálogo
+
+**Panel → 📊 Cuentas** (privado, solo el dueño):
+
+- **Resumen del mes:** vendido, ganancia y margen, número de ventas, ticket promedio, ventas por día, lo más vendido y una lista de «para hacer hoy».
+- **Costos y ganancia:** el costo de cada producto (materiales, mano de obra, empaque, otros) da la ganancia, el margen y el precio sugerido según el % de ganancia deseado.
+- **Ventas:** se anotan a mano o pegando el pedido que llegó por WhatsApp. Pueden descontar el inventario.
+- **Cotizaciones:** numeradas (COT-0001), con logo; se envían por WhatsApp, se guardan en PDF y se pasan a venta.
+
+**Panel → 🚀 Vender más** (estrategias de venta con datos reales):
+
+- **Meta de compra:** «Te faltan $X para envío gratis / % de descuento / regalo», con hasta 3 niveles.
+- **Ofertas con cuenta regresiva:** precio antes/ahora con fecha de fin.
+- **Pocas unidades:** «¡Quedan 3!» según el inventario; con 0 aparece «Agotado».
+- **Compara y elige (precio ancla):** 3 opciones con «El más elegido».
+- **Combos con ahorro**, **Lleva también / Completa tu pedido** y **Opiniones de clientes**.
+
+Datos privados en Firestore: `tenants/{negocio}/private/business`, `sales`, `quotes` (ver `firestore.rules`).
+
+## Cobros a tus clientes
+
+Panel **/super → Cobros**. Cada catálogo tiene su propio plan (lo eliges al crearlo y lo cambias con «Plan»):
+
+- **Mensualidad**: un valor fijo cada mes.
+- **Creación + mantenimiento**: un pago único de creación (se cobra en el primer pago) y luego una cuota mensual de mantenimiento.
+- Puedes poner un **precio especial** por cliente, dar días de **prueba gratis** y descuento por pago anual.
+
+Vencimientos: el dueño ve un aviso en su catálogo **5 días antes**; después del vencimiento tiene **5 días de gracia** y luego el catálogo se **pausa** solo (los visitantes ven «no disponible»). Al registrar o recibir el pago se reactiva automáticamente. Los días se cambian en «Cobros → Precios y reglas».
+
+Formas de pago:
+
+1. **Transferencia / Nequi** (siempre disponible): el cliente ve tus datos en *Panel → Mi plan* y te envía el comprobante por WhatsApp; tú lo registras con «Registrar pago».
+2. **En línea con Wompi** (tarjeta, PSE, Nequi, Bancolombia):
+   1. Crea tu cuenta en wompi.co y entra a *Desarrolladores*.
+   2. En Vercel agrega `WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET` y `WOMPI_EVENTS_SECRET` (Production) y vuelve a desplegar.
+   3. En Wompi pon la *URL de eventos*: `https://TU-DOMINIO/api/billing/webhook`.
+   4. En *Cobros → Precios y reglas* activa «Pago en línea con Wompi».
+   Prueba primero con las llaves `pub_test_…` (tarjeta de prueba 4242 4242 4242 4242).
 
 ## Desarrollo
 

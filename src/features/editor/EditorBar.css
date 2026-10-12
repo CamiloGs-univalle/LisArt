@@ -45,6 +45,14 @@
 .eb__tip { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
 .eb__tip button { margin-left: auto; flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--paper-2); }
 .eb__warn { background: #fff3cd; color: #6b4e00; }
+.eb__warn--pay { justify-content: space-between; }
+.eb__warn--grace, .eb__warn--overdue { background: #fde2e1; color: #7a1d1a; }
+.eb__warn--pay button {
+  flex: none; padding: 7px 12px; border-radius: 999px; border: 0;
+  font-weight: 700; font-size: 12.5px; cursor: pointer;
+}
+.eb__warn--pay button { background: #1d1d1f; color: #fff; }
+.eb__warn--pay button:focus-visible { outline: 2px solid #1d1d1f; outline-offset: 2px; }
 
 /* Deja espacio para la barra: los botones flotantes del cliente suben */
 body:has(.eb) .cartbar, body:has(.eb) .wa-fab { bottom: calc(80px + env(safe-area-inset-bottom)); }

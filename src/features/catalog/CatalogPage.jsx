@@ -2,19 +2,22 @@
 // Página pública del catálogo de un negocio (tusitio.com/<negocio>)
 // Orden de proveedores: negocio → datos (tiempo real) → edición → carrito → interfaz
 // ─────────────────────────────────────────────────────────────
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { useBillingSettings } from '@/features/billing/useBilling'
+import { billingState } from '@/lib/billingCore'
 import { TenantProvider, useTenant } from '@/features/tenant/TenantProvider'
 import { SettingsProvider, useSettingsCtx } from '@/features/catalog/data/SettingsProvider'
 import { ProductsProvider, useProductsCtx } from '@/features/catalog/data/ProductsProvider'
 import { EditorProvider, useAdmin } from '@/features/editor/EditorProvider'
 import { CartProvider, useCart } from '@/features/cart/CartProvider'
-import { UIProvider } from '@/features/catalog/UIProvider'
+import { UIProvider, useUI } from '@/features/catalog/UIProvider'
 import Header from '@/features/catalog/components/Header'
 import Hero from '@/features/catalog/components/Hero'
 import SectionNav from '@/features/catalog/components/SectionNav'
 import ResultsSection from '@/features/catalog/components/ResultsSection'
 import ProductSheet from '@/features/catalog/components/ProductSheet'
 import Footer from '@/features/catalog/components/Footer'
+import { MarketingSections } from '@/features/marketing/Boost'
 import { Highlights, HowToOrder, Story, Faq } from '@/features/catalog/components/InfoSections'
 import CatalogSections from '@/features/catalog/layouts/CatalogSections'
 import StoryViewer from '@/features/catalog/layouts/StoryViewer'
@@ -25,6 +28,79 @@ import { PhotoManager, SectionsPicker } from '@/features/editor/AdminTools'
 import CartDrawer from '@/features/cart/CartDrawer'
 import CartBar from '@/features/cart/CartBar'
 import StatusScreen from '@/shared/ui/StatusScreen'
+import BackToTop from '@/shared/ui/BackToTop'
+import ScrollProgress from '@/shared/ui/ScrollProgress'
+import { initFx } from '@/lib/fx'
+import '@/styles/fx.css'
+import '@/styles/cardstyles.css'
+import VeloraView from '@/features/catalog/skins/VeloraView'
+import TerrainView from '@/features/catalog/skins/TerrainView'
+import EditorialView from '@/features/catalog/skins/EditorialView'
+import ProductView from '@/features/catalog/skins/ProductView'
+import MenuView from '@/features/catalog/skins/MenuView'
+import ServiciosView from '@/features/catalog/skins/ServiciosView'
+import BentoView from '@/features/catalog/skins/BentoView'
+import LookbookView from '@/features/catalog/skins/LookbookView'
+import TiendaView from '@/features/catalog/skins/TiendaView'
+import LujoView from '@/features/catalog/skins/LujoView'
+import HistoriasView from '@/features/catalog/skins/HistoriasView'
+import EscaparateView from '@/features/catalog/skins/EscaparateView'
+import RevistaView from '@/features/catalog/skins/RevistaView'
+import MesaView from '@/features/catalog/skins/MesaView'
+
+// Panel del dueño: false = cerrado · true = abierto · 'plan' | … = abierto en esa pestaña.
+// Al volver de un pago en línea (?pago=REF) se abre solo en «Mi plan».
+function usePanel() {
+  const { canEdit } = useAdmin()
+  const [panel, setPanel] = useState(false)
+  useEffect(() => {
+    if (canEdit && new URLSearchParams(window.location.search).has('pago')) setPanel('plan')
+  }, [canEdit])
+  return { panel, openPanel: (tab) => setPanel(typeof tab === 'string' ? tab : true), closePanel: () => setPanel(false) }
+}
+
+// Estructuras de página alternativas (el negocio elige una en Panel → Diseño)
+const SKINS = { velora: VeloraView, terrain: TerrainView, editorial: EditorialView, menu: MenuView, servicios: ServiciosView, bento: BentoView, lookbook: LookbookView, tienda: TiendaView, lujo: LujoView, historias: HistoriasView, escaparate: EscaparateView, revista: RevistaView, mesa: MesaView }
+
+function SkinView({ layout }) {
+  const { panel, openPanel, closePanel } = usePanel()
+  const { cardStyle } = useSettingsCtx()
+  const Skin = SKINS[layout]
+  return (
+    <div className={`page page--${layout} cs-${cardStyle}`}>
+      <Skin onOpenDashboard={openPanel} />
+      <EditorPanel open={!!panel} initialTab={typeof panel === 'string' ? panel : undefined} onClose={closePanel} />
+      <ProductView variant={layout} />
+      <PhotoManager />
+      <SectionsPicker />
+      <EditorBar onOpenPanel={openPanel} />
+      <CartDrawer />
+      <CartBar />
+      <BackToTop />
+      <ScrollProgress />
+    </div>
+  )
+}
+
+// Enlace directo a un producto (?p=id): lo abre apenas cargan los productos
+function useProductDeepLink() {
+  const { products, loading } = useProductsCtx()
+  const { openProduct } = useUI()
+  const done = useRef(false)
+  useEffect(() => {
+    if (done.current || loading) return
+    done.current = true
+    const id = new URLSearchParams(window.location.search).get('p')
+    const p = id && products.find(x => x.id === id)
+    if (p) openProduct(p)
+  }, [products, loading, openProduct])
+}
+
+function CatalogSwitch() {
+  const { layout } = useTenant()
+  useProductDeepLink()
+  return SKINS[layout] ? <SkinView layout={layout} /> : <CatalogView />
+}
 
 const scrollToCatalog = () =>
   document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -46,11 +122,11 @@ function SkeletonGrid() {
 function CatalogView() {
   const [showAll, setShowAll] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [showDashboard, setShowDashboard] = useState(false)
+  const { panel, openPanel, closePanel } = usePanel()
   const { isAdmin } = useAdmin()
   const { loading, error } = useProductsCtx()
   const { sections, publicSections, visibleProducts: products } = useCatalog()
-  const { announcement } = useSettingsCtx()
+  const { announcement, cardStyle } = useSettingsCtx()
   const { count } = useCart()
 
   // Fotos del inicio: primero las de Destacados
@@ -91,7 +167,7 @@ function CatalogView() {
   const clearFilters = () => { setSearchTerm(''); setShowAll(false) }
 
   return (
-    <div className="page">
+    <div className={`page cs-${cardStyle}`}>
       <a href="#catalogo" className="sr-only">Saltar al catálogo</a>
 
       <Header
@@ -99,7 +175,7 @@ function CatalogView() {
         onSearchChange={setSearchTerm}
         cartCount={count}
         announcement={announcement}
-        onOpenDashboard={() => setShowDashboard(true)}
+        onOpenDashboard={openPanel}
       />
 
       <main>
@@ -141,17 +217,20 @@ function CatalogView() {
         )}
       </main>
 
+      <MarketingSections />
       <Footer />
 
-      <EditorPanel open={showDashboard} onClose={() => setShowDashboard(false)} />
+      <EditorPanel open={!!panel} initialTab={typeof panel === 'string' ? panel : undefined} onClose={closePanel} />
 
       <ProductSheet />
       <StoryViewer />
       <PhotoManager />
       <SectionsPicker />
-      <EditorBar onOpenPanel={() => setShowDashboard(true)} />
+      <EditorBar onOpenPanel={openPanel} />
       <CartDrawer />
       <CartBar />
+      <BackToTop />
+      <ScrollProgress />
     </div>
   )
 }
@@ -160,15 +239,27 @@ function CatalogView() {
 function TenantGate({ children }) {
   const { loading, notFound, tenant } = useTenant()
   const { canEdit } = useAdmin()
+  const billingSettings = useBillingSettings()
   if (loading) return <StatusScreen loading />
-  if (notFound) return <StatusScreen title="Catálogo no encontrado" text="Revisa que la dirección esté bien escrita." />
-  if (tenant.status !== 'active' && !canEdit) {
-    return <StatusScreen title="Catálogo no disponible" text="Este catálogo no está disponible por ahora. Vuelve pronto." />
+  if (notFound) return (
+    <StatusScreen icon="🔎" eyebrow="Error 404" title="No encontramos este catálogo" text="Revisa que la dirección esté bien escrita o pídele el enlace correcto al negocio.">
+      <a className="btn btn--ghost" href="/">Ir al inicio</a>
+    </StatusScreen>
+  )
+  // Pausa automática por falta de pago (después de los días de gracia)
+  const unpaid = billingState(tenant.billing, billingSettings).state === 'overdue'
+  if ((tenant.status !== 'active' || unpaid) && !canEdit) {
+    return (
+      <StatusScreen icon="🌙" eyebrow={tenant.name} title="Volvemos pronto" text="Este catálogo no está disponible en este momento. Mientras tanto, puedes escribirnos directamente.">
+        {tenant.whatsapp && <a className="btn btn--wa" href={`https://wa.me/${tenant.whatsapp}`} target="_blank" rel="noopener noreferrer">Escribir por WhatsApp</a>}
+      </StatusScreen>
+    )
   }
   return children
 }
 
 export default function CatalogPage({ slug }) {
+  useEffect(() => initFx(), [])
   return (
     <TenantProvider slug={slug} key={slug}>
       <SettingsProvider>
@@ -177,7 +268,7 @@ export default function CatalogPage({ slug }) {
             <TenantGate>
               <CartProvider>
                 <UIProvider>
-                  <CatalogView />
+                  <CatalogSwitch />
                 </UIProvider>
               </CartProvider>
             </TenantGate>

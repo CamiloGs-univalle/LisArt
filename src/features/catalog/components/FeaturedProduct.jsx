@@ -90,7 +90,7 @@ function FeaturedProduct({ product }) {
             {!isAdmin && (
               <div className="feat__btns">
                 <button className={`btn btn--rose ${isAdded ? 'is-added' : ''}`} onClick={() => add(product)}>
-                  <Icon name={isAdded ? 'check' : 'bag'} /> {isAdded ? '¡Agregado!' : ctaLabel(product)}
+                  <Icon name={isAdded ? 'check' : 'cart'} /> {isAdded ? '¡Agregado!' : ctaLabel(product)}
                 </button>
                 <button className="btn feat__ask" onClick={() => wa.askProduct(product)}>
                   <Icon name="whatsapp" /> Preguntar

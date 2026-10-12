@@ -89,7 +89,9 @@ export default function StoryViewer() {
   }
 
   const handleAdd = () => {
-    addToCart(p)
+    const block = addToCart(p)
+    if (block === 'options') { closeStory(); openProduct(p); return }
+    if (block) return
     setAdded(true)
     notify({ title: p.name, image: p.image })
   }
@@ -142,7 +144,7 @@ export default function StoryViewer() {
               <Icon name={added ? 'check' : 'heart'} /> {added ? '¡Agregado!' : 'Lo quiero'}
             </button>
             <button className="sv__icon" onClick={() => { closeStory(); openProduct(p) }} aria-label="Ver detalle">
-              <Icon name="bag" size={20} />
+              <Icon name="cart" size={20} />
             </button>
             <button className="sv__icon sv__icon--wa" onClick={() => wa.askProduct(p)} aria-label="Preguntar por WhatsApp">
               <Icon name="whatsapp" size={20} />

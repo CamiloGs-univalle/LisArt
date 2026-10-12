@@ -1,10 +1,29 @@
-.status { min-height: 100dvh; display: grid; place-items: center; padding: 24px; background: var(--paper); }
-.status__card { max-width: 440px; text-align: center; display: grid; gap: 12px; justify-items: center; }
-.status__title { font-size: var(--fs-h3l); }
-.status__text { color: var(--ink-2); }
-.status__spinner {
-  width: 44px; height: 44px; border-radius: 50%;
-  border: 3px solid var(--line-strong); border-top-color: var(--rose);
-  animation: spin .8s linear infinite;
+.status {
+  min-height: 100dvh; display: grid; place-items: center; padding: 24px;
+  background:
+    radial-gradient(60% 50% at 50% 0%, color-mix(in srgb, var(--rose) 9%, transparent), transparent 70%),
+    var(--paper);
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+.status__card {
+  max-width: 460px; text-align: center; display: grid; gap: 12px; justify-items: center;
+  animation: status-in .5s cubic-bezier(.2, .7, .2, 1) both;
+}
+.status__icon {
+  width: 72px; height: 72px; display: grid; place-items: center; font-size: 32px;
+  border-radius: 24px; background: var(--card, #fff); margin-bottom: 6px;
+  box-shadow: 0 1px 0 var(--line), 0 18px 40px -18px color-mix(in srgb, var(--ink) 35%, transparent);
+}
+.status__eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--rose-deep, var(--rose)); }
+.status__title { font-size: var(--fs-h3l, 30px); line-height: 1.1; text-wrap: balance; }
+.status__text { color: var(--ink-2); text-wrap: pretty; max-width: 38ch; }
+.status__actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
+.status__loader { display: flex; gap: 8px; }
+.status__loader span {
+  width: 10px; height: 10px; border-radius: 50%; background: var(--rose);
+  animation: status-dot 1s ease-in-out infinite;
+}
+.status__loader span:nth-child(2) { animation-delay: .15s; }
+.status__loader span:nth-child(3) { animation-delay: .3s; }
+@keyframes status-dot { 0%, 80%, 100% { transform: scale(.6); opacity: .35; } 40% { transform: scale(1); opacity: 1; } }
+@keyframes status-in { from { opacity: 0; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) { .status__card, .status__loader span { animation: none; } }

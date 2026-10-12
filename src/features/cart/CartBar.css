@@ -22,8 +22,8 @@
   min-height: 64px;
   padding: 8px 10px 8px 10px;
   border-radius: var(--r-pill);
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--inv);
+  color: var(--on-inv);
   box-shadow: 0 20px 40px -12px color-mix(in srgb, var(--ink) 55%, transparent);
   text-align: left;
 }
@@ -86,7 +86,7 @@
 .toast div { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
 .toast strong { font-size: var(--fs-small); font-weight: 800; color: var(--rose-deep); }
 .toast span { font-size: var(--fs-small); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.toast button { min-height: 40px; padding: 0 16px; border-radius: var(--r-pill); background: var(--ink); color: var(--paper); font-size: var(--fs-small); font-weight: 700; }
+.toast button { min-height: 40px; padding: 0 16px; border-radius: var(--r-pill); background: var(--inv); color: var(--on-inv); font-size: var(--fs-small); font-weight: 700; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(-14px) scale(.96); } }
 @keyframes toast-out { to { opacity: 0; transform: translateY(-10px); } }
 
@@ -95,3 +95,11 @@
   .cartbar__btn { width: auto; min-width: 380px; }
   .wa-fab { right: 28px; bottom: 28px; }
 }
+
+/* Auditoría: barra con meta, miniaturas sin foto y textos que no se parten */
+.cartbar.has-goal { display: grid; gap: 6px; }
+.cartbar.has-goal .mk-goal--compact { width: 100%; box-sizing: border-box; margin: 0; }
+.cartbar__go { white-space: nowrap; }
+.cartbar__ph { width: 40px; height: 40px; flex: none; margin-left: -12px; border-radius: 50%; background: linear-gradient(135deg, var(--blush), var(--paper-2)); box-shadow: 0 0 0 2px var(--ink); }
+.cartbar__ph:first-child { margin-left: 0; }
+@media (max-width: 380px) { .cartbar__thumbs { display: none; } .cartbar__go { padding-inline: 14px; } }

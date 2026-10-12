@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { useAdmin } from './EditorProvider'
 import { useTenant } from '@/features/tenant/TenantProvider'
 import Icon from '@/shared/ui/Icon'
+import { useBillingSettings } from '@/features/billing/useBilling'
+import { billingState } from '@/lib/billingCore'
 import './EditorBar.css'
 
 const TIP_KEY = 'editor-tip-hidden'
@@ -10,6 +12,8 @@ const TIP_KEY = 'editor-tip-hidden'
 export default function EditorBar({ onOpenPanel }) {
   const { canEdit, editMode, setEditMode } = useAdmin()
   const { tenant } = useTenant()
+  const billingSettings = useBillingSettings()
+  const bill = billingState(tenant?.billing, billingSettings)
   const [tip, setTip] = useState(() => { try { return localStorage.getItem(TIP_KEY) !== '1' } catch { return true } })
   if (!canEdit) return null
 
@@ -17,8 +21,18 @@ export default function EditorBar({ onOpenPanel }) {
 
   return (
     <div className="eb" role="region" aria-label="Herramientas de edición">
-      {tenant?.status === 'suspended' && (
+      {tenant?.status === 'suspended' && tenant?.suspendedReason !== 'pago' && (
         <p className="eb__warn">⚠️ Este catálogo está <strong>suspendido</strong>: los clientes no lo pueden ver.</p>
+      )}
+      {(['soon', 'grace', 'overdue'].includes(bill.state) || tenant?.suspendedReason === 'pago') && (
+        <p className={`eb__warn eb__warn--pay eb__warn--${bill.state}`}>
+          <span>{bill.state === 'soon'
+            ? <>💳 Tu plan <strong>{bill.label.toLowerCase()}</strong>. Renueva para no tener interrupciones.</>
+            : bill.state === 'grace'
+              ? <>⚠️ Tu plan está <strong>vencido</strong>. Tu catálogo se pausará pronto.</>
+              : <>⛔ Tu catálogo está <strong>pausado</strong> por falta de pago: tus clientes no lo ven.</>}</span>
+          <button onClick={() => onOpenPanel('plan')}>Pagar ahora</button>
+        </p>
       )}
       {editMode && tip && (
         <p className="eb__tip">

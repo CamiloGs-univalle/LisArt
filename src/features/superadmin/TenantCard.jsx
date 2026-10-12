@@ -4,11 +4,14 @@ import { navigate, catalogPath, catalogUrl } from '@/app/router'
 import { resolveTheme } from '@/features/tenant/themes'
 import { getTemplate } from '@/features/tenant/templates'
 import { PLATFORM } from '@/config/platform'
+import { billingState, MODELS, formatDay } from '@/lib/billingCore'
 
-export default function TenantCard({ tenant: t, onToggle, onChangePassword }) {
+export default function TenantCard({ tenant: t, onToggle, onChangePassword, billingSettings }) {
+  const bs = billingState(t.billing, billingSettings)
   const [copied, setCopied] = useState(false)
   const theme = resolveTheme(t.theme || { preset: getTemplate(t.template).theme })
   const suspended = t.status === 'suspended'
+  const unpaid = !suspended && bs.state === 'overdue'
   const url = catalogUrl(t.id)
 
   const copy = async () => {
@@ -27,14 +30,15 @@ export default function TenantCard({ tenant: t, onToggle, onChangePassword }) {
             /{t.id} <small>{copied ? '¡Copiado!' : 'Copiar'}</small>
           </button>
         </div>
-        <span className={`sa-badge ${suspended ? 'is-off' : ''}`}>{suspended ? 'Suspendido' : 'Activo'}</span>
+        <span className={`sa-badge ${suspended || unpaid ? 'is-off' : ''}`}>{suspended ? (t.suspendedReason === 'pago' ? 'Pausado por pago' : 'Suspendido') : unpaid ? 'Pausado' : 'Activo'}</span>
       </div>
 
       <dl className="sa-card__meta">
         <div><dt>Dueño</dt><dd>{t.ownerEmail || '—'}</dd></div>
         <div><dt>WhatsApp</dt><dd>{t.whatsapp || '—'}</dd></div>
         <div><dt>Plantilla</dt><dd>{getTemplate(t.template).label}</dd></div>
-        <div><dt>Colores</dt><dd className="sa-swatches">{[theme.primary, theme.blush, theme.ink].map(c => <i key={c} style={{ background: c }} />)}</dd></div>
+        <div className="sa-card__plan"><dt>Plan</dt><dd><span className={`bp-chip bp-chip--${bs.state}`}>{bs.label}</span> <small>{t.billing ? `${MODELS[t.billing.model]?.short || ''} · hasta ${formatDay(t.billing.paidUntil)}` : ''}</small></dd></div>
+        <div><dt>Colores</dt><dd className="sa-swatches">{[theme.primary, theme.blush, theme.ink].map((c, k) => <i key={k} style={{ background: c }} />)}</dd></div>
       </dl>
 
       <div className="sa-card__actions">

@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 // Enrutador mínimo (sin dependencias):
-//   /            → catálogo por defecto (PLATFORM.defaultTenant)
+//   /            → portafolio (o el catálogo de VITE_HOME_TENANT si está definido)
 //   /admin       → iniciar sesión
 //   /super       → panel del super administrador
 //   /:negocio    → catálogo de un negocio
@@ -20,7 +20,7 @@ export function navigate(to, { replace = false } = {}) {
 export function parseRoute(pathname) {
   const parts = pathname.replace(/\/+$/, '').split('/').filter(Boolean)
   const [first] = parts
-  if (!first) return PLATFORM.defaultTenant ? { name: 'catalog', slug: PLATFORM.defaultTenant, isRoot: true } : { name: 'home' }
+  if (!first) return PLATFORM.homeTenant ? { name: 'catalog', slug: PLATFORM.homeTenant, isRoot: true } : { name: 'home' }
   if (first === 'admin' || first === 'login') return { name: 'login' }
   if (first === 'super') return { name: 'super' }
   return { name: 'catalog', slug: decodeURIComponent(first).toLowerCase() }
@@ -54,5 +54,5 @@ export function Link({ to, onClick, ...rest }) {
 }
 
 // URL pública de un catálogo
-export const catalogPath = (slug) => (slug === PLATFORM.defaultTenant ? '/' : `/${slug}`)
+export const catalogPath = (slug) => (slug === PLATFORM.homeTenant ? '/' : `/${slug}`)
 export const catalogUrl = (slug) => `${window.location.origin}/${slug}`

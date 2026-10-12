@@ -1,0 +1,59 @@
+/* ── Efectos globales del catálogo (ver src/lib/fx.js) ─────── */
+
+/* Foto que vuela al carrito */
+.fx-fly { position: fixed; z-index: 2000; object-fit: cover; pointer-events: none; box-shadow: 0 18px 40px -12px rgba(0, 0, 0, .45), 0 0 0 3px #fff; will-change: transform; }
+
+/* Rebote del carrito */
+.fx-bump { animation: fx-bump .5s cubic-bezier(.3, 1.6, .5, 1); }
+.fx-bump--strong { animation: fx-bump-strong .6s cubic-bezier(.3, 1.8, .45, 1); }
+@keyframes fx-bump { 40% { transform: scale(1.12); } }
+@keyframes fx-bump-strong { 0% { transform: scale(1); } 30% { transform: scale(1.28) rotate(-8deg); } 60% { transform: scale(.94) rotate(4deg); } 100% { transform: none; } }
+
+/* Imágenes: borroso → nítido */
+img.fx-blur { filter: blur(14px) saturate(1.2); transform: scale(1.03); }
+img[data-fx] { transition: filter .7s ease, transform .9s cubic-bezier(.16, 1, .3, 1), opacity .5s ease; }
+
+/* Inclinación 3D suave (las tarjetas se mueven hacia el mouse) */
+.fx-tilt.fx-tilt { transform: perspective(900px) rotateX(var(--fx-rx, 0)) rotateY(var(--fx-ry, 0)) translateY(-3px); transition: transform .15s ease-out, box-shadow .3s; will-change: transform; }
+
+/* Botones magnéticos */
+.fx-mag.fx-mag { transform: translate(var(--fx-mx, 0), var(--fx-my, 0)); transition: transform .15s ease-out, background .25s, box-shadow .25s, color .25s; }
+:where(.kt-btn, .btn--primary, .btn--wa, .sk-add, .lj-btn, .mk-cta, .cart__cta):active { scale: .97; }
+
+/* Barra de progreso de lectura */
+.fx-progress { position: fixed; inset: 0 0 auto; z-index: 70; height: 3px; pointer-events: none; transform-origin: 0 50%; transform: scaleX(var(--p, 0)); background: linear-gradient(90deg, var(--rose), var(--gold)); transition: opacity .3s; }
+.fx-progress.is-off { opacity: 0; }
+
+/* Transición continua tarjeta → ficha */
+::view-transition-group(fx-product) { animation-duration: .5s; animation-timing-function: cubic-bezier(.2, .8, .2, 1); }
+::view-transition-old(fx-product), ::view-transition-new(fx-product) { height: 100%; object-fit: cover; overflow: hidden; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .35s; }
+
+/* Zoom de la foto en la ficha */
+.fx-zoom { position: relative; overflow: hidden; cursor: zoom-in; }
+.fx-zoom img { transition: transform .35s cubic-bezier(.2, .8, .2, 1); transform-origin: var(--zx, 50%) var(--zy, 50%); }
+.fx-zoom.is-zoom img { transform: scale(2); }
+.fx-zoom.is-zoom { cursor: zoom-out; }
+
+/* Visor de fotos a pantalla completa */
+.fx-lightbox { position: fixed; inset: 0; z-index: 1500; display: grid; grid-template-rows: auto 1fr auto; background: rgba(8, 8, 10, .96); color: #fff; animation: fx-fade .25s ease; touch-action: pan-y; }
+.fx-lightbox__bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; font: 600 14px/1 var(--font-ui); }
+.fx-lightbox__bar button { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: rgba(255, 255, 255, .1); }
+.fx-lightbox__stage { position: relative; overflow: hidden; display: grid; place-items: center; }
+.fx-lightbox__stage img { max-width: 100%; max-height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+.fx-lightbox__nav { position: absolute; top: 50%; translate: 0 -50%; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .12); color: #fff; }
+.fx-lightbox__nav--prev { left: 14px; }
+.fx-lightbox__nav--next { right: 14px; }
+.fx-lightbox__thumbs { display: flex; gap: 8px; justify-content: center; padding: 12px; overflow-x: auto; }
+.fx-lightbox__thumbs button { width: 54px; height: 54px; flex: none; border-radius: 10px; overflow: hidden; opacity: .5; outline: 2px solid transparent; outline-offset: 2px; transition: opacity .2s, outline-color .2s; }
+.fx-lightbox__thumbs button.is-on { opacity: 1; outline-color: #fff; }
+.fx-lightbox__thumbs img { width: 100%; height: 100%; object-fit: cover; }
+@keyframes fx-fade { from { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-bump, .fx-bump--strong { animation: none; }
+  img.fx-blur { filter: none; transform: none; }
+}
+
+/* Durante la transición tarjeta → ficha no se anima la entrada de la ficha */
+.fx-vt .pv, .fx-vt .sheet, .fx-vt .sheet__panel { animation: none !important; }

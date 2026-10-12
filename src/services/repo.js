@@ -7,12 +7,15 @@
 // ─────────────────────────────────────────────────────────────
 import {
   doc, collection, onSnapshot, getDoc, getDocs, setDoc, updateDoc, addDoc, deleteDoc,
-  serverTimestamp, runTransaction, writeBatch, query, where, limit,
+  serverTimestamp, deleteField, runTransaction, writeBatch, query, where, limit,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { demo, isDemo } from './demo'
 
 const toObj = (snap) => (snap.exists() ? { id: snap.id, ...snap.data() } : null)
+
+// Borra un campo del documento (con patchDoc)
+export const fieldGone = () => (isDemo() ? null : deleteField())
 
 export const now = () => (isDemo() ? new Date().toISOString() : serverTimestamp())
 
@@ -38,6 +41,12 @@ export async function readCollection(path, source = db) {
   if (isDemo()) return demo.list(path)
   const q = await getDocs(collection(source, path))
   return q.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
+// Suscripción a los documentos de una colección donde campo == valor
+export function watchWhere(path, field, value, onData, onError) {
+  if (isDemo()) return demo.watchCollection(path, (list) => onData(list.filter(d => d[field] === value)))
+  return onSnapshot(query(collection(db, path), where(field, '==', value)), (q) => onData(q.docs.map(d => ({ id: d.id, ...d.data() }))), onError)
 }
 
 // Busca documentos de una colección donde campo == valor
@@ -79,6 +88,22 @@ export async function createDocIfMissing(path, data) {
     const snap = await tx.get(ref)
     if (snap.exists()) throw new Error('exists')
     tx.set(ref, data)
+  })
+}
+
+// Suma 1 a un contador dentro de una transacción y devuelve el nuevo valor
+export async function bumpCounter(path, field, known = 0) {
+  if (isDemo()) {
+    const n = Math.max(Number(demo.read(path)?.[field]) || 0, Number(known) || 0) + 1
+    demo.write(path, { [field]: n }, true)
+    return n
+  }
+  return runTransaction(db, async (tx) => {
+    const ref = doc(db, path)
+    const snap = await tx.get(ref)
+    const n = Math.max(Number(snap.exists() ? snap.data()[field] : 0) || 0, Number(known) || 0) + 1
+    tx.set(ref, { [field]: n }, { merge: true })
+    return n
   })
 }
 

@@ -1,6 +1,7 @@
 // Negocios (cada uno tiene su propio catálogo)
 import { P } from './paths'
-import { watchDoc, watchCollection, readDoc, patchDoc, createDocIfMissing, writeDoc, removeDoc, findWhere, now } from './repo'
+import { watchDoc, watchCollection, readDoc, patchDoc, createDocIfMissing, writeDoc, removeDoc, findWhere, fieldGone, now } from './repo'
+import { publicBilling } from '@/lib/billingCore'
 
 export const RESERVED_SLUGS = ['admin', 'super', 'login', 'api', 'app', 'assets', 'static', 'ayuda', 'soporte']
 
@@ -24,11 +25,29 @@ export async function createTenant(slug, data) {
   await writeDoc(P.settings(slug), { announcement: '', layouts: {}, sections: [], order: [], hidden: [], content: {} })
 }
 
+// Datos privados del negocio (correo del dueño y plan completo): solo dueño y super
+export const writeAccount = (slug, data) => writeDoc(P.account(slug), { ...data, updatedAt: now() })
+
+// Pasa el correo del dueño y el plan del documento público a accounts/{negocio}
+export async function moveToAccount(tenant, account) {
+  const billing = { ...(tenant.billing || {}), ...(account?.billing || {}) }
+  const data = {}
+  if (tenant.ownerEmail || account?.ownerEmail) data.ownerEmail = account?.ownerEmail || tenant.ownerEmail
+  if (tenant.billing || account?.billing) data.billing = billing
+  await writeAccount(tenant.id, data)
+  const patch = { ownerEmail: fieldGone() }
+  if (tenant.billing) patch.billing = publicBilling(billing)
+  await patchDoc(P.tenant(tenant.id), patch)
+}
+// ¿Quedan datos privados en el documento público?
+export const needsAccountMove = (t) => !!t.ownerEmail || Object.keys(t.billing || {}).some(k => !['paidUntil', 'trial'].includes(k))
+
 export const updateTenant = (slug, patch) => patchDoc(P.tenant(slug), { ...patch, updatedAt: now() })
 
 // Solo se usa para deshacer un catálogo recién creado si falla la cuenta del dueño
 export async function deleteTenant(slug) {
   await removeDoc(P.settings(slug)).catch(() => {})
+  await removeDoc(P.account(slug)).catch(() => {})
   await removeDoc(P.tenant(slug))
 }
 

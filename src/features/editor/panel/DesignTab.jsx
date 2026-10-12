@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react'
 import { useTenant } from '@/features/tenant/TenantProvider'
 import { THEME_PRESETS, FONTS, resolveTheme, applyTheme } from '@/features/tenant/themes'
+import { LAYOUTS } from '@/features/tenant/templates'
+import DesignFan from './DesignFan'
 
 const COLOR_FIELDS = [
   { k: 'primary', label: 'Color principal' },
@@ -14,7 +16,7 @@ const COLOR_FIELDS = [
 ]
 
 export default function DesignTab() {
-  const { tenant, update, template } = useTenant()
+  const { tenant, update, template, layout } = useTenant()
   const saved = tenant?.theme || { preset: template.theme }
   const [theme, setTheme] = useState(saved)
   const [saving, setSaving] = useState(false)
@@ -38,6 +40,21 @@ export default function DesignTab() {
   return (
     <section className="ad-card">
       <h2>🎨 Diseño</h2>
+      <h3 className="dt-sub">Estructura de la página</h3>
+      <p className="ad-hint">Cómo se organiza tu catálogo. Se aplica al instante; tus productos no cambian.</p>
+      <div className="dt-layouts">
+        {Object.entries(LAYOUTS).map(([id, l]) => (
+          <button key={id} type="button" className={`dt-layout ${layout === id ? 'is-on' : ''}`} onClick={() => update({ layout: id })} aria-pressed={layout === id}>
+            <span className={`dt-layout__pic dt-layout__pic--${id}`} aria-hidden="true"><i /><i /><i /><i /></span>
+            <strong>{l.label}</strong>
+            <small>{l.description}</small>
+          </button>
+        ))}
+      </div>
+
+      <DesignFan />
+
+      <h3 className="dt-sub">Colores y letras</h3>
       <p className="ad-hint">Elige un estilo listo y, si quieres, ajusta colores y letras. Lo ves en vivo detrás de este panel.</p>
 
       <div className="dt-presets">

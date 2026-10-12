@@ -37,6 +37,8 @@ export default function LoginPage() {
   }
 
   const isSuperEmail = PLATFORM.superAdmins.includes(email.trim().toLowerCase())
+  // El registro de la cuenta de la plataforma solo aparece con /admin?registro (nunca a los clientes)
+  const allowRegister = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('registro')
   const goMode = (m) => { setMode(m); setError(''); setInfo(''); setTicketSent(false) }
 
   const onSubmit = (e) => {
@@ -173,7 +175,7 @@ export default function LoginPage() {
             ) : (
               <button type="button" onClick={() => goMode('login')}>← Volver a iniciar sesión</button>
             )}
-            {mode === 'login' && isSuperEmail && (
+            {mode === 'login' && isSuperEmail && allowRegister && (
               <button type="button" onClick={() => goMode('register')}>Primera vez: crear cuenta de administrador</button>
             )}
             <Link to="/">Volver al inicio</Link>

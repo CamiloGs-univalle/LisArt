@@ -1,0 +1,91 @@
+/* ── Estructura "Tienda minimal" (vl-*) ─────────────────────── */
+.vl { min-height: 100dvh; background: var(--paper); color: var(--ink); font-family: var(--font-ui); }
+.vl-wrap { width: min(100% - 32px, 1280px); margin-inline: auto; }
+:where(.vl) button { color: inherit; }
+
+.vl-ann { background: var(--paper-2); border-bottom: 1px solid var(--line); text-align: center; font-size: 13.5px; font-weight: 500; }
+.vl-ann p { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; animation: vl-ann .5s ease both; }
+@keyframes vl-ann { from { opacity: 0; transform: translateY(6px); } }
+
+.vl-head { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.vl-head__in { display: flex; align-items: center; gap: 12px; min-height: 68px; }
+.vl-logo { font-family: var(--font-display); font-weight: 800; font-size: clamp(20px, 2.4vw, 28px); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; max-width: 52vw; overflow: hidden; text-overflow: ellipsis; }
+.vl-logo img { height: 40px; width: auto; display: block; }
+.vl-nav { display: none; gap: 28px; margin-inline: auto; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.vl-nav button { position: relative; min-height: 44px; }
+.vl-nav button::after { content: ''; position: absolute; left: 0; right: 0; bottom: 10px; height: 1.5px; background: currentColor; transform: scaleX(0); transition: transform .3s; }
+.vl-nav button:hover::after { transform: scaleX(1); }
+.vl-actions { display: flex; gap: 2px; margin-left: auto; }
+.vl-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; position: relative; }
+.vl-icon:hover { background: var(--paper-2); }
+.vl-burger { display: grid; gap: 4px; place-content: center; }
+.vl-burger span { width: 20px; height: 1.8px; background: currentColor; border-radius: 2px; }
+.vl-cart b { position: absolute; top: 4px; right: 2px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--ink); color: var(--paper); font-size: 11px; display: grid; place-items: center; }
+@media (min-width: 1000px) { .vl-nav { display: flex; } .vl-burger { display: none; } .vl-actions { margin-left: 0; } }
+.vl-search { display: flex; align-items: center; gap: 10px; padding: 0 0 14px; }
+.vl-search input { flex: 1; min-height: 48px; padding: 0 16px; border-radius: var(--r-md); border: 1.5px solid var(--line-strong); background: var(--card); font-size: 16px; color: var(--ink); }
+
+.vl-menu { position: fixed; inset: 0; z-index: 90; background: rgba(0, 0, 0, .35); }
+.vl-menu__panel { width: min(86vw, 360px); height: 100%; background: var(--paper); padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; animation: vl-slide .3s ease both; }
+@keyframes vl-slide { from { transform: translateX(-100%); } }
+.vl-menu__link { display: flex; align-items: center; justify-content: space-between; min-height: 54px; border-bottom: 1px solid var(--line); font-size: 16px; font-weight: 600; text-align: left; }
+
+.vl-chip { display: inline-block; justify-self: start; padding: 5px 12px; border-radius: var(--r-sm); background: var(--paper-2); font-size: 13px; font-weight: 600; }
+.vl-hero { padding: clamp(28px, 5vw, 56px) 0 clamp(16px, 3vw, 28px); display: grid; gap: 12px; }
+.vl-hero__title { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 6vw, 72px); line-height: 1; letter-spacing: -.03em; max-width: 16ch; }
+.vl-hero__sub { color: var(--ink-2); font-size: clamp(16px, 1.5vw, 18px); max-width: 52ch; }
+
+.vl-spot { display: grid; gap: clamp(20px, 3vw, 48px); padding: clamp(12px, 2vw, 24px) 0 clamp(40px, 6vw, 80px); }
+@media (min-width: 900px) { .vl-spot { grid-template-columns: 1.15fr 1fr; align-items: start; } }
+.vl-spot__info { display: grid; gap: 14px; align-content: start; }
+.vl-spot__info hr { border: 0; border-top: 1px solid var(--line); }
+.vl-spot__name { font-family: var(--font-display); font-size: clamp(28px, 3.6vw, 44px); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; }
+.vl-spot__price { font-size: clamp(24px, 2.6vw, 30px); }
+.vl-spot__desc { color: var(--ink-2); max-width: 46ch; }
+.vl-spot__perks { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 13px; color: var(--ink-2); }
+.vl-spot__perks li { display: flex; align-items: center; gap: 8px; }
+
+.vl-sec { padding: clamp(28px, 4vw, 48px) 0; }
+.vl-sec__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.vl-sec__head h2 { font-family: var(--font-display); font-size: clamp(22px, 2.6vw, 30px); font-weight: 700; letter-spacing: -.01em; }
+.vl-sec__sub { color: var(--ink-2); margin-bottom: 18px; font-size: 15px; }
+.vl-more { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; min-height: 40px; white-space: nowrap; }
+.vl-empty { color: var(--ink-2); padding: 24px 0; }
+
+.vl-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 14px; }
+@media (min-width: 760px) { .vl-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1100px) { .vl-grid { grid-template-columns: repeat(4, 1fr); gap: 28px 20px; } }
+.vl-card { position: relative; display: grid; gap: 10px; align-content: start; }
+.vl-card__img { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; border-radius: var(--r-md); overflow: hidden; background: var(--paper-2); }
+.vl-card__img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .7s cubic-bezier(.2, .8, .2, 1), opacity .4s; }
+.vl-card__alt { opacity: 0; }
+.vl-card:hover .vl-card__img img { transform: scale(1.04); }
+.vl-card:hover .vl-card__alt { opacity: 1; }
+.vl-card__badge { position: absolute; left: 10px; top: 10px; padding: 4px 10px; border-radius: var(--r-sm); background: var(--card); font-size: 12px; font-weight: 700; }
+.vl-card__media { position: relative; }
+.vl-card__add { position: absolute; right: 10px; bottom: 10px; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: var(--card); box-shadow: var(--shadow-md); transition: transform .25s, background .25s; }
+
+.vl-card__add:hover { transform: scale(1.08); background: var(--inv); color: var(--on-inv); }
+.vl-card__meta { display: grid; gap: 2px; text-align: left; }
+.vl-card__meta strong { font-weight: 600; font-size: 15px; line-height: 1.3; }
+.vl-card__meta .sk-price { font-size: 15px; }
+
+.vl-benefits { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); padding: clamp(28px, 4vw, 48px) 0; border-top: 1px solid var(--line); }
+.vl-benefits > div { display: grid; gap: 6px; padding: 18px; border-radius: var(--r-lg); background: var(--paper-2); }
+.vl-benefits small { color: var(--ink-2); font-size: 14px; }
+
+.vl-faq details { border-bottom: 1px solid var(--line); }
+.vl-faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 58px; font-weight: 600; }
+.vl-faq summary::-webkit-details-marker { display: none; }
+.vl-faq details[open] summary svg { transform: rotate(45deg); }
+.vl-faq summary svg { transition: transform .25s; flex: none; }
+.vl-faq p { padding: 0 0 18px; color: var(--ink-2); max-width: 70ch; }
+
+.vl-foot { margin-top: clamp(32px, 5vw, 64px); border-top: 1px solid var(--line); background: var(--paper-2); padding: clamp(32px, 5vw, 56px) 0 calc(96px + env(safe-area-inset-bottom)); }
+.vl-foot__in { display: grid; gap: 28px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.vl-logo--foot { font-size: 24px; }
+.vl-foot__tag { color: var(--ink-2); font-size: 14px; margin-top: 6px; max-width: 32ch; }
+.vl-foot__links { display: grid; gap: 8px; justify-items: start; font-size: 14.5px; color: var(--ink-2); }
+.vl-foot__links strong { color: var(--ink); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+.vl-foot__links button:hover, .vl-foot__links a:hover { color: var(--ink); }
+.vl-foot__legal { margin-top: 28px; font-size: 13px; color: var(--ink-3); }

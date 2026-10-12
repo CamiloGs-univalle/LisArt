@@ -1,13 +1,15 @@
 // Pestaña "Productos": lista rápida para crear, editar y eliminar productos
-import { useRef, useState } from 'react'
+import { Fragment, useRef, useState } from 'react'
 import { useProductsCtx } from '@/features/catalog/data/ProductsProvider'
 import { useCatalog } from '@/features/catalog/layouts/useCatalog'
 import { productSections } from '@/lib/catalog'
+import { HIGHLIGHTS } from '@/lib/design'
 
 export default function ProductsTab() {
   const { products, createProduct, deleteProduct, updateField, updateImage } = useProductsCtx()
   const { sections } = useCatalog()
   const [creatingSection, setCreatingSection] = useState(null)
+  const [openId, setOpenId] = useState(null) // producto con "más opciones" abierto
   const fileRefs = useRef({})
 
   const productSectionsList = sections.filter(s => !s.special)
@@ -82,7 +84,8 @@ export default function ProductsTab() {
                 </thead>
                 <tbody>
                   {items.map(product => (
-                    <tr key={product.id}>
+                    <Fragment key={product.id}>
+                    <tr>
                       <td>
                         <div
                           className="ad-thumb"
@@ -141,7 +144,15 @@ export default function ProductsTab() {
                           }}
                         />
                       </td>
-                      <td>
+                      <td className="ad-actions-cell">
+                        <button
+                          className="ad-btn ad-btn-ghost ad-btn-sm"
+                          aria-expanded={openId === product.id}
+                          title="Más opciones: tallas, colores, precio anterior"
+                          onClick={() => setOpenId(openId === product.id ? null : product.id)}
+                        >
+                          {openId === product.id ? '▲' : '⋯'}
+                        </button>
                         <button
                           className="ad-btn ad-btn-danger ad-btn-sm"
                           onClick={() => handleDelete(product.id)}
@@ -150,6 +161,28 @@ export default function ProductsTab() {
                         </button>
                       </td>
                     </tr>
+                    {openId === product.id && (
+                      <tr className="ad-more">
+                        <td colSpan={6}>
+                          <div className="ad-more-grid">
+                            <MoreField label="Precio antes (para mostrar descuento)" type="number" value={product.oldPrice} onSave={v => handleField(product.id, 'oldPrice', v === '' ? null : Number(v))} />
+                            <label className="ad-more-field">
+                              <span>Destacar este producto</span>
+                              <select className="ad-input" defaultValue={product.highlight || ''} onChange={e => handleField(product.id, 'highlight', e.target.value)}>
+                                {Object.entries(HIGHLIGHTS).map(([k, h]) => <option key={k} value={k}>{h.label}</option>)}
+                              </select>
+                            </label>
+                            <MoreField label="Unidades disponibles (vacío = sin control)" type="number" value={product.stock} onSave={v => handleField(product.id, 'stock', v === '' ? null : Math.max(0, Math.floor(Number(v) || 0)))} />
+                            <MoreField label="Tallas (separadas por coma)" placeholder="S, M, L, XL" value={product.sizes} onSave={v => handleField(product.id, 'sizes', v)} />
+                            <MoreField label="Colores (separados por coma)" placeholder="Negro, Gris, Beige #E8DCC4" value={product.colors} onSave={v => handleField(product.id, 'colors', v)} />
+                            <MoreField label="Personalización" placeholder="fotos + nombre + mensaje" value={product.personalizacion} onSave={v => handleField(product.id, 'personalizacion', v)} />
+                            <MoreField label="Descripción" textarea value={product.description} onSave={v => handleField(product.id, 'description', v)} />
+                          </div>
+                          <p className="ad-hint">Las tallas y colores aparecen como opciones al pedir y llegan en el mensaje de WhatsApp.</p>
+                        </td>
+                      </tr>
+                    )}
+                    </Fragment>
                   ))}
                 </tbody>
               </table>
@@ -158,5 +191,22 @@ export default function ProductsTab() {
         </div>
       ))}
     </section>
+  )
+}
+
+// Campo que guarda al salir de él (solo si cambió)
+function MoreField({ label, value, onSave, type = 'text', placeholder, textarea = false }) {
+  const initial = value ?? ''
+  const props = {
+    className: 'ad-input',
+    defaultValue: initial,
+    placeholder,
+    onBlur: (e) => { const v = e.target.value.trim(); if (v !== String(initial)) onSave(v) },
+  }
+  return (
+    <label className="ad-more-field">
+      <span>{label}</span>
+      {textarea ? <textarea rows={3} {...props} /> : <input type={type} {...props} />}
+    </label>
   )
 }

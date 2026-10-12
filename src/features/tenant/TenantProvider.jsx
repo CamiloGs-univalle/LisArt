@@ -7,6 +7,17 @@ import { applyTheme } from './themes'
 
 const Ctx = createContext(null)
 
+function setMeta(attr, key, content) {
+  let el = document.head.querySelector(`meta[${attr}="${key}"]`)
+  if (!el) { el = document.createElement('meta'); el.setAttribute(attr, key); document.head.appendChild(el) }
+  el.setAttribute('content', content)
+}
+function setLink(rel, href) {
+  let el = document.head.querySelector(`link[rel="${rel}"]`)
+  if (!el) { el = document.createElement('link'); el.rel = rel; document.head.appendChild(el) }
+  el.href = href
+}
+
 export function TenantProvider({ slug, children }) {
   const [tenant, setTenant] = useState(undefined) // undefined = cargando · null = no existe
   const [error, setError] = useState(null)
@@ -19,10 +30,21 @@ export function TenantProvider({ slug, children }) {
   // Tema del negocio (colores + fuentes)
   useEffect(() => { if (tenant) applyTheme(tenant.theme || { preset: getTemplate(tenant.template).theme }) }, [tenant])
 
-  // Título de la pestaña del navegador
+  // Título, descripción, color del navegador e ícono de la pestaña (por negocio)
   useEffect(() => {
     if (!tenant) return
-    document.title = `${tenant.name}${tenant.tagline ? ` · ${tenant.tagline}` : ''}`
+    const title = `${tenant.name}${tenant.tagline ? ` · ${tenant.tagline}` : ''}`
+    const desc = tenant.tagline
+      ? `${tenant.tagline}. Mira el catálogo de ${tenant.name}${tenant.city ? ` en ${tenant.city}` : ''} y pide por WhatsApp.`
+      : `Catálogo de ${tenant.name}${tenant.city ? ` en ${tenant.city}` : ''}. Elige tus productos y pide por WhatsApp.`
+    document.title = title
+    setMeta('name', 'description', desc)
+    setMeta('property', 'og:title', title)
+    setMeta('property', 'og:description', desc)
+    if (tenant.logo) setMeta('property', 'og:image', tenant.logo)
+    const color = getComputedStyle(document.documentElement).getPropertyValue('--paper').trim()
+    if (color) setMeta('name', 'theme-color', color)
+    if (tenant.logo) setLink('icon', tenant.logo)
   }, [tenant])
 
   const value = useMemo(() => {
@@ -34,6 +56,8 @@ export function TenantProvider({ slug, children }) {
       notFound: tenant === null,
       error,
       template: getTemplate(t.template),
+      // Estructura de la página: clasico | velora | terrain | editorial
+      layout: t.layout || getTemplate(t.template).layout || 'clasico',
       imageFolder: `catalogos/${slug}`,
       // Acciones (solo dueño o super administrador; lo valida la base de datos)
       update: (patch) => updateTenant(slug, patch),

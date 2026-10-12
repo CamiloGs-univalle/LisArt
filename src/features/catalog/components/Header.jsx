@@ -5,12 +5,17 @@ import { useSiteContent } from '@/features/tenant/useSiteContent'
 import { useTenant } from '@/features/tenant/TenantProvider'
 import { navigate } from '@/app/router'
 import Icon from '@/shared/ui/Icon'
+import { useSettingsCtx } from '@/features/catalog/data/SettingsProvider'
+import { goalAnnouncement } from '@/lib/marketing'
 import './Header.css'
 
 function AnnounceBar({ announcement }) {
   const { announcements: ANNOUNCEMENTS } = useSiteContent()
+  const { marketing } = useSettingsCtx()
+  const goalText = goalAnnouncement(marketing)
   const items = [
     ...(announcement ? [{ icon: 'sparkle', text: announcement, hot: true }] : []),
+    ...(goalText ? [{ icon: 'truck', text: goalText, hot: true }] : []),
     ...ANNOUNCEMENTS,
   ]
   // Se duplica la lista para que la marquesina sea continua
@@ -107,7 +112,7 @@ function Header({ searchTerm = '', onSearchChange, cartCount = 0, onOpenDashboar
             </button>
 
             <button className="hdr__icon hdr__bag" onClick={openCart} aria-label={`Ver pedido, ${cartCount} productos`}>
-              <Icon name="bag" />
+              <Icon name="cart" />
               {cartCount > 0 && <span className={`hdr__count ${bump ? 'is-bump' : ''}`}>{cartCount}</span>}
             </button>
 

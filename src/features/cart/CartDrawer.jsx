@@ -6,10 +6,11 @@ import Icon from '@/shared/ui/Icon'
 import './CartDrawer.css'
 import { useSiteContent } from '@/features/tenant/useSiteContent'
 import EditText from '@/features/editor/EditText'
+import { GoalBar, CartUpsell } from '@/features/marketing/Boost'
 
 function CartDrawer() {
   const { cartOpen: open, closeCart: onClose } = useUI()
-  const { items, setQty, removeFromCart, clearCart, total, count, checkoutUrl, info, updateInfo } = useCart()
+  const { items, lineKey, changeQty, removeFromCart, clearCart, total, count, checkoutUrl, info, updateInfo, discount, finalTotal, rewards } = useCart()
   const closeRef = useRef(null)
   const { cartNote } = useSiteContent()
 
@@ -49,28 +50,33 @@ function CartDrawer() {
         ) : (
           <>
             <div className="cart__scroll">
+              <GoalBar />
               <ul className="cart__items">
                 {items.map(item => (
-                  <li className="ci" key={item.id}>
-                    <img src={item.image} alt="" className="ci__img" loading="lazy" />
+                  <li className="ci" key={lineKey(item)}>
+                    {item.image ? <img src={item.image} alt="" className="ci__img" loading="lazy" /> : <span className="ci__img ci__img--empty" aria-hidden="true"><Icon name={String(item.id).startsWith('combo:') ? 'gift' : 'cart'} size={22} /></span>}
                     <div className="ci__info">
                       <p className="ci__name">{item.name}</p>
+                      {item.detail && <p className="ci__opts">Incluye: {item.detail}</p>}
+                      {(item.size || item.color) && <p className="ci__opts">{[item.size && `Talla ${item.size}`, item.color].filter(Boolean).join(' · ')}</p>}
                       <p className="ci__unit">{formatPrice(item.price)} c/u</p>
                       <div className="ci__row">
                         <div className="qty qty--sm">
-                          <button onClick={() => setQty(item.id, item.qty - 1)} aria-label={`Quitar uno de ${item.name}`}><Icon name="minus" size={16} /></button>
+                          <button onClick={() => changeQty(lineKey(item), -1)} aria-label={`Quitar uno de ${item.name}`}><Icon name="minus" size={16} /></button>
                           <span>{item.qty}</span>
-                          <button onClick={() => setQty(item.id, item.qty + 1)} aria-label={`Agregar uno de ${item.name}`}><Icon name="plus" size={16} /></button>
+                          <button onClick={() => changeQty(lineKey(item), 1)} aria-label={`Agregar uno de ${item.name}`}><Icon name="plus" size={16} /></button>
                         </div>
                         <strong className="ci__sub">{formatPrice(item.price * item.qty)}</strong>
                       </div>
                     </div>
-                    <button className="ci__remove" onClick={() => removeFromCart(item.id)} aria-label={`Eliminar ${item.name}`}>
+                    <button className="ci__remove" onClick={() => removeFromCart(lineKey(item))} aria-label={`Eliminar ${item.name}`}>
                       <Icon name="trash" size={18} />
                     </button>
                   </li>
                 ))}
               </ul>
+
+              <CartUpsell />
 
               <details className="cart__extra" open={!!(info.name || info.date || info.note)}>
                 <summary>
@@ -97,10 +103,17 @@ function CartDrawer() {
             </div>
 
             <footer className="cart__foot">
+              {discount > 0 && (
+                <div className="cart__total cart__total--sub">
+                  <span>Subtotal <s className="num">{formatPrice(total)}</s></span>
+                  <span className="cart__save num">−{formatPrice(discount)}</span>
+                </div>
+              )}
               <div className="cart__total">
                 <span>Total productos</span>
-                <strong>{formatPrice(total)}</strong>
+                <strong className="num">{formatPrice(finalTotal)}</strong>
               </div>
+              {rewards.length > 0 && <p className="cart__reward">🎁 Ganaste: <b>{rewards.join(' + ')}</b></p>}
               {cartNote && <p className="cart__note">{cartNote}</p>}
               <a className="btn btn--wa btn--block cart__cta" href={checkoutUrl()} target="_blank" rel="noopener noreferrer">
                 <Icon name="whatsapp" /> <EditText path="cart.cta" fallback="Enviar pedido por WhatsApp" inButton />

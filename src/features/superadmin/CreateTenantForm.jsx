@@ -1,14 +1,16 @@
 // Formulario para crear el catálogo de un cliente nuevo + su cuenta de acceso
 import { useEffect, useState } from 'react'
 import { slugify, tempPassword, normalizePhone, waLink } from '@/lib/format'
-import { isSlugAvailable, createTenant, updateTenant, deleteTenant, RESERVED_SLUGS } from '@/services/tenants.service'
+import { isSlugAvailable, createTenant, updateTenant, deleteTenant, writeAccount, RESERVED_SLUGS } from '@/services/tenants.service'
 import { createOwnerAccount } from '@/services/users.service'
 import { friendlyError } from '@/services/auth.service'
 import { TEMPLATES, DEFAULT_TEMPLATE } from '@/features/tenant/templates'
 import { THEME_PRESETS } from '@/features/tenant/themes'
 import { catalogUrl } from '@/app/router'
+import { useBillingSettings } from '@/features/billing/useBilling'
+import { MODELS, formatCOP, publicBilling } from '@/lib/billingCore'
 
-const EMPTY = { name: '', slug: '', email: '', password: '', whatsapp: '', city: '', template: DEFAULT_TEMPLATE, preset: TEMPLATES[DEFAULT_TEMPLATE].theme }
+const EMPTY = { name: '', slug: '', email: '', password: '', whatsapp: '', city: '', template: DEFAULT_TEMPLATE, preset: TEMPLATES[DEFAULT_TEMPLATE].theme, model: 'mensual', price: '', setupFee: '', trial: true }
 
 export default function CreateTenantForm({ onCancel, onCreated }) {
   const [f, setF] = useState(() => ({ ...EMPTY, password: tempPassword() }))
@@ -18,6 +20,7 @@ export default function CreateTenantForm({ onCancel, onCreated }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(null)
+  const billingSettings = useBillingSettings()
 
   const set = (k) => (e) => setF(prev => ({ ...prev, [k]: e.target.value }))
 
@@ -48,15 +51,26 @@ export default function CreateTenantForm({ onCancel, onCreated }) {
     setBusy(true)
     try {
       const email = f.email.trim().toLowerCase()
-      // 1) Catálogo (reserva el enlace)
+      const billing = {
+        model: f.model,
+        price: Number(f.price) || 0,
+        setupFee: Number(f.setupFee) || 0,
+        setupPaid: false,
+        trial: !!f.trial,
+        paidUntil: new Date(Date.now() + (f.trial ? billingSettings.trialDays : 0) * 864e5).toISOString(),
+        createdAt: new Date().toISOString(),
+      }
+      // 1) Catálogo (reserva el enlace). Lo público no lleva el correo ni el precio.
       await createTenant(f.slug, {
         name: f.name.trim(),
         whatsapp: normalizePhone(f.whatsapp),
         city: f.city.trim(),
         template: f.template,
+        layout: TEMPLATES[f.template]?.layout || 'clasico',
         theme: { preset: f.preset },
-        ownerEmail: email,
+        billing: publicBilling(billing),
       })
+      await writeAccount(f.slug, { ownerEmail: email, billing })
       // 2) Cuenta del dueño. Si falla, se deshace el catálogo para no dejar nada a medias.
       let uid
       try {
@@ -134,7 +148,7 @@ export default function CreateTenantForm({ onCancel, onCreated }) {
         <div className="sa-presets" role="radiogroup" aria-label="Colores">
           {Object.entries(THEME_PRESETS).map(([id, p]) => (
             <button type="button" key={id} role="radio" aria-checked={f.preset === id} className={`sa-preset ${f.preset === id ? 'is-on' : ''}`} onClick={() => setF(prev => ({ ...prev, preset: id }))}>
-              <span className="sa-preset__dots">{[p.primary, p.blush, p.ink].map(c => <i key={c} style={{ background: c }} />)}</span>
+              <span className="sa-preset__dots">{[p.primary, p.blush, p.ink].map((c, k) => <i key={k} style={{ background: c }} />)}</span>
               {p.label}
             </button>
           ))}
@@ -142,7 +156,38 @@ export default function CreateTenantForm({ onCancel, onCreated }) {
       </fieldset>
 
       <fieldset>
-        <legend>3. Acceso del cliente</legend>
+        <legend>3. Plan de cobro <small>(lo puedes cambiar en «Cobros»)</small></legend>
+        <div className="sa-options sa-options--2">
+          {Object.entries(MODELS).map(([id, m]) => (
+            <label key={id} className={`sa-opt ${f.model === id ? 'is-on' : ''}`}>
+              <input type="radio" name="model" value={id} checked={f.model === id} onChange={() => setF(p => ({ ...p, model: id }))} />
+              <strong>{m.label}</strong>
+              <small>{id === 'mensual'
+                ? `${formatCOP(billingSettings.monthlyPrice)} al mes`
+                : `${formatCOP(billingSettings.setupFee)} una vez + ${formatCOP(billingSettings.maintenancePrice)}/mes`}</small>
+            </label>
+          ))}
+        </div>
+        <div className="sa-row">
+          <label className="pf-field">
+            <span>Precio mensual especial <small>(opcional)</small></span>
+            <input inputMode="numeric" value={f.price} onChange={(e) => setF(p => ({ ...p, price: e.target.value.replace(/\D/g, '') }))} placeholder={String(f.model === 'unico' ? billingSettings.maintenancePrice : billingSettings.monthlyPrice)} />
+          </label>
+          {f.model === 'unico' && (
+            <label className="pf-field">
+              <span>Valor de creación <small>(opcional)</small></span>
+              <input inputMode="numeric" value={f.setupFee} onChange={(e) => setF(p => ({ ...p, setupFee: e.target.value.replace(/\D/g, '') }))} placeholder={String(billingSettings.setupFee)} />
+            </label>
+          )}
+        </div>
+        <label className="pe-check">
+          <input type="checkbox" checked={f.trial} onChange={(e) => setF(p => ({ ...p, trial: e.target.checked }))} />
+          <span>Dar {billingSettings.trialDays} días de prueba gratis</span>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>4. Acceso del cliente</legend>
         <label className="pf-field">
           <span>Correo del cliente</span>
           <input required type="email" autoComplete="off" value={f.email} onChange={set('email')} placeholder="cliente@correo.com" />

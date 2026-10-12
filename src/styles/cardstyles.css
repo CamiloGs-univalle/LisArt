@@ -1,0 +1,61 @@
+/* ── Estilos de tarjeta (Panel → Diseño → Tarjetas) ──────────
+   Se aplican con una clase en la raíz del catálogo: .cs-<estilo>  */
+
+/* Texto sobre la foto */
+.cs-encima .pc__media::after { display: block; inset: 40% 0 0; background: linear-gradient(transparent, rgba(0,0,0,.72)); opacity: 1; }
+.cs-encima .pc { position: relative; }
+.cs-encima .pc__body { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 14px 14px 12px; color: #fff; pointer-events: none; }
+.cs-encima .pc__body > * { pointer-events: auto; }
+.cs-encima .pc__name, .cs-encima .pc__price, .cs-encima .price-tag__value { color: #fff !important; }
+.cs-encima .pc__desc, .cs-encima .pc__perso, .cs-encima .pc__rating { display: none; }
+.cs-encima .pc__cta { background: rgba(255,255,255,.18); color: #fff; backdrop-filter: blur(8px); box-shadow: none; }
+.cs-encima .pc__img-wrap { aspect-ratio: 3 / 4; }
+
+/* Polaroid */
+.cs-polaroid .pc { background: #fff; padding: 10px 10px 14px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 16px 30px -18px rgba(0,0,0,.4); rotate: -1.2deg; transition: rotate .35s, transform .35s, box-shadow .3s; }
+.cs-polaroid .pgrid__cell:nth-child(even) .pc, .cs-polaroid .lx-rail__item:nth-child(even) .pc { rotate: 1.4deg; }
+.cs-polaroid .pc:hover { rotate: 0deg; transform: translateY(-4px); }
+.cs-polaroid .pc__media { border-radius: 2px; }
+.cs-polaroid .pc__img-wrap { aspect-ratio: 1; }
+.cs-polaroid .pc__name { font-family: var(--font-script) !important; font-size: 1.35em !important; color: #222; }
+.cs-polaroid .pc__body { color: #333; }
+
+/* Minimal */
+.cs-minimal .pc__media { border-radius: var(--r-md); }
+.cs-minimal .pc__media::after { display: none; }
+.cs-minimal .pc__body { align-items: center; text-align: center; padding-top: 14px; }
+.cs-minimal .pc__foot { justify-content: center; }
+.cs-minimal .pc__desc { display: none; }
+.cs-minimal .pc__cta { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-strong); }
+
+/* Con borde */
+.cs-borde .pc { padding: 10px; border: 1.5px solid var(--line-strong); border-radius: 2px; background: var(--card); transition: border-color .25s; }
+.cs-borde .pc:hover { border-color: var(--ink); }
+.cs-borde .pc__media { border-radius: 0; }
+.cs-borde .pc__cta { border-radius: 0; }
+
+/* Flotante */
+.cs-flotante .pc { padding: 10px 10px 14px; border-radius: calc(var(--r-xl) + 6px); background: var(--card); box-shadow: 0 24px 50px -28px color-mix(in srgb, var(--shade) 55%, transparent), 0 0 0 1px var(--line); transition: transform .35s, box-shadow .35s; }
+.cs-flotante .pc:hover { transform: translateY(-5px); box-shadow: 0 34px 60px -28px color-mix(in srgb, var(--shade) 60%, transparent), 0 0 0 1px var(--line); }
+.cs-flotante .pc__media { border-radius: var(--r-xl); }
+
+/* Clásica: foto arriba, texto abajo dentro de una tarjeta blanca */
+.cs-clasica .pc { padding: 0 0 12px; border-radius: var(--r-lg); background: var(--card); box-shadow: 0 0 0 1px var(--line); overflow: hidden; }
+.cs-clasica .pc__media { border-radius: 0; }
+.cs-clasica .pc__body { padding: 12px 14px 0; }
+
+/* ── Productos destacados (Panel → Productos → ⋯ → Destacar) ── */
+.pgrid__cell:has(.pc--hl-grande) { grid-column: span 2; }
+.pgrid__cell:has(.pc--hl-grande) .pc__img-wrap { aspect-ratio: 5 / 4; }
+.pgrid__cell:has(.pc--hl-grande) .pc__name { font-size: var(--fs-h3); }
+.pgrid__cell:has(.pc--hl-banner) { grid-column: 1 / -1; }
+.pc--hl-banner { flex-direction: row !important; align-items: stretch; gap: clamp(14px, 3vw, 36px); padding: clamp(10px, 1.6vw, 18px); border-radius: var(--r-xl); background: var(--paper-2); }
+.pc--hl-banner .pc__media { flex: 1.2; }
+.pc--hl-banner .pc__img-wrap { aspect-ratio: 16 / 10; height: 100%; }
+.pc--hl-banner .pc__body { flex: 1; justify-content: center; padding: 8px 4px; }
+.pc--hl-banner .pc__name { font-size: clamp(24px, 3vw, 40px) !important; line-height: 1.05; }
+.pc--hl-banner .pc__desc { display: -webkit-box !important; -webkit-line-clamp: 4 !important; }
+@media (max-width: 640px) { .pc--hl-banner { flex-direction: column !important; } .pgrid__cell:has(.pc--hl-grande) { grid-column: 1 / -1; } }
+.pc--hl-color { padding: 10px 10px 14px; border-radius: var(--r-xl); background: color-mix(in srgb, var(--rose) 16%, var(--card)); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--rose) 45%, transparent); }
+.pc--hl-color .pc__name { color: var(--rose-deep); }
+.pgrid:has(.pc--hl-grande), .pgrid:has(.pc--hl-banner) { align-items: start; }

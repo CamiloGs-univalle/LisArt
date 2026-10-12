@@ -9,19 +9,29 @@ import BusinessTab from './BusinessTab'
 import DesignTab from './DesignTab'
 import ContentTab from './ContentTab'
 import ProductsTab from './ProductsTab'
+import PlanTab from './PlanTab'
+import ShareTab from './ShareTab'
+import AccountsTab from '@/features/business/AccountsTab'
+import MarketingTab from '@/features/marketing/MarketingTab'
 
 const TABS = [
   { id: 'negocio', label: 'Mi negocio', icon: '🏪', C: BusinessTab },
   { id: 'productos', label: 'Productos', icon: '🛍️', C: ProductsTab },
   { id: 'diseno', label: 'Diseño', icon: '🎨', C: DesignTab },
   { id: 'textos', label: 'Textos', icon: '📝', C: ContentTab },
+  { id: 'vender', label: 'Vender más', icon: '🚀', C: MarketingTab },
+  { id: 'cuentas', label: 'Cuentas', icon: '📊', C: AccountsTab },
+  { id: 'compartir', label: 'Compartir', icon: '📣', C: ShareTab },
+  { id: 'plan', label: 'Mi plan', icon: '💳', C: PlanTab },
 ]
 
-export default function EditorPanel({ open, onClose }) {
+export default function EditorPanel({ open, onClose, initialTab }) {
   const { logout, editMode, setEditMode } = useAdmin()
   const { isSuper, user } = useAuth()
   const { brand } = useTenant()
-  const [tab, setTab] = useState('negocio')
+  const [tab, setTab] = useState(initialTab || 'negocio')
+  // Abrir directamente en una pestaña (ej. «Mi plan» desde el aviso de pago)
+  useEffect(() => { if (open && initialTab) setTab(initialTab) }, [open, initialTab])
 
   useEffect(() => {
     if (!open) return

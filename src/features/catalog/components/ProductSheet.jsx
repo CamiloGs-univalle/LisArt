@@ -1,11 +1,18 @@
 // Detalle de producto: hoja inferior en móvil, modal en escritorio
 import { useEffect, useRef, useState } from 'react'
 import './ProductSheet.css'
-import { useUI } from '@/features/catalog/UIProvider'
+import { useUI, productLink } from '@/features/catalog/UIProvider'
 import { useCart } from '@/features/cart/CartProvider'
 import { formatPrice } from '@/lib/format'
 import { useWhatsApp } from '@/features/tenant/useWhatsApp'
+import ShareButton from '@/shared/ui/ShareButton'
+import Lightbox from '@/shared/ui/Lightbox'
 import Icon from '@/shared/ui/Icon'
+import { OfferNote, StockNote, ProductBoost } from '@/features/marketing/Boost'
+import { useSettingsCtx } from '@/features/catalog/data/SettingsProvider'
+import { stockInfo } from '@/lib/marketing'
+import { productDiscount, productSizes, productColors } from '@/lib/catalog'
+import { ProductOptions } from '@/features/catalog/skins/shared'
 import { getImages, optimizeImg } from '@/lib/images'
 import { useSiteContent } from '@/features/tenant/useSiteContent'
 
@@ -14,6 +21,7 @@ function Gallery({ p }) {
   const imgs = getImages(p)
   const ref = useRef(null)
   const [i, setI] = useState(0)
+  const [box, setBox] = useState(false)
 
   useEffect(() => { setI(0); if (ref.current) ref.current.scrollLeft = 0 }, [p])
 
@@ -26,12 +34,13 @@ function Gallery({ p }) {
 
   return (
     <div className="sheet__media">
-      <div className="gal" ref={ref} onScroll={onScroll} aria-label={`Fotos de ${p.name}`}>
+      <div className="gal" ref={ref} onScroll={onScroll} aria-label={`Fotos de ${p.name}`} onClick={() => setBox(true)}>
         {imgs.map((url, k) => (
           <img key={url} src={optimizeImg(url, 1000)} alt={`${p.name}, foto ${k + 1} de ${imgs.length}`} loading={k === 0 ? 'eager' : 'lazy'} />
         ))}
       </div>
       {p.badge && <span className="sheet__badge">{p.badge}</span>}
+      {box && <Lightbox images={imgs.map(u => optimizeImg(u, 1600))} index={i} title={p.name} onClose={() => setBox(false)} />}
       {imgs.length > 1 && (
         <>
           <span className="gal__count">{i + 1} / {imgs.length}</span>
@@ -51,6 +60,7 @@ export default function ProductSheet() {
   const { product: p, closeProduct, notify, openCart } = useUI()
   const { addToCart } = useCart()
   const { perks } = useSiteContent()
+  const { marketing } = useSettingsCtx()
   const [qty, setQty] = useState(1)
   const [closing, setClosing] = useState(false)
   const closeRef = useRef(null)
@@ -80,13 +90,17 @@ export default function ProductSheet() {
   }
 
   const handleAdd = (goToCart = false) => {
-    addToCart(p, qty)
+    if (addToCart(p, qty)) return
     if (goToCart) { openCart(); return }
     notify({ title: p.name, image: p.image })
     close()
   }
 
   const rating = Number(p.rating)
+  const out = stockInfo(p, marketing)?.out
+  const d = productDiscount(p)
+  // Con tallas o varios colores se eligen antes de agregar
+  const needsOptions = productSizes(p).length > 0 || productColors(p).length > 1
 
   return (
     <div className={`sheet ${closing ? 'is-closing' : ''}`} onClick={close} role="presentation">
@@ -98,6 +112,7 @@ export default function ProductSheet() {
         onClick={e => e.stopPropagation()}
       >
         <span className="sheet__grip" aria-hidden="true" />
+        <ShareButton className="sheet__share" url={productLink(p.id)} title={p.name} text={p.name} label="Compartir producto" />
         <button ref={closeRef} className="sheet__close" onClick={close} aria-label="Cerrar">
           <Icon name="close" size={20} />
         </button>
@@ -113,12 +128,15 @@ export default function ProductSheet() {
               {Number(p.price) > 0
                 ? <>{p.pricePrefix && <small className="sheet__prefix">{p.pricePrefix}</small>} {formatPrice(p.price)}</>
                 : 'Precio a cotizar'}
+              {d && <s className="sheet__before">{formatPrice(d.before)}</s>}
             </span>
             {rating > 0 && (
               <span className="sheet__rating"><Icon name="star" size={14} /> {rating.toFixed(1)}</span>
             )}
           </div>
 
+          <OfferNote p={p} />
+          <StockNote p={p} />
           {p.description && <p className="sheet__desc">{p.description}</p>}
           {p.personalizacion && (
             <p className="sheet__perso"><Icon name="sparkle" size={16} /> <span><strong>Personalizamos:</strong> {p.personalizacion}</span></p>
@@ -130,25 +148,31 @@ export default function ProductSheet() {
             ))}
           </ul>
 
+          {needsOptions ? <ProductOptions p={p} onAdded={close} /> : (
           <div className="sheet__actions">
             <div className="qty" aria-label="Cantidad">
               <button onClick={() => setQty(q => Math.max(1, q - 1))} aria-label="Menos" disabled={qty <= 1}><Icon name="minus" size={18} /></button>
               <span aria-live="polite">{qty}</span>
               <button onClick={() => setQty(q => q + 1)} aria-label="Más"><Icon name="plus" size={18} /></button>
             </div>
-            <button className="btn btn--primary sheet__add" onClick={() => handleAdd(false)}>
-              <Icon name="bag" /> {Number(p.price) > 0 ? `Pedir · ${formatPrice((Number(p.price) || 0) * qty)}` : 'Agregar para cotizar'}
+            <button className="btn btn--primary sheet__add" onClick={() => handleAdd(false)} disabled={out}>
+              <Icon name="cart" /> {out ? 'Agotado' : Number(p.price) > 0 ? `Pedir · ${formatPrice((Number(p.price) || 0) * qty)}` : 'Agregar para cotizar'}
             </button>
           </div>
+          )}
 
           <div className="sheet__secondary">
-            <button className="sheet__link" onClick={() => handleAdd(true)}>
-              Agregar y ver pedido <Icon name="arrow" size={16} />
-            </button>
+            {!needsOptions && !out && (
+              <button className="sheet__link" onClick={() => handleAdd(true)}>
+                Agregar y ver pedido <Icon name="arrow" size={16} />
+              </button>
+            )}
             <button className="sheet__link sheet__link--wa" onClick={() => wa.askProduct(p)}>
               <Icon name="whatsapp" size={16} /> Preguntar por este
             </button>
           </div>
+
+          <ProductBoost p={p} />
         </div>
       </div>
     </div>

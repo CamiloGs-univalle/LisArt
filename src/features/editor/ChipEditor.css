@@ -1,0 +1,12 @@
+.chipe { display: grid; gap: 10px; }
+.chipe__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.chipe__chip { display: inline-flex; align-items: center; gap: 2px; padding: 3px 4px 3px 4px; border-radius: 999px; background: color-mix(in srgb, var(--rose, #cf4a7e) 10%, #fff); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rose, #cf4a7e) 25%, transparent); font-size: 14px; font-weight: 600; color: var(--text-primary, #2a1b22); animation: chipe-in .25s ease; }
+.chipe__chip span { padding: 0 4px; }
+.chipe__chip button { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; color: var(--ink-2, #6b5560); }
+.chipe__chip button:hover:not(:disabled) { background: rgba(0,0,0,.06); }
+.chipe__chip button:disabled { opacity: .25; }
+.chipe__x { font-size: 11px !important; }
+.chipe__empty { font-size: 13px; color: var(--ink-3, #9a8a92); padding: 4px 0; }
+.chipe__add { display: flex; gap: 8px; }
+.chipe__add .ad-input { flex: 1; min-width: 0; }
+@keyframes chipe-in { from { opacity: 0; transform: scale(.9); } }

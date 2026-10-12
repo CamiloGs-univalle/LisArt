@@ -1,10 +1,11 @@
 // Punto de entrada de la aplicación: sesión + rutas
 import { lazy, Suspense } from 'react'
-import { AuthProvider } from '@/features/auth/AuthProvider'
+import { AuthProvider, useAuth } from '@/features/auth/AuthProvider'
 import { useRoute } from './router'
 import CatalogPage from '@/features/catalog/CatalogPage'
-import PlatformHome from '@/features/platform/PlatformHome'
+import PortfolioPage from '@/features/portfolio/PortfolioPage'
 import StatusScreen from '@/shared/ui/StatusScreen'
+import ErrorBoundary from '@/shared/ui/ErrorBoundary'
 
 // Las páginas de administración se cargan solo cuando se necesitan,
 // así el catálogo abre más rápido para los clientes.
@@ -13,20 +14,24 @@ const SuperAdminPage = lazy(() => import('@/features/superadmin/SuperAdminPage')
 
 function Routes() {
   const route = useRoute()
+  const { isSuper, loading } = useAuth()
   switch (route.name) {
     case 'login': return <LoginPage />
-    case 'super': return <SuperAdminPage />
+    // El panel de super administrador ni siquiera se descarga si la cuenta no lo es
+    case 'super': return loading ? <StatusScreen loading /> : isSuper ? <SuperAdminPage /> : <LoginPage />
     case 'catalog': return <CatalogPage slug={route.slug} />
-    default: return <PlatformHome />
+    default: return <PortfolioPage />
   }
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Suspense fallback={<StatusScreen loading />}>
-        <Routes />
-      </Suspense>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Suspense fallback={<StatusScreen loading />}>
+          <Routes />
+        </Suspense>
+      </AuthProvider>
+    </ErrorBoundary>
   )
 }

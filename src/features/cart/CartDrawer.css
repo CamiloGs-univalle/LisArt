@@ -86,7 +86,7 @@
   font-size: var(--fs-body);
   resize: vertical;
 }
-.cart__fields input:focus, .cart__fields textarea:focus { outline: none; border-color: var(--ink); background: #fff; }
+.cart__fields input:focus, .cart__fields textarea:focus { outline: none; border-color: var(--ink); background: var(--card); }
 
 .cart__clear {
   margin-top: 14px;
@@ -119,3 +119,5 @@
 .cart__empty .display { font-size: var(--fs-h3); color: var(--ink); }
 .cart__empty em { color: var(--rose); }
 .cart__empty .btn { margin-top: 14px; }
+.ci__opts { font-size: var(--fs-label); color: var(--ink-2); font-weight: 600; }
+.ci__img--empty { display: grid; place-items: center; color: var(--ink-3); background: linear-gradient(135deg, var(--paper-2), var(--blush)); }

@@ -6,9 +6,11 @@
 //  · order        → orden de las secciones
 //  · hidden       → secciones ocultas
 //  · content      → textos de la página editados por el dueño
+//  · marketing    → estrategias de venta (metas de compra, comparadores, combos, opiniones)
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useTenant } from '@/features/tenant/TenantProvider'
 import { watchSettings, saveSettings, EMPTY_SETTINGS } from '@/services/settings.service'
+import { withMarketingDefaults } from '@/lib/marketing'
 
 const Ctx = createContext(null)
 
@@ -34,6 +36,13 @@ export function SettingsProvider({ children }) {
   const api = useMemo(() => ({
     updateAnnouncement: (text) => save({ announcement: text }),
     updateContent: (content) => save({ content }),
+    // Abanico de diseños
+    setSectionStyle: (layout, id, style) => {
+      const all = ref.current.sectionStyles || {}
+      return save({ sectionStyles: { ...all, [layout]: { ...(all[layout] || {}), [id]: style } } })
+    },
+    setCardStyle: (style) => save({ cardStyle: style }),
+    updateMarketing: (patch) => save({ marketing: { ...(ref.current.marketing || {}), ...patch } }),
     setLayout: (id, style) => save({ layouts: { ...ref.current.layouts, [id]: style } }),
     setOrder: (order) => save({ order }),
     toggleHidden: (id) => {
@@ -63,6 +72,9 @@ export function SettingsProvider({ children }) {
     customSections: data.sections || [],
     order: data.order || [],
     hidden: data.hidden || [],
+    marketing: withMarketingDefaults(data.marketing),
+    sectionStyles: data.sectionStyles || {},
+    cardStyle: data.cardStyle || 'auto',
     ...api,
   }
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

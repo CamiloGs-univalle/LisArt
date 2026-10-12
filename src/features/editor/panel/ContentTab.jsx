@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import './ContentTab.css'
 import { useSettingsCtx } from '@/features/catalog/data/SettingsProvider'
 import { useSiteContent } from '@/features/tenant/useSiteContent'
+import ChipEditor from '@/features/editor/ChipEditor'
 
 export default function AdminContentEditor() {
   const { updateContent, content = {} } = useSettingsCtx()
@@ -23,6 +24,7 @@ export default function AdminContentEditor() {
       envios: current.envios,
       cartNote: current.cartNote,
       perks: [...current.perks],
+      ribbon: [...current.ribbon],
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -68,6 +70,7 @@ export default function AdminContentEditor() {
       envios: DEFAULT_CONTENT.envios,
       cartNote: DEFAULT_CONTENT.cartNote,
       perks: [...DEFAULT_CONTENT.perks],
+      ribbon: [...(DEFAULT_CONTENT.ribbon || [])],
     })
   }
 
@@ -121,6 +124,14 @@ export default function AdminContentEditor() {
           </div>
         ))}
         <button className="ad-btn ad-btn-ghost" onClick={() => setDraft(d => ({ ...d, perks: [...d.perks, ''] }))}>+ Agregar ventaja</button>
+      </details>
+
+      {/* Cinta animada de palabras */}
+      <details className="ce-block" open>
+        <summary>Cinta de palabras (franja que se mueve)</summary>
+        <p className="ad-hint">Las palabras pasan en una franja animada por la página. Pon lo que vendes o lo que te hace especial. Si las quitas todas, la cinta desaparece.</p>
+        <div className="ce-ribbon-preview" aria-hidden="true"><span>{(draft.ribbon.length ? draft.ribbon : ['(sin cinta)']).join('  ✦  ')}</span></div>
+        <ChipEditor value={draft.ribbon} onChange={ribbon => setDraft(d => ({ ...d, ribbon }))} placeholder="Ej: Envíos gratis — escribe y presiona Enter" />
       </details>
 
       {/* Barra de anuncios */}
