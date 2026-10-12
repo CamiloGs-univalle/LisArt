@@ -1,9 +1,9 @@
 // Panel "Cobros" del super administrador: precios, estado de cada cliente y pagos
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useBillingSettings } from '@/features/billing/useBilling'
-import { watchAllPayments, saveBillingSettings, recordManualPayment, updateTenantBilling } from '@/services/billing.service'
+import { watchAllPayments, saveBillingSettings, recordManualPayment, updateTenantBilling, setTenantPlan } from '@/services/billing.service'
 import { updateTenant } from '@/services/tenants.service'
-import { MODELS, PAY_MONTHS, billingState, quote, monthlyFor, formatCOP, formatDay, extendDate } from '@/lib/billingCore'
+import { MODELS, PLANS, planOf, PAY_MONTHS, billingState, quote, monthlyTotal, formatCOP, formatDay, extendDate } from '@/lib/billingCore'
 import { waLink } from '@/lib/format'
 import { catalogUrl } from '@/app/router'
 import { friendlyError } from '@/services/auth.service'
@@ -20,7 +20,7 @@ export default function BillingPanel({ tenants, onToast }) {
   useEffect(() => watchAllPayments((list) => setPayments(list.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))), () => {}), [])
 
   const rows = useMemo(() => (tenants || [])
-    .map(t => ({ t, st: billingState(t.billing, settings), monthly: t.billing ? monthlyFor(t.billing, settings) : 0 }))
+    .map(t => ({ t, st: billingState(t.billing, settings), monthly: t.billing ? monthlyTotal(t.billing, settings, planOf(t)) : 0 }))
     .sort((a, b) => STATE_ORDER[a.st.state] - STATE_ORDER[b.st.state] || (a.st.days ?? 999) - (b.st.days ?? 999)), [tenants, settings])
 
   const stats = useMemo(() => {
@@ -35,7 +35,7 @@ export default function BillingPanel({ tenants, onToast }) {
   }, [rows, payments])
 
   const remind = (t, st) => {
-    const q = quote(t.billing || {}, settings, 1)
+    const q = quote(t.billing || {}, settings, 1, planOf(t))
     const msg = `Hola 👋 Te recuerdo que el plan de tu catálogo *${t.name}* ${st.days < 0 ? `venció el ${formatDay(st.due)}` : `vence el ${formatDay(st.due)}`}.\n\nValor: *${formatCOP(q.total)}*\nPuedes pagar desde tu panel (${catalogUrl(t.id)} → ⚙️ → Mi plan) o por transferencia:\n${settings.manualInstructions}\n\n¡Gracias!`
     if (!t.whatsapp) return onToast('Este cliente no tiene WhatsApp registrado.')
     window.open(waLink(t.whatsapp, msg), '_blank', 'noopener')
@@ -57,7 +57,7 @@ export default function BillingPanel({ tenants, onToast }) {
           {rows.map(({ t, st, monthly }) => (
             <div key={t.id} className="bp-row" role="row">
               <div className="bp-row__main">
-                <strong>{t.name || t.id}</strong>
+                <strong>{t.name || t.id}{planOf(t) === 'premium' && <em className="bp-premium">Premium</em>}</strong>
                 <small>/{t.id} · {t.billing ? MODELS[t.billing.model]?.short || 'Mensual' : 'Sin plan'}{t.billing && ` · ${formatCOP(monthly)}/mes`}</small>
               </div>
               <div className="bp-row__due">
@@ -114,6 +114,7 @@ function SettingsCard({ settings, onToast }) {
         <p className="pf-muted">Estos valores se usan por defecto. A cada cliente le puedes poner un precio especial desde “Plan”.</p>
         <div className="sa-row">
           <label className="pf-field"><span>Mensualidad (modelo mensual)</span><input {...num('monthlyPrice')} /></label>
+          <label className="pf-field"><span>Plan Premium (Google): valor extra al mes</span><input {...num('premiumPrice')} /></label>
           <label className="pf-field"><span>Descuento al pagar 12 meses (%)</span><input {...num('annualDiscount')} /></label>
         </div>
         <div className="sa-row">
@@ -145,7 +146,8 @@ function useDialog(onClose) {
 function PaymentDialog({ tenant, settings, onClose, onToast }) {
   const dlg = useDialog(onClose)
   const [months, setMonths] = useState(1)
-  const q = quote(tenant.billing || { model: 'mensual' }, settings, months)
+  const [plan, setPlan] = useState(planOf(tenant))
+  const q = quote(tenant.billing || { model: 'mensual' }, settings, months, plan)
   const [amount, setAmount] = useState(q.total)
   const [method, setMethod] = useState('nequi')
   const [note, setNote] = useState('')
@@ -154,7 +156,7 @@ function PaymentDialog({ tenant, settings, onClose, onToast }) {
   const save = async (e) => {
     e.preventDefault(); setBusy(true)
     try {
-      await recordManualPayment({ ...tenant, billing: tenant.billing || { model: 'mensual' } }, { amount, months, method, concepts: q.lines, note })
+      await recordManualPayment({ ...tenant, billing: tenant.billing || { model: 'mensual' } }, { amount, months, method, concepts: q.lines, note, plan })
       onToast(`Pago de ${tenant.name} registrado. Nuevo vencimiento: ${formatDay(extendDate(tenant.billing?.paidUntil, months))}`)
       onClose()
     } catch (err) { onToast(friendlyError(err, 'No se pudo registrar el pago.')) } finally { setBusy(false) }
@@ -166,6 +168,9 @@ function PaymentDialog({ tenant, settings, onClose, onToast }) {
         <p className="pf-muted"><strong>{tenant.name}</strong> · vence {formatDay(tenant.billing?.paidUntil)}</p>
         <div className="bp-months" role="radiogroup" aria-label="Meses">
           {PAY_MONTHS.map(m => <button type="button" key={m} role="radio" aria-checked={months === m} className={`sa-chip ${months === m ? 'is-on' : ''}`} onClick={() => setMonths(m)}>{m} {m === 1 ? 'mes' : 'meses'}</button>)}
+        </div>
+        <div className="bp-months" role="radiogroup" aria-label="Plan">
+          {Object.entries(PLANS).map(([id, p]) => <button type="button" key={id} role="radio" aria-checked={plan === id} className={`sa-chip ${plan === id ? 'is-on' : ''}`} onClick={() => setPlan(id)}>{p.label}</button>)}
         </div>
         <ul className="bp-lines">{q.lines.map((l, i) => <li key={i}><span>{l.label}{l.discount > 0 && <small> (−{formatCOP(l.discount)})</small>}</span><b>{formatCOP(l.amount)}</b></li>)}</ul>
         <div className="sa-row">
@@ -189,9 +194,11 @@ function PlanDialog({ tenant, settings, onClose, onToast }) {
   const [setupPaid, setSetupPaid] = useState(!!b.setupPaid)
   const [due, setDue] = useState(String(b.paidUntil || new Date(Date.now() + settings.trialDays * 864e5).toISOString()).slice(0, 10))
   const [busy, setBusy] = useState(false)
+  const [plan, setPlan] = useState(planOf(tenant))
   const save = async (e) => {
     e.preventDefault(); setBusy(true)
     try {
+      if (plan !== planOf(tenant)) await setTenantPlan(tenant.id, plan)
       await updateTenantBilling(tenant, { model, price: Number(price) || 0, setupFee: Number(setupFee) || 0, setupPaid, paidUntil: new Date(`${due}T23:59:00`).toISOString() })
       onToast('Plan actualizado'); onClose()
     } catch (err) { onToast(friendlyError(err, 'No se pudo guardar.')) } finally { setBusy(false) }
@@ -210,6 +217,15 @@ function PlanDialog({ tenant, settings, onClose, onToast }) {
               <input type="radio" name="model" checked={model === id} onChange={() => setModel(id)} />
               <strong>{m.label}</strong>
               <small>{id === 'mensual' ? `${formatCOP(settings.monthlyPrice)} al mes` : `${formatCOP(settings.setupFee)} + ${formatCOP(settings.maintenancePrice)}/mes`}</small>
+            </label>
+          ))}
+        </div>
+        <div className="sa-options">
+          {Object.entries(PLANS).map(([id, p]) => (
+            <label key={id} className={`sa-opt ${plan === id ? 'is-on' : ''}`}>
+              <input type="radio" name="plan" checked={plan === id} onChange={() => setPlan(id)} />
+              <strong>Plan {p.label}</strong>
+              <small>{id === 'premium' ? `+ ${formatCOP(settings.premiumPrice)}/mes · Google` : 'Sin herramientas de Google'}</small>
             </label>
           ))}
         </div>

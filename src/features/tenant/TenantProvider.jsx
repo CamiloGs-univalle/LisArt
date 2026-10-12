@@ -18,6 +18,9 @@ function setLink(rel, href) {
   el.href = href
 }
 
+// Solo enlaces https:// (evita enlaces «javascript:» guardados en la base de datos)
+const safeUrl = (u) => (typeof u === 'string' && /^https:\/\/[^\s]+$/i.test(u.trim()) ? u.trim() : '')
+
 export function TenantProvider({ slug, children }) {
   const [tenant, setTenant] = useState(undefined) // undefined = cargando · null = no existe
   const [error, setError] = useState(null)
@@ -73,9 +76,9 @@ export function TenantProvider({ slug, children }) {
         city: t.city || '',
         whatsapp: t.whatsapp || '',
         logo: t.logo || '',
-        instagram: t.instagram || '',
-        tiktok: t.tiktok || '',
-        facebook: t.facebook || '',
+        instagram: safeUrl(t.instagram),
+        tiktok: safeUrl(t.tiktok),
+        facebook: safeUrl(t.facebook),
       },
     }
   }, [tenant, slug, error])

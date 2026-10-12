@@ -11,6 +11,7 @@ import ContentTab from './ContentTab'
 import ProductsTab from './ProductsTab'
 import PlanTab from './PlanTab'
 import ShareTab from './ShareTab'
+import GoogleTab from './GoogleTab'
 import AccountsTab from '@/features/business/AccountsTab'
 import MarketingTab from '@/features/marketing/MarketingTab'
 
@@ -21,6 +22,7 @@ const TABS = [
   { id: 'textos', label: 'Textos', icon: '📝', C: ContentTab },
   { id: 'vender', label: 'Vender más', icon: '🚀', C: MarketingTab },
   { id: 'cuentas', label: 'Cuentas', icon: '📊', C: AccountsTab },
+  { id: 'google', label: 'Google', icon: '🔎', C: GoogleTab },
   { id: 'compartir', label: 'Compartir', icon: '📣', C: ShareTab },
   { id: 'plan', label: 'Mi plan', icon: '💳', C: PlanTab },
 ]
@@ -30,6 +32,7 @@ export default function EditorPanel({ open, onClose, initialTab }) {
   const { isSuper, user } = useAuth()
   const { brand } = useTenant()
   const [tab, setTab] = useState(initialTab || 'negocio')
+  const [wantPlan, setWantPlan] = useState(null) // ej. «Activar Premium» desde la pestaña Google
   // Abrir directamente en una pestaña (ej. «Mi plan» desde el aviso de pago)
   useEffect(() => { if (open && initialTab) setTab(initialTab) }, [open, initialTab])
 
@@ -70,7 +73,7 @@ export default function EditorPanel({ open, onClose, initialTab }) {
         </nav>
 
         <div className="admin-dash-body">
-          <Active />
+          <Active goTo={(id, opts) => { if (opts?.plan) setWantPlan(opts.plan); setTab(id) }} wantPlan={wantPlan} />
         </div>
       </div>
     </div>

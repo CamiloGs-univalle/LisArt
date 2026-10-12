@@ -44,7 +44,11 @@ export function CartProvider({ children }) {
   const { products, loading: productsLoading } = useProductsCtx()
   const [items, setItems] = useState(() => cleanItems(load(CART_KEY, [])))
   // Datos opcionales que ayudan a cerrar el pedido más rápido
-  const [info, setInfo] = useState(() => load(INFO_KEY, { name: '', date: '', note: '' }))
+  const [info, setInfo] = useState(() => {
+    const v = load(INFO_KEY, {})
+    const str = (x) => (typeof x === 'string' ? x.slice(0, 500) : '')
+    return { name: str(v?.name), date: str(v?.date), note: str(v?.note) }
+  })
 
   useEffect(() => { save(CART_KEY, items) }, [CART_KEY, items])
   useEffect(() => { save(INFO_KEY, info) }, [INFO_KEY, info])
@@ -156,14 +160,38 @@ export function CartProvider({ children }) {
   const checkoutUrl = () =>
     waLink(brand.whatsapp, buildMessage())
 
+  // Pedido enviado: se guarda como «último pedido» (para reenviar o deshacer) y el carrito queda vacío
+  const LAST_KEY = `last-order:${tenantId}`
+  const [lastOrder, setLastOrder] = useState(() => {
+    const o = load(LAST_KEY, null)
+    return o && Array.isArray(o.items) && Date.now() - (Number(o.at) || 0) < 864e5 ? { ...o, items: cleanItems(o.items) } : null
+  })
+  useEffect(() => { save(LAST_KEY, lastOrder) }, [LAST_KEY, lastOrder])
+
+  const placeOrder = () => {
+    if (items.length === 0) return null
+    const order = { items, url: checkoutUrl(), total: finalTotal, count, at: Date.now() }
+    setLastOrder(order)
+    setItems([])
+    setInfo(prev => ({ ...prev, date: '', note: '' }))
+    return order
+  }
+  // «No lo envié»: el pedido vuelve al carrito
+  const restoreOrder = () => {
+    if (!lastOrder) return
+    setItems(lastOrder.items)
+    setLastOrder(null)
+  }
+
   const checkout = () => {
     if (items.length === 0) return
-    window.open(checkoutUrl(), '_blank', 'noopener')
+    const order = placeOrder()
+    window.open(order.url, '_blank', 'noopener')
   }
 
   return (
     <Ctx.Provider
-      value={{ items, lineKey, addToCart, setQty, changeQty, removeFromCart, clearCart, total, count, checkout, checkoutUrl, info, updateInfo, progress, discount, finalTotal, rewards }}
+      value={{ items, lineKey, addToCart, setQty, changeQty, placeOrder, restoreOrder, lastOrder, removeFromCart, clearCart, total, count, checkout, checkoutUrl, info, updateInfo, progress, discount, finalTotal, rewards }}
     >
       {children}
     </Ctx.Provider>

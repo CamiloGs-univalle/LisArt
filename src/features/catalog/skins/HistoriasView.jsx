@@ -12,6 +12,7 @@ import { productSizes, productColors } from '@/lib/catalog'
 import { useSkin, useSearch, Price } from './shared'
 import { useRevealAll, CartButton, AdminButton, Img, Faq, Skeleton, Footer } from './kit'
 import './Historias.css'
+import { optimizeImg } from '@/lib/images'
 
 const DURATION = 6000
 
@@ -180,10 +181,10 @@ function Player({ secs, start, s, onClose, onSeen }) {
   const offer = activeOffer(p)
   return (
     <div className="hs-player" role="dialog" aria-modal="true" aria-label={`Historias de ${secs[sec].name}`}>
-      <div className="hs-player__bg" aria-hidden="true"><img key={p.image} src={p.image} alt="" /></div>
+      <div className="hs-player__bg" aria-hidden="true"><img key={p.image} src={optimizeImg(p.image, 400)} alt="" decoding="async" /></div>
       <div className="hs-story">
         <div className="hs-story__media" onPointerDown={down} onPointerUp={up} onPointerCancel={() => { clearTimeout(holdT.current); setPaused(false); touch.current = null }}>
-          <img key={p.id} src={p.image} alt={p.name} draggable="false" />
+          <img key={p.id} src={optimizeImg(p.image, 1080)} alt={p.name} draggable="false" />
         </div>
         <div className="hs-story__top">
           <div className="hs-bars">{list.map((x, i) => <span key={x.id}><i style={{ transform: `scaleX(${i < item ? 1 : i === item ? progress : 0})` }} /></span>)}</div>

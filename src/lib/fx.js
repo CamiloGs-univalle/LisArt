@@ -79,9 +79,37 @@ export function withProductTransition(update) {
 const TILT = '.bn-card, .sc-card, .lj-card__img, .mn-row, .tg-item, .vl-card__img, .tr-card, .ed-card, .lb-card__img, .mk-plan, .sw-card, .ch-page__img, .mt-item'
 const MAGNET = '.kt-btn, .btn--primary, .btn--wa, .sk-add, .lj-btn, .mk-cta, .cart__cta'
 
+// Rejillas de productos en celular: si la última fila queda con un hueco
+// (ej. 5 productos en 2 columnas), el último producto se estira y ocupa el espacio.
+const FILL_GRIDS = '.pgrid, .vl-grid, .tr-grid, .ed-cards, .tg-grid, .lj-grid, .es-grid, .bn-grid, .lx-polaroids, .kt-foot__grid'
+function fillGrid(g) {
+  const kids = [...g.children].filter(c => c.offsetParent !== null || getComputedStyle(c).display !== 'none')
+  const last = kids.at(-1)
+  if (!last) return
+  if (last.dataset.fill) { last.style.gridColumn = ''; delete last.dataset.fill; last.classList.remove('fx-fill') }
+  const s = getComputedStyle(g)
+  if (s.display !== 'grid' || s.gridAutoFlow.includes('column')) return
+  const cols = s.gridTemplateColumns.split(' ').filter(Boolean).length
+  if (cols !== 2 || kids.length < 2) return
+  const gap = parseFloat(s.columnGap) || 0
+  const gr = g.getBoundingClientRect(), lr = last.getBoundingClientRect()
+  const colW = (gr.width - gap) / 2
+  if (lr.width > colW * 1.5) return // ya ocupa las dos columnas
+  if (gr.right - lr.right > colW * 0.6) { last.style.gridColumn = '1 / -1'; last.dataset.fill = '1'; last.classList.add('fx-fill') }
+}
+
 export function initFx() {
   const off = []
   const on = (t, ev, fn, opt) => { t.addEventListener(ev, fn, opt); off.push(() => t.removeEventListener(ev, fn, opt)) }
+
+  // Huecos al final de las rejillas (celular)
+  let fillRaf = 0
+  const fillAll = () => { if (fillRaf) return; fillRaf = requestAnimationFrame(() => { fillRaf = 0; document.querySelectorAll(FILL_GRIDS).forEach(fillGrid) }) }
+  fillAll()
+  on(window, 'resize', fillAll)
+  const fmo = new MutationObserver(fillAll)
+  fmo.observe(document.body, { childList: true, subtree: true })
+  off.push(() => { fmo.disconnect(); cancelAnimationFrame(fillRaf) })
 
   on(document, 'pointerdown', (e) => { last = { el: e.target, t: Date.now() } }, true)
 

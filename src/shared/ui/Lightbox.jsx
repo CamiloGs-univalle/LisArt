@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Icon from './Icon'
+import { optimizeImg } from '@/lib/images'
 
 export default function Lightbox({ images, index = 0, title = '', onClose }) {
   const [i, setI] = useState(index)
@@ -47,7 +48,7 @@ export default function Lightbox({ images, index = 0, title = '', onClose }) {
         <button onClick={onClose} aria-label="Cerrar fotos"><Icon name="close" size={20} /></button>
       </div>
       <div className="fx-lightbox__stage" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={() => { start.current = null; setDx(0) }}>
-        <img key={images[i]} src={images[i]} alt={`${title}, foto ${i + 1}`} draggable="false"
+        <img key={images[i]} src={optimizeImg(images[i], 1600)} alt={`${title}, foto ${i + 1}`} draggable="false"
           style={{ transform: zoom ? 'scale(2.2)' : `translateX(${dx}px)`, transition: start.current ? 'none' : undefined }} />
         {n > 1 && <>
           <button className="fx-lightbox__nav fx-lightbox__nav--prev" onClick={() => go(i - 1)} aria-label="Foto anterior"><Icon name="chevronLeft" size={22} /></button>

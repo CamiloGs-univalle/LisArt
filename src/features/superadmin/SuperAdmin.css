@@ -225,3 +225,25 @@
 .sa-demo { display: grid; gap: 12px; margin-bottom: 18px; }
 .sa-demo .pf-link { justify-self: start; font-size: 13px; text-decoration: underline; color: var(--ink-2); }
 .sa-demo__names { font-size: 12.5px; line-height: 1.7; word-break: break-word; }
+.bp-premium { margin-left: 8px; padding: 2px 8px; border-radius: 99px; background: #1a73e8; color: #fff; font: 700 11px/1.4 var(--font-ui, sans-serif); font-style: normal; vertical-align: middle; }
+
+/* Precios del cotizador */
+.pe-est { display: grid; gap: 6px; margin: 8px 0 14px; }
+.pe-est__row { display: grid; grid-template-columns: minmax(0, 1.6fr) 1fr 1fr 1fr; gap: 6px; align-items: center; font-size: 13.5px; }
+.pe-est__row--x { grid-template-columns: minmax(0, 2fr) 1fr 1fr; }
+.pe-est__row--head { font-weight: 700; font-size: 12px; color: var(--ink-3, #888); text-transform: uppercase; letter-spacing: .06em; }
+.pe-est__row input { width: 100%; min-width: 0; min-height: 40px; padding: 6px 8px; border-radius: 10px; border: 1px solid var(--line, #ddd); font: inherit; }
+.pe-est__weeks { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+@media (max-width: 560px) { .pe-est__row { grid-template-columns: 1fr 1fr; } .pe-est__row > span:first-child { grid-column: 1 / -1; font-weight: 600; } .pe-est__row--head { display: none; } .pe-est__weeks { grid-column: 1 / -1; } }
+.sa-leads .sa-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.sa-leads__list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
+.sa-lead { display: grid; gap: 6px; padding: 16px; border-radius: 18px; background: var(--card, #fff); box-shadow: 0 0 0 1px var(--line, #e7e1d9); }
+.sa-lead__top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sa-lead__top small { color: var(--ink-3, #888); }
+.sa-lead__type { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #E7ECFF; color: #3A50C9; }
+.sa-lead__type--cita { background: #DDF7EA; color: #157A4B; }
+.sa-lead__type--cotizacion { background: #FFF1D6; color: #92600A; }
+.sa-lead__contact { color: var(--ink-2, #555); overflow-wrap: anywhere; }
+.sa-lead__summary { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--paper-2, #f5f1ea); font: 500 12.5px/1.55 var(--font-ui, sans-serif); white-space: pre-wrap; }
+.sa-lead__msg { font-style: italic; color: var(--ink-2, #555); }
+.sa-lead__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }

@@ -3,6 +3,44 @@
 // /super → "Mi portafolio"; lo guardado reemplaza estos valores.
 // ─────────────────────────────────────────────────────────────
 export const PORTFOLIO_DEFAULTS = {
+  // Marca (página principal GS Solutions)
+  brand: 'GS Solutions',
+  brandLong: 'Gestión de Servicios y Soluciones',
+  founderRole: 'Fundador y desarrollador líder',
+  heroKicker: 'Software a la medida para tu negocio',
+  heroTitleA: 'Sistemas que hacen que tu negocio',
+  heroTitleB: 'funcione solo.',
+  heroText: 'Creamos ERP, CRM, inventarios, puntos de venta, catálogos y automatizaciones con inteligencia artificial. Fáciles de usar, en la nube y hechos a la medida de cómo trabajas.',
+  estimator: null, // precios del cotizador (vacío = valores iniciales)
+
+  // Quién está detrás (sección "Sobre mí" de la página GS Solutions)
+  about: {
+    hello: 'Hola, soy',
+    bio: 'Soy desarrollador de software y fundador de GS Solutions. Me apasiona convertir procesos complicados en sistemas sencillos que cualquier persona entiende. Combino diseño, tecnología e inteligencia artificial para que los negocios trabajen mejor y crezcan.',
+    chips: ['Desarrollador de software', 'Colombia'],
+    location: 'Colombia · Trabajo remoto',
+    tagline: 'Diseño sistemas que la gente entiende y disfruta usar.',
+    education: [
+      { years: 'Formación', title: 'Universidad del Valle', place: 'Formación profesional' },
+    ],
+    experience: [
+      { years: 'Hoy', title: 'Fundador · GS Solutions', text: 'Diseño y desarrollo de sistemas a la medida para empresas.' },
+      { years: 'Hoy', title: 'Auxiliar de TI · Proservis', text: 'Automatización de procesos, plataformas internas y soporte.' },
+      { years: 'Proyectos', title: 'Desarrollador independiente', text: 'Catálogos, plataformas de compras, indicadores y herramientas con IA.' },
+    ],
+    tags: ['#Creatividad', '#Comunicación', '#DetalleAlMáximo', '#Adaptabilidad'],
+    tools: ['React', 'TypeScript', 'Firebase', 'Node.js', 'Figma', 'Python', 'SAP B1', 'Git'],
+    languages: [{ name: 'Español', level: 'Nativo' }],
+    hobbies: [],
+    why: [
+      { icon: 'spark', title: 'Ideas creativas' },
+      { icon: 'brush', title: 'Diseño moderno' },
+      { icon: 'bolt', title: 'Entrega rápida' },
+      { icon: 'shield', title: 'Alta calidad' },
+      { icon: 'heart', title: 'Clientes felices' },
+    ],
+  },
+
   // Encabezado
   role: 'Desarrollador de software',
   availability: 'Disponible para nuevos proyectos',
@@ -89,7 +127,7 @@ export function withDefaults(saved) {
   const out = { ...d }
   for (const [k, v] of Object.entries(saved)) {
     if (v === undefined || v === null) continue
-    out[k] = k === 'contact' ? { ...d.contact, ...v } : v
+    out[k] = k === 'contact' ? { ...d.contact, ...v } : k === 'about' ? { ...d.about, ...v } : v
   }
   return out
 }

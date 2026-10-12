@@ -36,7 +36,13 @@ export default function BusinessTab() {
     if (normalizePhone(draft.whatsapp).length < 10) return alert('Revisa el número de WhatsApp.')
     setSaving(true)
     try {
-      await update({ ...Object.fromEntries(Object.entries(draft).map(([k, v]) => [k, String(v).trim()])), whatsapp: normalizePhone(draft.whatsapp) })
+      // Redes: siempre como enlace https:// (ej. «instagram.com/minegocio» → «https://instagram.com/minegocio»)
+      const HANDLE = { instagram: 'https://instagram.com/', tiktok: 'https://tiktok.com/@', facebook: 'https://facebook.com/' }
+      const link = (v, k) => { v = String(v || '').trim(); if (!v) return ''; if (/^@/.test(v)) return HANDLE[k] + v.slice(1); return /^https?:\/\//i.test(v) ? v.replace(/^http:/i, 'https:') : `https://${v}` }
+      const clean = Object.fromEntries(Object.entries(draft).map(([k, v]) => [k, String(v).trim()]))
+      for (const k of ['instagram', 'tiktok', 'facebook']) clean[k] = link(clean[k], k)
+      if (['instagram', 'tiktok', 'facebook'].some(k => clean[k] && !/^https:\/\/[^\s]+$/.test(clean[k]))) { setSaving(false); return alert('Revisa los enlaces de tus redes: deben ser como https://instagram.com/tu_negocio') }
+      await update({ ...clean, whatsapp: normalizePhone(draft.whatsapp) })
       await updateAnnouncement(ann.trim())
       flash('✓ Datos guardados')
     } catch { alert('No se pudieron guardar los datos. Intenta de nuevo.') }

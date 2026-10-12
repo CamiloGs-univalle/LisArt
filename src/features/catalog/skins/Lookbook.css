@@ -110,3 +110,9 @@
 .lb-quote blockquote { margin: 0; font: italic 400 clamp(26px, 3.8vw, 52px)/1.15 var(--font-display); letter-spacing: -.02em; max-width: 24ch; text-wrap: balance; }
 .lb-quote cite { font: 500 13px/1 var(--font-ui); font-style: normal; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); }
 .lb-faq { padding: clamp(64px, 9vw, 110px) 0 0; display: grid; gap: 18px; max-width: 900px; }
+/* Precio arriba y botones en una sola fila (no se parten en celular) */
+@media (max-width: 640px) {
+  .lb-look__buy { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+  .lb-look__buy .lb-look__price { grid-column: 1 / -1; }
+  .lb-look__buy .lb-look__see { justify-content: center; }
+}

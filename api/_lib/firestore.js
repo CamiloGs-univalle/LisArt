@@ -55,3 +55,16 @@ export async function setFields(path, data, { updateTime } = {}) {
   const body = JSON.stringify({ fields: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, encode(v)])) })
   return call(`${base()}/${path}?${mask}`, { method: 'PATCH', body })
 }
+
+// Lista todos los documentos de una colección (paginado)
+export async function listDocs(path, { max = 2000 } = {}) {
+  const out = []
+  let token = ''
+  do {
+    const d = await call(`${base()}/${path}?pageSize=300${token ? `&pageToken=${encodeURIComponent(token)}` : ''}`)
+    if (!d) break
+    for (const doc of d.documents || []) out.push({ id: doc.name.split('/').pop(), ...decodeFields(doc.fields || {}), _updateTime: doc.updateTime })
+    token = d.nextPageToken || ''
+  } while (token && out.length < max)
+  return out
+}

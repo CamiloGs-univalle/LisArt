@@ -35,6 +35,17 @@ service cloud.firestore {
 
     function canEdit(tenantId) { return isSuper() || isOwnerOf(tenantId); }
 
+    // Los enlaces que pone el dueño deben ser https:// (bloquea «javascript:» y similares)
+    // (solo se revisan los campos que cambian, para no bloquear datos viejos)
+    function okUrl(d, changed, k) {
+      return !(k in changed) || !(k in d) || d[k] == null || d[k] == ''
+        || (d[k] is string && d[k].size() < 600 && d[k].matches('https://[^ ]+'));
+    }
+    function okLinks(d, changed) {
+      return okUrl(d, changed, 'instagram') && okUrl(d, changed, 'tiktok') && okUrl(d, changed, 'facebook')
+        && okUrl(d, changed, 'mapsUrl') && okUrl(d, changed, 'googleReviewUrl');
+    }
+
     // ── Negocios ───────────────────────────────────────────
     match /tenants/{tenantId} {
       allow get: if true;                // ver un catálogo
@@ -44,7 +55,8 @@ service cloud.firestore {
       // El dueño edita su negocio, pero no su estado, plan ni a quién pertenece
       allow update: if isSuper() || (
         isOwnerOf(tenantId) &&
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'plan', 'ownerUid', 'ownerEmail', 'createdAt', 'billing', 'suspendedReason'])
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'plan', 'ownerUid', 'ownerEmail', 'createdAt', 'billing', 'suspendedReason', 'demo']) &&
+        okLinks(request.resource.data, request.resource.data.diff(resource.data).affectedKeys())
       );
 
       match /products/{productId} {
@@ -103,6 +115,24 @@ service cloud.firestore {
     // ── Solicitudes de ayuda ("olvidé mi contraseña") ───────
     // Cualquiera puede crear una (sin sesión), con campos limitados.
     // Solo el super administrador las ve y las resuelve.
+    // Solicitudes de la página principal (GS Solutions): cualquiera crea, solo el super lee
+    match /leads/{leadId} {
+      allow create: if request.resource.data.keys().hasOnly(['type', 'name', 'company', 'phone', 'email', 'date', 'slot', 'message', 'summary', 'status', 'createdAt'])
+        && request.resource.data.type in ['cita', 'info', 'cotizacion']
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.name is string && request.resource.data.name.size() > 1 && request.resource.data.name.size() <= 80
+        && request.resource.data.company is string && request.resource.data.company.size() <= 80
+        && request.resource.data.phone is string && request.resource.data.phone.size() <= 30
+        && request.resource.data.email is string && request.resource.data.email.size() <= 120
+        && (request.resource.data.phone.size() >= 7 || request.resource.data.email.size() >= 5)
+        && request.resource.data.date is string && request.resource.data.date.size() <= 20
+        && request.resource.data.slot is string && request.resource.data.slot.size() <= 30
+        && request.resource.data.message is string && request.resource.data.message.size() <= 1000
+        && request.resource.data.summary is string && request.resource.data.summary.size() <= 1500;
+      allow read, update, delete: if isSuper();
+    }
+
     match /tickets/{ticketId} {
       allow create: if request.resource.data.keys().hasOnly(['type', 'email', 'phone', 'message', 'status', 'createdAt'])
         && request.resource.data.type == 'password'

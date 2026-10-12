@@ -11,6 +11,7 @@ import { productSizes, productColors } from '@/lib/catalog'
 import SectionBlock from './SectionBlock'
 import { useSkin, useSearch, Price, ProductOptions } from './shared'
 import './Terrain.css'
+import { optimizeImg } from '@/lib/images'
 
 const pad = (n) => String(n).padStart(3, '0')
 const ICONS = ['truck', 'card', 'chat', 'gift']
@@ -72,7 +73,7 @@ export default function TerrainView({ onOpenDashboard }) {
                 <p className="tr-scroll">Desliza para descubrir <Icon name="arrowDown" size={14} /></p>
               </div>
               <div className="tr-hero__media">
-                {s.heroImage && <img src={s.heroImage} alt="" />}
+                {s.heroImage && <img src={optimizeImg(s.heroImage, 1400)} alt="" fetchPriority="high" decoding="async" />}
                 <span className="tr-cross tr-cross--a" aria-hidden="true" />
                 <span className="tr-cross tr-cross--b" aria-hidden="true" />
                 <span className="tr-vlabel" aria-hidden="true">{s.brand.name} · {year}</span>
@@ -218,7 +219,7 @@ function Coverflow({ sec, openProduct }) {
             <article key={p.id} className={`tr-cf ${i === active ? 'is-active' : ''}`} onClick={() => (i === active ? null : goTo(i))}>
               <div className="tr-cf__top"><strong>{p.name}</strong><span>[{pad(i + 1)}]</span></div>
               <Price p={p} className="tr-cf__price" />
-              <img src={p.image} alt="" loading="lazy" />
+              <img src={optimizeImg(p.image, 600)} alt="" loading="lazy" decoding="async" />
               {i === active && (
                 <div className="tr-cf__actions">
                   <button onClick={(e) => { e.stopPropagation(); openProduct(p) }}>Ver <Icon name="arrow" size={14} /></button>
@@ -241,7 +242,7 @@ function Grid({ items, openProduct }) {
       {items.map((p, i) => (
         <button key={p.id} className="tr-card" onClick={() => openProduct(p)}>
           <span className="tr-card__top"><span>{p.badge || ''}</span><span>[{pad(i + 1)}]</span></span>
-          <span className="tr-card__img"><img src={p.image} alt="" loading="lazy" /></span>
+          <span className="tr-card__img"><img src={optimizeImg(p.image, 600)} alt="" loading="lazy" decoding="async" /></span>
           <strong>{p.name}</strong>
           <Price p={p} />
         </button>

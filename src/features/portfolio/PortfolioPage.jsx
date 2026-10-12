@@ -1,366 +1,421 @@
 // ─────────────────────────────────────────────────────────────
-// Portafolio (página principal). Estilo editorial premium:
-// tipografía gigante, crema + terracota y animaciones al hacer scroll.
-// El contenido se edita en /super → "Mi portafolio".
+// GS Solutions · página principal con estructura de portafolio editorial:
+// póster de portada, «Hola, soy…», hoja de vida, servicios, simulaciones en vivo,
+// proyectos, cotizador y contacto. El contenido se edita en /super → «Mi página».
 // ─────────────────────────────────────────────────────────────
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from '@/app/router'
-import { THEME_PRESETS } from '@/features/tenant/themes'
 import { waLink } from '@/lib/format'
-import { usePortfolio, useFitText, useReveal, useScrollVar } from './effects'
-import './Portfolio.css'
+import { usePortfolio, useReveal } from './effects'
+import { SOLUTIONS, PROCESS, SKILLS, FAQ, withEstimator, simForProject } from './gs/data'
+import Sim from './gs/Sims'
+import GsIcon from './gs/GsIcon'
+import Estimator from './gs/Estimator'
+import ContactForm from './gs/ContactForm'
+import Detail from './gs/Detail'
+import './gs/gs.css'
+import './gs/poster.css'
 
-const FONTS_HREF = 'https://fonts.googleapis.com/css2?family=Anton&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Inter:wght@400..700&family=Mrs+Saint+Delafield&display=swap'
+const FONTS_HREF = 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500..900;1,9..144,500..800&family=Inter:wght@400..700&family=Great+Vibes&display=swap'
+const go = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+const https = (u) => (/^https:\/\//.test(u || '') ? u : '')
+const handle = (u) => (u || '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '').split('/').slice(1).join('/') || u
 
 export default function PortfolioPage() {
   const p = usePortfolio()
   const root = useRef(null)
-  useScrollVar(root)
-  useReveal(root, [p.projects.length, p.skills.length, p.services.length, p.testimonials.length])
+  const cfg = withEstimator(p.estimator)
+  const [detail, setDetail] = useState(null)
+  const [system, setSystem] = useState('erp')
+  const [prefill, setPrefill] = useState(null)
+  const [menu, setMenu] = useState(false)
+  useReveal(root, [p.projects.length])
 
-  // Fuentes, título y color del navegador propios del portafolio
   useEffect(() => {
-    let link = document.getElementById('pfo-fonts')
+    let link = document.getElementById('gs-fonts2')
     if (!link) {
-      link = Object.assign(document.createElement('link'), { id: 'pfo-fonts', rel: 'stylesheet', href: FONTS_HREF })
+      link = Object.assign(document.createElement('link'), { id: 'gs-fonts2', rel: 'stylesheet', href: FONTS_HREF })
       document.head.appendChild(link)
     }
-    const name = [p.firstName, p.lastName].filter(Boolean).join(' ')
-    document.title = `${name} · ${p.role}`
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#F4EFE7')
+    document.title = `${p.brand} · ${p.brandLong}`
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#2E4A36')
     document.documentElement.style.colorScheme = 'light'
-  }, [p.firstName, p.lastName, p.role])
+    document.documentElement.style.setProperty('--page-bg', '#F4EEE1')
+    return () => document.documentElement.style.removeProperty('--page-bg')
+  }, [p.brand, p.brandLong])
 
-  const fullName = [p.firstName, p.lastName].filter(Boolean).join(' ')
-  const wa = p.contact.whatsapp ? waLink(p.contact.whatsapp, `Hola ${p.firstName} 👋 Vi tu portafolio y quiero hablar de un proyecto.`) : ''
-  const primaryContact = wa || (p.contact.email ? `mailto:${p.contact.email}` : '#contacto')
+  const a = p.about
+  const name = [p.firstName, p.lastName].filter(Boolean).join(' ')
+  const whatsapp = p.contact.whatsapp
+  const socials = [
+    ['GH', 'github', https(p.contact.github)],
+    ['LI', 'linkedin', https(p.contact.linkedin)],
+    ['IG', 'instagram', https(p.contact.instagram)],
+  ].filter(s => s[2])
+  const quote = useCallback((id) => { setDetail(null); setSystem(id); setTimeout(() => go('cotizar'), 60) }, [])
+  const ask = useCallback((type, summary, message) => { setDetail(null); setPrefill({ type, summary, message, at: Date.now() }); setTimeout(() => go('contacto'), 60) }, [])
+  const closeDetail = useCallback(() => setDetail(null), [])
+  const openSol = (s) => setDetail({ kind: 'solution', data: s })
+  const nav = [['sobre-mi', 'Sobre mí'], ['hoja-de-vida', 'Hoja de vida'], ['servicios', 'Servicios'], ['trabajo', 'Trabajo'], ['cotizar', 'Cotizador']]
 
   return (
-    <div className="pfo" ref={root}>
-
-      <a href="#proyectos" className="pfo-skip">Saltar a proyectos</a>
-
-      <header className="pfo-top">
-        <span className="pfo-top__role"><span className="pfo-star" aria-hidden="true">✱</span>{p.role}</span>
-        <nav className="pfo-top__nav" aria-label="Secciones">
-          <a href="#proyectos">Proyectos</a>
-          <a href="#habilidades">Servicios</a>
-          <a href="#contacto">Contacto</a>
+    <div className="gs gsp" ref={root}>
+      {/* Encabezado */}
+      <header className="gs-top gsp-top">
+        <a href="#inicio" className="gsp-logo" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
+          <Star /> <span>{p.brand}</span>
+        </a>
+        <nav className={`gs-nav ${menu ? 'is-open' : ''}`} aria-label="Secciones">
+          {nav.map(([id, l]) => <button key={id} onClick={() => { setMenu(false); go(id) }}>{l}</button>)}
         </nav>
-        <a className="pfo-top__cta" href="#contacto">{p.availability} <Arrow /></a>
+        <button className="gsp-pill gs-top__cta" onClick={() => ask('cita', '')}>¡Hablemos!</button>
+        <button className="gs-burger" onClick={() => setMenu(m => !m)} aria-label="Menú" aria-expanded={menu}><span /><span /></button>
       </header>
 
-      <span className="pfo-side pfo-side--l" aria-hidden="true">{p.sideLeft}</span>
-      <span className="pfo-side pfo-side--r" aria-hidden="true">{p.sideRight}</span>
+      <main id="inicio">
+        {/* 1 · Póster de portada */}
+        <section className="gsp-poster">
+          <div className="gsp-poster__green">
+            <h1 className="gsp-poster__word" aria-label={`${p.brand} · ${p.brandLong}`}>
+              <span className="gsp-solid" data-reveal>{p.brand.replace(/\s+/g, ' ').toUpperCase()}</span>
+              <span className="gsp-outline" aria-hidden="true">{(p.brand.split(' ').pop() || '').toUpperCase()}</span>
+              <span className="gsp-outline gsp-outline--b" aria-hidden="true">{(p.brand.split(' ').pop() || '').toUpperCase()}</span>
+              <span className="gsp-outline gsp-outline--c" aria-hidden="true">{(p.brand.split(' ').pop() || '').toUpperCase()}</span>
+            </h1>
+            <div className="gsp-poster__photo" data-reveal="zoom">
+              <Star className="gsp-star gsp-star--a" /><Star className="gsp-star gsp-star--b" />
+              <Photo src={p.photo} alt={`Foto de ${name}`} letter={(p.firstName || 'C')[0]} />
+            </div>
+            <ul className="gsp-poster__social">
+              {socials.map(([k, , u]) => <li key={k}><a href={u} target="_blank" rel="noopener noreferrer"><b>{k}:</b> /{handle(u)}</a></li>)}
+              {p.contact.email && <li><a href={`mailto:${p.contact.email}`}><b>@:</b> {p.contact.email}</a></li>}
+            </ul>
+          </div>
+          <div className="gsp-poster__black">
+            <p className="gsp-poster__lead">{p.heroTitleA} {p.heroTitleB} {p.heroText}</p>
+            <Star className="gsp-star gsp-star--c" />
+          </div>
+          <button className="gsp-scroll" onClick={() => go('sobre-mi')}>Ver<br />más</button>
+        </section>
 
-      <Hero p={p} fullName={fullName} contactHref={primaryContact} />
+        {/* 2 · Hola, soy… */}
+        <section className="gsp-hello" id="sobre-mi">
+          <div className="gsp-hello__text" data-reveal>
+            <p className="gsp-kicker">{p.heroKicker}</p>
+            <h2 className="gsp-serif">{a.hello?.replace(/,?\s*soy$/i, ',') || 'Hola,'}<br /><span className="gsp-nowrap">soy {p.firstName}&nbsp;!</span></h2>
+            <p className="gsp-script">{p.founderRole}</p>
+            <p className="gsp-hello__bio">{a.bio}</p>
+            <div className="gsp-hello__cta">
+              <button className="gsp-search" onClick={() => go('cotizar')}><GsIcon name="spark" size={18} /> Cotiza tu sistema en 1 minuto</button>
+              <button className="gsp-btn gsp-btn--ghost" onClick={() => go('demo')}><GsIcon name="play" size={16} /> Ver cómo funciona</button>
+            </div>
+            <ul className="gsp-stats">
+              <li><b>{p.projects.length}+</b><span>sistemas entregados</span></li>
+              <li><b>100%</b><span>a la medida</span></li>
+              <li><b>24 h</b><span>respuesta</span></li>
+            </ul>
+          </div>
+          <div className="gsp-hello__art" data-reveal="zoom">
+            {/* Tarjeta de perfil: foto + contacto en una sola pieza, etiquetas encima */}
+            <div className="gsp-outline-stack gsp-outline-stack--perfil" aria-hidden="true"><span>PERFIL</span><span>PERFIL</span><span>PERFIL</span></div>
+            <article className="gsp-profile">
+              <div className="gsp-profile__top">
+                <div className={`gsp-cut ${p.photoCutout ? 'is-cutout' : ''}`}>
+                  <i className="gsp-cut__sun" />
+                  <Photo src={p.photo} alt={`Foto de ${p.firstName}`} letter={(p.firstName || 'C')[0]} />
+                </div>
+                {(a.chips || []).slice(0, 2).map((c, i) => <span key={c} className={`gsp-chip gsp-chip--${i}`}>{c}</span>)}
+              </div>
+              <div className="gsp-contact">
+                <b className="gsp-serif">Contacto</b>
+                {a.location && <span><GsIcon name="pin" size={15} /> {a.location}</span>}
+                {p.contact.email && <a href={`mailto:${p.contact.email}`}><GsIcon name="mail" size={15} /> {p.contact.email}</a>}
+                {whatsapp && <a href={waLink(whatsapp, `Hola ${p.firstName} 👋`)} target="_blank" rel="noopener noreferrer"><GsIcon name="whatsapp" size={15} /> WhatsApp</a>}
+              </div>
+            </article>
+          </div>
+        </section>
 
-      <Marquee items={p.marquee} />
+        {/* 3 · Hoja de vida (bloque verde + experiencia amarilla) */}
+        <section className="gsp-resume" id="hoja-de-vida">
+          <div className="gsp-resume__green">
+            <div className="gsp-resume__edu" data-reveal>
+              <h2 className="gsp-serif gsp-h gsp-h--sun">Formación</h2>
+              <ul className="gsp-edu">
+                {(a.education || []).map(ed => (
+                  <li key={ed.title + ed.years}>
+                    <i aria-hidden="true"><GsIcon name="id" size={20} /></i>
+                    <div><strong>{ed.title}</strong>{ed.place && <small>{ed.place}</small>}</div>
+                    {/\d/.test(ed.years || '') && <em>{ed.years}</em>}
+                  </li>
+                ))}
+              </ul>
+              {a.languages?.length > 0 && (
+                <>
+                  <h3 className="gsp-serif gsp-sub">Idiomas</h3>
+                  <div className="gsp-langs gsp-langs--dark">{a.languages.map(l => <div key={l.name}><b className="gsp-serif">{l.name}</b><span>{l.level}</span></div>)}</div>
+                </>
+              )}
+              {a.tags?.length > 0 && (
+                <>
+                  <h3 className="gsp-serif gsp-sub">Cómo trabajo</h3>
+                  <div className="gsp-tags gsp-tags--dark">{a.tags.map(t => <span key={t}>{t.replace(/^#/, '')}</span>)}</div>
+                </>
+              )}
+            </div>
+            <div className="gsp-resume__skills" data-reveal>
+              <h2 className="gsp-serif gsp-h gsp-h--sun">Habilidades técnicas</h2>
+              <h3 className="gsp-serif gsp-sub">Tecnologías que manejo</h3>
+              <ul className="gsp-tech">{techList(a.tools).map(t => <li key={t}><i aria-hidden="true">{mono(t)}</i>{t}</li>)}</ul>
+              <h3 className="gsp-serif gsp-sub">Especialidades</h3>
+              <div className="gsp-pills">{['Diseño UX/UI', 'Sistemas a la medida', 'Automatización con IA', 'Integraciones'].map(t => <span key={t}>{t}</span>)}</div>
+            </div>
+          </div>
+          <div className="gsp-resume__low">
+            <div className="gsp-exp" data-reveal>
+              <h2 className="gsp-serif gsp-h">Experiencia</h2>
+              <Timeline items={a.experience || []} light />
+            </div>
+            <div className="gsp-right" data-reveal>
+              <div className="gsp-block">
+                <h2 className="gsp-serif gsp-h gsp-h--ink">¿Por qué yo?</h2>
+                <div className="gsp-why">{(a.why || []).map((w, i) => <span key={w.title} style={{ '--i': i }}><i><GsIcon name={w.icon} size={26} /></i>{w.title}</span>)}</div>
+              </div>
+              {a.hobbies?.length > 0 && (
+                <div className="gsp-block">
+                  <h2 className="gsp-serif gsp-h gsp-h--ink">Me gusta</h2>
+                  <div className="gsp-tags gsp-tags--soft">{a.hobbies.map(h => <span key={h}>{h}</span>)}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
 
-      <Projects p={p} />
+        {/* 4 · Banda de servicios (estilo tarjeta de presentación) */}
+        <section className="gsp-band" id="servicios">
+          <div className="gsp-band__about" data-reveal>
+            <p className="gsp-kicker gsp-kicker--sun">Sobre {p.brand}</p>
+            <h2 className="gsp-serif">Soy {p.firstName}, y esto es lo que hago</h2>
+            <p>{p.heroText}</p>
+            <div className="gsp-monogram" aria-hidden="true"><b className="gsp-serif">{p.brand.split(' ')[0]}</b><span className="gsp-script">{p.brand.split(' ').slice(1).join(' ') || 'Solutions'}</span><small>{p.brandLong}</small></div>
+          </div>
+          <div className="gsp-band__grid">
+            <div className="gsp-col gsp-col--cream" data-reveal>
+              <h3>Mis servicios</h3>
+              <ul className="gsp-services">
+                {SOLUTIONS.map(s => (
+                  <li key={s.id}><button onClick={() => openSol(s)}><i><GsIcon name={s.icon} size={15} /></i>{s.name.split(' · ')[0]}<GsIcon name="arrow" size={14} /></button></li>
+                ))}
+              </ul>
+            </div>
+            <div className="gsp-col gsp-col--sand" data-reveal style={{ '--d': '.08s' }}>
+              <h3>Mis habilidades</h3>
+              <p className="gsp-col__sub">Lado creativo</p>
+              <ul className="gsp-checks">{SKILLS.creative.map(s => <li key={s.name}>{s.name}</li>)}</ul>
+              <p className="gsp-col__sub">Lado profesional</p>
+              <ul className="gsp-checks">{SKILLS.pro.map(s => <li key={s.name}>{s.name}</li>)}</ul>
+            </div>
+            <div className="gsp-col gsp-col--green" data-reveal style={{ '--d': '.16s' }}>
+              <h3>Experiencia</h3>
+              <div className="gsp-badge"><i><GsIcon name="grid" size={22} /></i><div><b>{p.founderRole}</b><span>{p.brand} · Hoy</span></div></div>
+              <ul className="gsp-checks gsp-checks--light">
+                <li>{p.projects.length}+ sistemas en producción</li>
+                <li>ERP, CRM, inventarios y catálogos</li>
+                <li>Integraciones con SAP B1 y Gmail</li>
+                <li>Automatización con inteligencia artificial</li>
+              </ul>
+            </div>
+          </div>
+        </section>
 
-      <Skills p={p} />
+        {/* 5 · Simulaciones */}
+        <Showcase onOpen={openSol} onQuote={quote} />
 
-      {p.testimonials.length > 0 && <Testimonials p={p} />}
+        {/* 6 · Mi trabajo */}
+        <section className="gs-sec" id="trabajo">
+          <SecHead kicker="Mi trabajo" title="Sistemas que ya están" em="funcionando" text="Toca un proyecto para ver su resumen y una simulación de lo que hace." />
+          <div className="gsp-work">
+            {p.projects.map((pr, i) => {
+              const sol = SOLUTIONS.find(s => s.sim === (pr.sim || simForProject(pr)))
+              return (
+                <button key={pr.title + i} className="gsp-card" style={{ '--c': sol?.color || '#2E4A36', '--d': `${(i % 4) * 0.06}s` }} data-reveal onClick={() => setDetail({ kind: 'project', data: pr })}>
+                  <span className="gsp-card__img">
+                    {pr.image ? <img src={pr.image} alt="" loading="lazy" /> : <Sim kind={pr.sim || simForProject(pr)} title={pr.title} color={sol?.color} />}
+                    <span className="gsp-card__n">{String(i + 1).padStart(2, '0')}</span>
+                  </span>
+                  <b className="gsp-serif">{pr.title}</b>
+                  <span className="gsp-card__cat">{sol?.name.split(' · ')[0]} · {pr.category}</span>
+                  <span className="gsp-card__more">Ver resumen <GsIcon name="arrow" size={14} /></span>
+                </button>
+              )
+            })}
+          </div>
+          <p className="gsp-work__cats">{SOLUTIONS.slice(0, 7).map(s => s.name.split(' · ')[0]).join('  ·  ')}</p>
+        </section>
 
-      <Contact p={p} wa={wa} fullName={fullName} />
+        {/* 7 · Proceso */}
+        <section className="gs-sec" id="proceso">
+          <SecHead kicker="Cómo trabajamos" title="Simple, claro y" em="sin sorpresas" />
+          <ol className="gs-steps">
+            {PROCESS.map((s, i) => (
+              <li key={s.n} data-reveal style={{ '--d': `${i * 0.1}s` }}>
+                <span className="gs-steps__n">{s.n}</span>
+                <b>{s.title}</b>
+                <p>{s.text}</p>
+                <small>{s.time}</small>
+              </li>
+            ))}
+          </ol>
+        </section>
 
-      <footer className="pfo-foot">
-        <span className="pfo-foot__brand">{p.bigWord}</span>
-        <span>© {new Date().getFullYear()} {fullName}</span>
-        <Link to="/admin" className="pfo-foot__link">Acceso clientes <Arrow /></Link>
+        {/* 8 · Cotizador */}
+        <section className="gs-sec" id="cotizar">
+          <SecHead kicker="Cotizador" title="Arma tu sistema y mira" em="cuánto cuesta" text="Elige lo que necesitas y te mostramos un rango de precio y tiempo al instante. Sin compromiso." />
+          <Estimator cfg={cfg} system={system} setSystem={setSystem} onRequest={(type, summary) => ask(type, summary)} />
+        </section>
+
+        {p.testimonials.length > 0 && (
+          <section className="gs-sec">
+            <SecHead kicker="Clientes" title="Lo que dicen" em="de nosotros" />
+            <div className="gs-quotes">
+              {p.testimonials.map((t, i) => <figure key={i} data-reveal><blockquote>“{t.text}”</blockquote><figcaption><b>{t.name}</b>{t.role && <span>{t.role}</span>}</figcaption></figure>)}
+            </div>
+          </section>
+        )}
+
+        {/* 9 · Preguntas */}
+        <section className="gs-sec gs-sec--narrow" id="preguntas">
+          <SecHead kicker="Preguntas frecuentes" title="Lo que todos" em="preguntan" />
+          <div className="gs-faq">
+            {FAQ.map(f => (
+              <details key={f.q} data-reveal>
+                <summary>{f.q}<span aria-hidden="true">+</span></summary>
+                <p>{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* 10 · Trabajemos juntos */}
+        <section className="gs-sec" id="contacto">
+          <div className="gsp-together">
+            <div className="gsp-together__text" data-reveal>
+              <p className="gsp-kicker gsp-kicker--sun">Hablemos</p>
+              <h2 className="gsp-serif">¿Trabajamos <span className="gsp-script">juntos?</span></h2>
+              <p>¿Tienes un proyecto en mente? En una charla gratis de 30 minutos entendemos tu negocio y te decimos qué sistema te conviene, cuánto cuesta y cuánto tarda.</p>
+              <ul className="gsp-together__list">
+                {whatsapp && <li><a href={waLink(whatsapp, `Hola ${p.brand} 👋 Quiero información.`)} target="_blank" rel="noopener noreferrer"><GsIcon name="whatsapp" /> Escríbenos por WhatsApp</a></li>}
+                {p.contact.email && <li><a href={`mailto:${p.contact.email}`}><GsIcon name="mail" /> {p.contact.email}</a></li>}
+                {p.contact.location && <li><span><GsIcon name="pin" /> {p.contact.location}</span></li>}
+              </ul>
+            </div>
+            <div data-reveal style={{ '--d': '.1s' }}><ContactForm prefill={prefill} whatsapp={whatsapp} brand={p.brand} /></div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="gsp-foot">
+        <p className="gsp-foot__line"><Star /> Construyamos <span className="gsp-script">tu sistema</span> juntos. <Star /></p>
+        <div className="gsp-foot__row">
+          <span className="gsp-logo"><Star /> <span>{p.brand}</span></span>
+          <span>© {new Date().getFullYear()} {p.brand} · Fundado por {name}</span>
+          <Link to="/admin" className="gs-foot__link">Acceso clientes <GsIcon name="arrow" size={14} /></Link>
+        </div>
       </footer>
+
+      <button className="gs-fab gsp-fab" onClick={() => ask('cita', '')}><GsIcon name="calendar" size={18} /> Agendar cita</button>
+      {detail && <Detail item={detail} cfg={cfg} onClose={closeDetail} onQuote={quote} onAsk={(msg) => ask('info', '', msg)} />}
     </div>
   )
 }
 
-/* ── Portada ──────────────────────────────────────────────── */
-function Hero({ p, fullName, contactHref }) {
-  const [box, inner] = useFitText(p.bigWord)
-  const letters = [...(p.bigWord || '')]
-  return (
-    <section className="pfo-hero" aria-labelledby="pfo-name">
-      <div className="pfo-big" ref={box} aria-hidden="true">
-        <span ref={inner} className="pfo-big__inner">
-          {letters.map((ch, i) => (
-            <span key={i} className="pfo-big__ch" style={{ '--i': i }}>{ch === ' ' ? ' ' : ch}</span>
-          ))}
-        </span>
-      </div>
+/* ── Partes ── */
+function Photo({ src, alt, letter }) {
+  const [ok, setOk] = useState(true)
+  return src && ok ? <img src={src} alt={alt} onError={() => setOk(false)} /> : <span>{letter}</span>
+}
 
-      <div className="pfo-hero__grid">
-        <div className="pfo-hero__text">
-          <p className="pfo-kicker pfo-in" style={{ '--d': '.5s' }}>{p.greeting}</p>
-          <h1 id="pfo-name" className="pfo-name pfo-in" style={{ '--d': '.6s' }}>
-            {p.firstName}{p.lastName && <><br />{p.lastName}</>}
-          </h1>
-          <p className="pfo-title pfo-in" style={{ '--d': '.7s' }}>{p.title}</p>
-          <p className="pfo-intro pfo-in" style={{ '--d': '.8s' }}>{p.intro}</p>
-          {p.signature && <p className="pfo-sign pfo-in" style={{ '--d': '.95s' }} aria-hidden="true">{p.signature}</p>}
-          <div className="pfo-ctas pfo-in" style={{ '--d': '1.05s' }}>
-            <a className="pfo-btn pfo-btn--ink" href="#proyectos">Ver proyectos <Arrow /></a>
-            <a className="pfo-btn" href={contactHref} target={contactHref.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer">Hablemos</a>
+function Star({ className = '' }) {
+  return <svg className={`gsp-st ${className}`} viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path fill="currentColor" d="M12 0c.8 6.8 4.4 10.6 12 12-7.6 1.4-11.2 5.2-12 12-.8-6.8-4.4-10.6-12-12C7.6 10.6 11.2 6.8 12 0z" /></svg>
+}
+
+function SecHead({ kicker, title, em, text }) {
+  return (
+    <header className="gs-head" data-reveal>
+      <p className="gsp-kicker">{kicker}</p>
+      <h2 className="gsp-serif">{title} <span className="gsp-script">{em}</span></h2>
+      {text && <p>{text}</p>}
+    </header>
+  )
+}
+
+function Timeline({ items, light = false }) {
+  return (
+    <ol className={`gsp-tl ${light ? 'gsp-tl--light' : ''}`}>
+      {items.map((it, i) => (
+        <li key={i}>
+          <Star className="gsp-tl__dot" />
+          <b className="gsp-serif">{it.years}</b>
+          <div><strong>{it.title}</strong>{it.text && <small>{it.text}</small>}</div>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+// Vitrina: el visitante elige un sistema y lo ve funcionando
+function Showcase({ onOpen, onQuote }) {
+  const [i, setI] = useState(0)
+  const [auto, setAuto] = useState(true)
+  useEffect(() => {
+    if (!auto) return
+    const id = setInterval(() => setI(x => (x + 1) % SOLUTIONS.length), 7000)
+    return () => clearInterval(id)
+  }, [auto])
+  const s = SOLUTIONS[i]
+  return (
+    <section className="gs-sec" id="demo">
+      <SecHead kicker="Pruébalo aquí" title="Mira cómo funciona" em="cada sistema" text="Elige un sistema: la simulación muestra lo que hace por tu negocio, en vivo." />
+      <div className="gs-show" style={{ '--c': s.color }} data-reveal>
+        <div className="gs-show__list" role="tablist" aria-label="Sistemas">
+          {SOLUTIONS.map((x, k) => (
+            <button key={x.id} role="tab" aria-selected={k === i} className={k === i ? 'is-on' : ''} style={{ '--c': x.color }} onClick={() => { setI(k); setAuto(false) }}>
+              <GsIcon name={x.icon} /> <span>{x.name.split(' · ')[0]}</span>
+              {k === i && auto && <i className="gs-show__timer" />}
+            </button>
+          ))}
+        </div>
+        <div className="gs-show__stage" role="tabpanel">
+          <Sim key={s.id} kind={s.sim} title={s.name} color={s.color} big />
+          <div className="gs-show__info">
+            <b className="gsp-serif">{s.name}</b>
+            <p>{s.simple}</p>
+            <div className="gs-show__cta">
+              <button className="gs-btn gs-btn--primary" onClick={() => onQuote(s.id)}>Cotizar</button>
+              <button className="gs-btn gs-btn--ghost" onClick={() => onOpen(s)}>Ver detalle</button>
+            </div>
           </div>
         </div>
-
-        <div className="pfo-hero__art">
-          <div className="pfo-circle" />
-          {p.photo ? (
-            <img className={`pfo-photo ${p.photoCutout ? 'is-cutout' : ''}`} src={p.photo} alt={fullName} />
-          ) : (
-            <div className="pfo-mono" aria-hidden="true">
-              <span>{(p.firstName || '✱')[0]}</span>
-              <code className="pfo-code">
-                <i>const</i> dev = {'{'}<br />
-                &nbsp;&nbsp;nombre: <b>&quot;{p.firstName}&quot;</b>,<br />
-                &nbsp;&nbsp;pasión: <b>&quot;crear&quot;</b><br />
-                {'}'}
-              </code>
-            </div>
-          )}
-          <Badge text={p.badge} />
-        </div>
       </div>
     </section>
   )
 }
 
-function Badge({ text }) {
-  const t = (text || '').toUpperCase()
-  return (
-    <div className="pfo-badge" aria-hidden="true">
-      <svg viewBox="0 0 120 120">
-        <defs><path id="pfo-badge-path" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0" /></defs>
-        <text><textPath href="#pfo-badge-path" textLength="288">{t.repeat(Math.max(1, Math.round(40 / Math.max(1, t.length))))}</textPath></text>
-      </svg>
-      <span className="pfo-badge__core">✱</span>
-    </div>
-  )
+// Monograma de 2 letras (React → Re, TypeScript → TS)
+// Tecnologías del perfil + las de la plataforma, sin repetir (máx. 12)
+function techList(tools) {
+  const seen = new Set()
+  return [...(tools || []), ...SKILLS.tools].filter(x => { const k = String(x).trim().toLowerCase(); if (!k || seen.has(k)) return false; seen.add(k); return true }).slice(0, 12)
 }
 
-/* ── Cinta animada ────────────────────────────────────────── */
-function Marquee({ items }) {
-  if (!items?.length) return null
-  const row = [...items, ...items]
-  return (
-    <div className="pfo-marquee" aria-label={items.join(', ')}>
-      <div className="pfo-marquee__track" aria-hidden="true">
-        {[0, 1].map(k => (
-          <span key={k} className="pfo-marquee__group">
-            {row.map((t, i) => <span key={i} className="pfo-marquee__item">{t}<span className="pfo-star">✱</span></span>)}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-/* ── Proyectos ────────────────────────────────────────────── */
-function Projects({ p }) {
-  return (
-    <section id="proyectos" className="pfo-sec">
-      <div className="pfo-sec__head">
-        <h2 className="pfo-h2" data-reveal>{p.projectsTitle}<br /><em>{p.projectsEmphasis}</em></h2>
-        <p className="pfo-sec__intro" data-reveal>{p.projectsIntro}</p>
-        {p.githubUrl
-          ? <a className="pfo-link" href={p.githubUrl} target="_blank" rel="noopener noreferrer" data-reveal>Ver todo en GitHub <Arrow /></a>
-          : <a className="pfo-link" href="#contacto" data-reveal>¿Tienes un proyecto? <Arrow /></a>}
-      </div>
-      <div className="pfo-projects">
-        {p.projects.map((pr, i) => <ProjectCard key={i} pr={pr} i={i} />)}
-      </div>
-    </section>
-  )
-}
-
-function ProjectCard({ pr, i }) {
-  const link = pr.url || pr.repo || ''
-  const tech = String(pr.tech || '').split(',').map(t => t.trim()).filter(Boolean)
-  return (
-    <article className="pfo-proj" data-reveal style={{ '--d': `${(i % 4) * 0.08}s` }}>
-      <a className="pfo-proj__visual" href={link || undefined} target={/^https?:/.test(link) ? '_blank' : undefined} rel="noopener noreferrer" aria-label={`Ver ${pr.title}`} tabIndex={link ? undefined : -1}>
-        {pr.image
-          ? <img src={pr.image} alt="" loading="lazy" />
-          : pr.preset ? <MiniSite project={pr} /> : <Cover project={pr} i={i} />}
-        {pr.description && <span className="pfo-proj__desc"><span>{pr.description}</span></span>}
-        {link && <span className="pfo-proj__go" aria-hidden="true"><Arrow /></span>}
-      </a>
-      <div className="pfo-proj__meta">
-        <span className="pfo-proj__num">{String(i + 1).padStart(2, '0')}</span>
-        <span className="pfo-proj__txt">
-          <strong>{pr.title}</strong>
-          <small>{pr.category}</small>
-          {(tech.length > 0 || pr.repo) && (
-            <span className="pfo-proj__tags">
-              {tech.slice(0, 3).map(t => <em key={t}>{t}</em>)}
-              {pr.repo && <a href={pr.repo} target="_blank" rel="noopener noreferrer" className="pfo-proj__code" aria-label={`Código de ${pr.title} en GitHub`}>{'</>'} Código</a>}
-            </span>
-          )}
-        </span>
-      </div>
-    </article>
-  )
-}
-
-// Portada tipográfica elegante (cuando el proyecto no tiene imagen)
-const COVERS = ['ink', 'stone', 'paper', 'night']
-function Cover({ project, i }) {
-  const words = String(project.title || '').toUpperCase().split(/\s+/)
-  const mid = Math.ceil(words.length / 2)
-  return (
-    <div className={`pfo-cover pfo-cover--${COVERS[i % COVERS.length]}`} aria-hidden="true">
-      <div className="pfo-cover__nav"><b>{words[0]}</b><span><i /><i /><i /></span></div>
-      <p className="pfo-cover__title">{words.slice(0, mid).join(' ')}<br />{words.slice(mid).join(' ')}</p>
-      <span className="pfo-cover__btn">Ver proyecto</span>
-      <span className="pfo-cover__shape" />
-    </div>
-  )
-}
-
-// Vista previa ilustrada de un catálogo (proyectos importados desde tus catálogos)
-function MiniSite({ project }) {
-  const t = THEME_PRESETS[project.preset] || THEME_PRESETS.noche
-  return (
-    <div className="pfo-mini" style={{ '--m-paper': t.paper, '--m-ink': t.ink, '--m-acc': t.primary, '--m-soft': t.blush, '--m-font': `'${t.fontDisplay}', serif` }} aria-hidden="true">
-      <div className="pfo-mini__bar"><i /><i /><i /></div>
-      <div className="pfo-mini__nav"><b>{project.title}</b><span /></div>
-      <div className="pfo-mini__hero">
-        <p>{project.title}</p>
-        <span className="pfo-mini__btn" />
-      </div>
-      <div className="pfo-mini__grid"><i /><i /><i /></div>
-    </div>
-  )
-}
-
-/* ── Habilidades y servicios ──────────────────────────────── */
-function Skills({ p }) {
-  return (
-    <section id="habilidades" className="pfo-sec pfo-skills">
-      <div className="pfo-skills__col">
-        <h2 className="pfo-h2" data-reveal>{p.skillsTitle}<br /><em>{p.skillsEmphasis}</em></h2>
-        <ul className="pfo-bars">
-          {p.skills.map((s, i) => (
-            <li key={i} data-reveal style={{ '--lvl': `${Math.max(0, Math.min(100, Number(s.level) || 0))}%`, '--d': `${i * 0.06}s` }}>
-              <span>{s.name}</span><b>{s.level}%</b>
-              <i className="pfo-bars__track"><i className="pfo-bars__fill" /></i>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <blockquote className="pfo-quote" data-reveal>
-        <span className="pfo-quote__mark" aria-hidden="true">“</span>
-        {p.quote}
-      </blockquote>
-      <ul className="pfo-services">
-        {p.services.map((s, i) => (
-          <li key={i} data-reveal style={{ '--d': `${i * 0.08}s` }}>
-            <span className="pfo-services__icon"><Icon name={s.icon} /></span>
-            <span><strong>{s.title}</strong><small>{s.text}</small></span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )
-}
-
-/* ── Testimonios ──────────────────────────────────────────── */
-function Testimonials({ p }) {
-  return (
-    <section className="pfo-sec">
-      <div className="pfo-sec__head">
-        <h2 className="pfo-h2" data-reveal>{p.testimonialsTitle}<br /><em>{p.testimonialsEmphasis}</em></h2>
-      </div>
-      <div className="pfo-testi">
-        {p.testimonials.map((t, i) => (
-          <figure key={i} data-reveal style={{ '--d': `${i * 0.08}s` }}>
-            <span className="pfo-quote__mark" aria-hidden="true">“</span>
-            <blockquote>{t.text}</blockquote>
-            <figcaption>
-              <span className="pfo-testi__avatar">{t.photo ? <img src={t.photo} alt="" /> : (t.name || '?')[0]}</span>
-              <span><strong>{t.name}</strong><small>{t.role}</small></span>
-            </figcaption>
-          </figure>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-/* ── Contacto ─────────────────────────────────────────────── */
-function Contact({ p, wa, fullName }) {
-  const c = p.contact
-  const items = [
-    c.email && { icon: 'mail', label: c.email, href: `mailto:${c.email}` },
-    c.whatsapp && { icon: 'chat', label: `+${c.whatsapp.replace(/\D/g, '')}`, href: wa },
-    c.website && { icon: 'globe', label: c.website.replace(/^https?:\/\//, ''), href: /^https?:/.test(c.website) ? c.website : `https://${c.website}` },
-    c.location && { icon: 'pin', label: c.location },
-  ].filter(Boolean)
-  const socials = [
-    c.instagram && { name: 'Instagram', href: c.instagram },
-    c.github && { name: 'GitHub', href: c.github },
-    c.linkedin && { name: 'LinkedIn', href: c.linkedin },
-  ].filter(Boolean)
-  return (
-    <section id="contacto" className="pfo-sec pfo-contact">
-      <div>
-        <h2 className="pfo-h2 pfo-h2--xl" data-reveal>{p.ctaTitle}<br /><em>{p.ctaEmphasis}</em></h2>
-        <p className="pfo-sec__intro" data-reveal>{p.ctaText}</p>
-        <div className="pfo-ctas" data-reveal>
-          {wa && <a className="pfo-btn pfo-btn--accent" href={wa} target="_blank" rel="noopener noreferrer">{p.ctaButton} <Arrow /></a>}
-          {c.email && <a className="pfo-btn" href={`mailto:${c.email}`}>Enviar un correo</a>}
-        </div>
-      </div>
-      <div className="pfo-contact__side" data-reveal>
-        <div className="pfo-contact__spin" aria-hidden="true">✱</div>
-        <div className="pfo-qr">
-          <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&color=161412&bgcolor=F4EFE7&data=${encodeURIComponent(window.location.origin)}`} alt="Código QR de este sitio" loading="lazy" width="90" height="90" />
-          <span>Escanea para<br />visitar mi sitio</span>
-        </div>
-        <ul className="pfo-contact__list">
-          {items.map((it, i) => (
-            <li key={i}>
-              <span className="pfo-services__icon pfo-services__icon--sm"><Icon name={it.icon} /></span>
-              {it.href ? <a href={it.href} target={it.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer">{it.label}</a> : <span>{it.label}</span>}
-            </li>
-          ))}
-        </ul>
-        {socials.length > 0 && (
-          <p className="pfo-contact__social">
-            {socials.map(s => <a key={s.name} href={s.href} target="_blank" rel="noopener noreferrer">{s.name}</a>)}
-          </p>
-        )}
-        <p className="pfo-sign pfo-sign--sm" aria-hidden="true">{p.signature || fullName}</p>
-      </div>
-    </section>
-  )
-}
-
-/* ── Íconos ───────────────────────────────────────────────── */
-function Arrow() {
-  return <svg className="pfo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
-}
-
-const ICONS = {
-  monitor: 'M3 4h18v12H3zM8 20h8M12 16v4',
-  code: 'm8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14',
-  phone: 'M7 2h10v20H7zM11 18h2',
-  rocket: 'M5 15c-1 1-2 4-2 6 2 0 5-1 6-2M9 13l2 2M14 4c3-1 6-1 6-1s0 3-1 6l-7 7-5-5zM15 9h.01',
-  palette: 'M12 3a9 9 0 1 0 0 18c1 0 2-1 1-2-1-2 0-3 2-3h2a4 4 0 0 0 4-4c0-5-4-9-9-9zM7.5 11h.01M10 7h.01M15 7h.01',
-  bolt: 'M13 2 4 14h7l-1 8 9-12h-7z',
-  chat: 'M21 12a8 8 0 0 1-12 7l-5 1 1-4a8 8 0 1 1 16-4z',
-  mail: 'M3 5h18v14H3zM3 6l9 7 9-7',
-  globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18',
-  pin: 'M12 21s7-6 7-12a7 7 0 1 0-14 0c0 6 7 12 7 12zM12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
-  cart: 'M3 4h2l2 12h11l2-8H6M9 20h.01M17 20h.01',
-  chart: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
-  star: 'm12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z',
-}
-
-function Icon({ name }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d={ICONS[name] || ICONS.star} />
-    </svg>
-  )
+// Abreviatura legible de cada tecnología (sin repetidas como «Fi» para Firebase y Figma)
+const TECH_ABBR = { react: 'Re', typescript: 'TS', javascript: 'JS', firebase: 'Fb', 'node.js': 'Nd', node: 'Nd', figma: 'Fg', python: 'Py', 'sap b1': 'SAP', git: 'Git', github: 'GH', vercel: 'Vc', ia: 'IA', sql: 'SQL', pwa: 'PWA', html: 'H5', css: 'CSS', excel: 'XL', 'power bi': 'BI' }
+function mono(t) {
+  const known = TECH_ABBR[String(t).trim().toLowerCase()]
+  if (known) return known
+  const words = t.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .]/g, ' ').split(/[\s.]+/).filter(Boolean)
+  if (words.length > 1) return (words[0][0] + words[1][0]).toUpperCase()
+  const caps = t.match(/[A-Z]/g)
+  if (caps && caps.length >= 2) return caps.slice(0, 2).join('')
+  return t.slice(0, 2).replace(/^./, c => c.toUpperCase())
 }

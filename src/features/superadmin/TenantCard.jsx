@@ -37,7 +37,7 @@ export default function TenantCard({ tenant: t, onToggle, onChangePassword, bill
         <div><dt>Dueño</dt><dd>{t.ownerEmail || '—'}</dd></div>
         <div><dt>WhatsApp</dt><dd>{t.whatsapp || '—'}</dd></div>
         <div><dt>Plantilla</dt><dd>{getTemplate(t.template).label}</dd></div>
-        <div className="sa-card__plan"><dt>Plan</dt><dd><span className={`bp-chip bp-chip--${bs.state}`}>{bs.label}</span> <small>{t.billing ? `${MODELS[t.billing.model]?.short || ''} · hasta ${formatDay(t.billing.paidUntil)}` : ''}</small></dd></div>
+        <div className="sa-card__plan"><dt>Plan</dt><dd>{t.plan === 'premium' && <em className="bp-premium" style={{ marginLeft: 0 }}>Premium</em>}<span className={`bp-chip bp-chip--${bs.state}`}>{bs.label}</span> <small>{t.billing ? `${MODELS[t.billing.model]?.short || ''} · hasta ${formatDay(t.billing.paidUntil)}` : ''}</small></dd></div>
         <div><dt>Colores</dt><dd className="sa-swatches">{[theme.primary, theme.blush, theme.ink].map((c, k) => <i key={k} style={{ background: c }} />)}</dd></div>
       </dl>
 

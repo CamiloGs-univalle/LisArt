@@ -13,6 +13,7 @@ export const BILLING_DEFAULTS = {
   monthlyPrice: 49900,        // modelo mensual
   setupFee: 350000,           // modelo único: creación
   maintenancePrice: 25000,    // modelo único: mantenimiento mensual
+  premiumPrice: 30000,        // plan Premium (Google): valor extra al mes
   annualDiscount: 15,         // % de descuento al pagar 12 meses
   graceDays: 5,               // días extra después del vencimiento antes de pausar
   warnDays: 5,                // días antes del vencimiento para avisar
@@ -28,6 +29,28 @@ export const MODELS = {
 }
 
 export const PAY_MONTHS = [1, 3, 6, 12]
+
+// Planes: el Premium suma las herramientas para aparecer mejor en Google
+export const PLANS = {
+  basico: {
+    label: 'Básico',
+    features: ['Catálogo con todos los diseños', 'Pedidos por WhatsApp', 'Vender más y cuentas del negocio', 'Enlace con foto al compartir'],
+  },
+  premium: {
+    label: 'Premium',
+    tag: 'Google',
+    features: [
+      'Tus productos con precio en los resultados de Google',
+      'Tus productos en Google Compras (gratis)',
+      'Dirección, horario y tipo de negocio para Google',
+      'Puntaje y consejos para aparecer mejor',
+      'Botón de reseñas en Google después de cada pedido',
+      'Todos tus productos en el mapa del sitio para Google',
+    ],
+  },
+}
+export const planOf = (t) => (t?.plan === 'premium' ? 'premium' : 'basico')
+export const isPremium = (t) => planOf(t) === 'premium'
 
 export const withBillingDefaults = (s) => ({ ...BILLING_DEFAULTS, ...(s || {}) })
 
@@ -48,8 +71,15 @@ export function monthlyFor(billing = {}, settings = BILLING_DEFAULTS) {
   return billing.model === 'unico' ? s.maintenancePrice : s.monthlyPrice
 }
 
+// Cuota mensual total con el plan (Básico o Premium)
+export function monthlyTotal(billing = {}, settings = BILLING_DEFAULTS, plan = 'basico') {
+  const s = withBillingDefaults(settings)
+  const extra = plan === 'premium' ? (Number(billing.premiumPrice) > 0 ? Number(billing.premiumPrice) : Number(s.premiumPrice) || 0) : 0
+  return monthlyFor(billing, s) + extra
+}
+
 // Lo que se cobra en el siguiente pago (y por qué)
-export function quote(billing = {}, settings = BILLING_DEFAULTS, months = 1) {
+export function quote(billing = {}, settings = BILLING_DEFAULTS, months = 1, plan = 'basico') {
   const s = withBillingDefaults(settings)
   const m = PAY_MONTHS.includes(Number(months)) ? Number(months) : 1
   const lines = []
@@ -65,6 +95,11 @@ export function quote(billing = {}, settings = BILLING_DEFAULTS, months = 1) {
     amount: base - discount,
     discount,
   })
+  if (plan === 'premium') {
+    const pBase = (Number(billing.premiumPrice) > 0 ? Number(billing.premiumPrice) : Number(s.premiumPrice) || 0) * m
+    const pDisc = m === 12 ? Math.round(pBase * (s.annualDiscount || 0) / 100) : 0
+    if (pBase > 0) lines.push({ concept: 'premium', label: `Plan Premium · Google × ${m} ${m === 1 ? 'mes' : 'meses'}`, amount: pBase - pDisc, discount: pDisc })
+  }
   return { months: m, lines, total: lines.reduce((a, l) => a + l.amount, 0) }
 }
 

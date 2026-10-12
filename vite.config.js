@@ -46,4 +46,20 @@ export default defineConfig(({ mode }) => ({
     // "@/..." apunta a src/ (imports cortos y estables al mover archivos)
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  build: {
+    target: 'es2020',
+    cssCodeSplit: true,
+    // Librerías en archivos propios: cambian poco, así el navegador las
+    // reutiliza de su caché entre una publicación y otra.
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (/[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id)) return 'vendor-react'
+          // Firebase va en UN solo archivo: separarlo rompe su orden de arranque
+          if (/[\\/]node_modules[\\/](@firebase|firebase|idb|tslib)[\\/]/.test(id)) return 'vendor-firebase'
+        },
+      },
+    },
+  },
 }))

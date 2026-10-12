@@ -3,7 +3,8 @@
 import { verifyIdToken, superEmails, httpError } from '../_lib/firebaseAdmin.js'
 import { setFields } from '../_lib/firestore.js'
 import { billingSettings, wompiConfig, assertCanPay, sha256 } from '../_lib/billing.js'
-import { quote } from '../../src/lib/billingCore.js'
+import { quote, planOf, PLANS } from '../../src/lib/billingCore.js'
+import { originOf } from '../_lib/seo.js'
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store')
@@ -23,18 +24,20 @@ export default async function handler(req, res) {
 
     const tenant = await assertCanPay(decoded, tenantId, isSuper)
     const settings = await billingSettings()
-    const q = quote(tenant.billing || {}, settings, body.months)
+    // Plan a pagar: el que pidió (para subir a Premium o volver a Básico) o el que ya tiene
+    const plan = PLANS[body.plan] ? body.plan : planOf(tenant)
+    const q = quote(tenant.billing || {}, settings, body.months, plan)
     if (q.total < 1500) throw httpError(400, 'El valor a pagar es muy bajo para pago en línea.')
 
     const amountInCents = Math.round(q.total * 100)
     const reference = `${tenantId}_${Date.now().toString(36)}`
     await setFields(`payments/${reference}`, {
       tenantId, tenantName: tenant.name || tenantId, reference,
-      amount: q.total, currency: 'COP', months: q.months, lines: q.lines,
+      amount: q.total, currency: 'COP', months: q.months, lines: q.lines, plan,
       method: 'wompi', status: 'pending', createdAt: new Date().toISOString(), createdBy: decoded.email || decoded.uid,
     })
 
-    const origin = req.headers.origin || `https://${req.headers.host}`
+    const origin = originOf(req)
     const params = new URLSearchParams({
       'public-key': wompi.publicKey,
       currency: 'COP',

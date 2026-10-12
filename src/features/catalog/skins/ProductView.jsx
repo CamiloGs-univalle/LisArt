@@ -11,6 +11,7 @@ import { Price, ProductOptions, ThumbGallery } from './shared'
 import { OfferNote, StockNote, ProductBoost } from '@/features/marketing/Boost'
 import { useSettingsCtx } from '@/features/catalog/data/SettingsProvider'
 import './ProductView.css'
+import { optimizeImg } from '@/lib/images'
 
 export default function ProductView({ variant = 'velora' }) {
   const { product: p, closeProduct, openProduct, openCart } = useUI()
@@ -92,7 +93,7 @@ export default function ProductView({ variant = 'velora' }) {
             <div className="pv__grid">
               {more.map(x => (
                 <button key={x.id} className="pv__card" onClick={() => openProduct(x)}>
-                  <span className="pv__card-img"><img src={x.image} alt="" loading="lazy" /></span>
+                  <span className="pv__card-img"><img src={optimizeImg(x.image, 400)} alt="" loading="lazy" decoding="async" /></span>
                   <strong>{x.name}</strong>
                   <Price p={x} />
                 </button>

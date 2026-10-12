@@ -2,7 +2,7 @@
 // Sirve para ver cómo luce un catálogo real con todas las estrategias de venta.
 // Las fotos se asignan por nombre de archivo (capuchino.jpg → producto "capuchino").
 import { P } from '@/services/paths'
-import { readDoc, writeDoc, writeMany, now } from '@/services/repo'
+import { readDoc, writeDoc, writeMany, patchDoc, now } from '@/services/repo'
 import { createTenant, writeAccount } from '@/services/tenants.service'
 import { uploadImage } from '@/lib/cloudinary'
 import { slugify } from '@/lib/format'
@@ -91,6 +91,7 @@ export async function seedDemoCafe({ user, files = [], onStep = () => {} }) {
       theme: { preset: 'sabor' },
       ownerUid: user.uid,
       demo: true,
+      plan: 'premium',
       billing: publicBilling(billing),
     })
     await writeAccount(DEMO_SLUG, { ownerEmail: user.email, billing })
@@ -126,6 +127,7 @@ export async function seedDemoCafe({ user, files = [], onStep = () => {} }) {
     }]
   }))
 
+  if (exists) await patchDoc(P.tenant(DEMO_SLUG), { plan: 'premium' })
   onStep('Configurando diseño y ventas…')
   const id = (k) => `demo-${k}`
   await writeDoc(P.settings(DEMO_SLUG), {

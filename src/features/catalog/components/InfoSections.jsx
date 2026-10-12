@@ -10,6 +10,7 @@ import Icon from '@/shared/ui/Icon'
 import SectionHeader from '@/features/catalog/components/SectionHeader'
 import EditText, { useEditableText } from '@/features/editor/EditText'
 import ChipEditor from '@/features/editor/ChipEditor'
+import { optimizeImg } from '@/lib/images'
 
 const STEP_COLORS = ['var(--c-berry)', 'var(--c-rose)', 'var(--c-gold)']
 
@@ -184,7 +185,7 @@ export function Story({ image }) {
       <Reveal className="story__card">
         {image && (
           <div className="story__media">
-            <img src={image} alt="" loading="lazy" decoding="async" />
+            <img src={optimizeImg(image, 1000)} alt="" loading="lazy" decoding="async" />
             <EditText path="story.sticker" fallback="Hecho con amor ♥" className="sticker story__sticker" />
           </div>
         )}

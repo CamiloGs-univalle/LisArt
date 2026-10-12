@@ -1,4 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useTenant } from '@/features/tenant/TenantProvider'
+import { isPremium } from '@/lib/billingCore'
 import { useCart } from '@/features/cart/CartProvider'
 import { useUI } from '@/features/catalog/UIProvider'
 import { formatPrice } from '@/lib/format'
@@ -10,9 +12,15 @@ import { GoalBar, CartUpsell } from '@/features/marketing/Boost'
 
 function CartDrawer() {
   const { cartOpen: open, closeCart: onClose } = useUI()
-  const { items, lineKey, changeQty, removeFromCart, clearCart, total, count, checkoutUrl, info, updateInfo, discount, finalTotal, rewards } = useCart()
+  const { items, lineKey, changeQty, removeFromCart, clearCart, total, count, checkoutUrl, info, updateInfo, discount, finalTotal, rewards, placeOrder, restoreOrder, lastOrder } = useCart()
   const closeRef = useRef(null)
   const { cartNote } = useSiteContent()
+  const { tenant } = useTenant()
+  const reviewUrl = isPremium(tenant) && /^https:\/\//.test(tenant?.googleReviewUrl || '') ? tenant.googleReviewUrl : ''
+  const [sent, setSent] = useState(false)
+
+  // La vista «pedido enviado» solo dura mientras el carrito sigue abierto
+  useEffect(() => { if (!open) setSent(false) }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -30,7 +38,7 @@ function CartDrawer() {
       <aside className="cart" role="dialog" aria-modal="true" aria-labelledby="cart-title" onClick={e => e.stopPropagation()}>
         <header className="cart__head">
           <div>
-            <p className="eyebrow">{count} {count === 1 ? 'pieza' : 'piezas'}</p>
+            <p className="eyebrow">{sent && lastOrder ? 'Pedido enviado' : `${count} ${count === 1 ? 'pieza' : 'piezas'}`}</p>
             <h2 id="cart-title" className="display cart__title"><EditText path="cart.title" fallback="Tu" /> <em><EditText path="cart.emphasis" fallback="pedido" /></em></h2>
           </div>
           <button ref={closeRef} className="cart__close" onClick={onClose} aria-label="Cerrar pedido">
@@ -38,7 +46,22 @@ function CartDrawer() {
           </button>
         </header>
 
-        {items.length === 0 ? (
+        {sent && lastOrder ? (
+          <div className="cart__sent" role="status">
+            <span className="cart__sent-icon" aria-hidden="true"><Icon name="check" size={34} /></span>
+            <p className="display">¡Pedido <em>listo</em>!</p>
+            <span>Se abrió WhatsApp con tu pedido de {lastOrder.count} {lastOrder.count === 1 ? 'producto' : 'productos'} por <b className="num">{formatPrice(lastOrder.total)}</b>. Solo falta tocar <b>Enviar</b> allá.</span>
+            <a className="btn btn--wa btn--block" href={lastOrder.url} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" /> Abrir WhatsApp de nuevo</a>
+            <button className="btn btn--primary btn--block" onClick={onClose}>Seguir viendo el catálogo</button>
+            <button className="cart__undo" onClick={() => { restoreOrder(); setSent(false) }}>No lo envié, volver a mi pedido</button>
+            {reviewUrl && (
+              <a className="cart__review" href={reviewUrl} target="_blank" rel="noopener noreferrer">
+                <span aria-hidden="true">⭐</span>
+                <span><strong>¿Te gustó la atención?</strong> Déjanos tu reseña en Google, nos ayuda muchísimo.</span>
+              </a>
+            )}
+          </div>
+        ) : items.length === 0 ? (
           <div className="cart__empty">
             <span className="cart__empty-icon"><Icon name="gift" size={34} /></span>
             <p className="display">Tu pedido está <em>vacío</em></p>
@@ -46,6 +69,13 @@ function CartDrawer() {
             <button className="btn btn--primary" onClick={onClose}>
               Ver catálogo <Icon name="arrow" />
             </button>
+            {lastOrder && (
+              <div className="cart__last">
+                <span>Tu último pedido: {lastOrder.count} {lastOrder.count === 1 ? 'producto' : 'productos'} · <b className="num">{formatPrice(lastOrder.total)}</b></span>
+                <a href={lastOrder.url} target="_blank" rel="noopener noreferrer">Reenviar por WhatsApp</a>
+                <button type="button" onClick={restoreOrder}>Volver a pedirlo</button>
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -99,7 +129,7 @@ function CartDrawer() {
                 </div>
               </details>
 
-              <button className="cart__clear" onClick={clearCart}>Vaciar pedido</button>
+              <button className="cart__clear" onClick={() => { if (window.confirm('¿Vaciar todo el pedido?')) clearCart() }}>Vaciar pedido</button>
             </div>
 
             <footer className="cart__foot">
@@ -115,7 +145,7 @@ function CartDrawer() {
               </div>
               {rewards.length > 0 && <p className="cart__reward">🎁 Ganaste: <b>{rewards.join(' + ')}</b></p>}
               {cartNote && <p className="cart__note">{cartNote}</p>}
-              <a className="btn btn--wa btn--block cart__cta" href={checkoutUrl()} target="_blank" rel="noopener noreferrer">
+              <a className="btn btn--wa btn--block cart__cta" href={checkoutUrl()} target="_blank" rel="noopener noreferrer" onClick={(e) => { e.preventDefault(); const o = placeOrder(); if (o) window.open(o.url, '_blank', 'noopener'); setSent(true) }}>
                 <Icon name="whatsapp" /> <EditText path="cart.cta" fallback="Enviar pedido por WhatsApp" inButton />
               </a>
             </footer>

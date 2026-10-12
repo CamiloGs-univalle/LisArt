@@ -16,6 +16,8 @@ import { useAdmin } from '@/features/editor/EditorProvider'
 import { formatPrice } from '@/lib/format'
 import { activeOffer, timeLeft, stockInfo, goalLabel, comboInfo, compareInfo, suggestions, GOAL_TYPES } from '@/lib/marketing'
 import Icon from '@/shared/ui/Icon'
+import { useTenant } from '@/features/tenant/TenantProvider'
+import { isPremium } from '@/lib/billingCore'
 import './Boost.css'
 
 function useNow(active, every = 1000) {
@@ -163,7 +165,9 @@ export function CompareBlock({ cmp, currentId }) {
   useEffect(() => {
     const g = grid.current
     const rec = g?.querySelector('.is-rec')
-    if (g && rec && g.scrollWidth > g.clientWidth) g.scrollLeft = rec.offsetLeft - (g.clientWidth - rec.clientWidth) / 2
+    if (!g || !rec || g.scrollWidth <= g.clientWidth) return
+    const gr = g.getBoundingClientRect(), rr = rec.getBoundingClientRect()
+    g.scrollLeft += (rr.left - gr.left) - (gr.width - rr.width) / 2
   }, [recommended, items.length])
   if (items.length < 2) return null
   const features = (cmp.features || []).filter(f => f.label)
@@ -264,6 +268,69 @@ export function Reviews({ list, title = 'Lo que dicen nuestros clientes' }) {
   )
 }
 
+/* ── Opiniones de Google (plan Premium) ──
+   Muestra la calificación y reseñas reales de la ficha de Google del negocio.
+   «Escribir una reseña» abre el formulario de Google: las reseñas se escriben allá. */
+export function useGoogleReviews() {
+  const { tenant } = useTenant()
+  const ok = isPremium(tenant)
+  const https = (u) => (/^https:\/\//.test(u || '') ? u : '')
+  const writeUrl = ok ? https(tenant?.googleReviewUrl) : ''
+  const viewUrl = ok ? https(tenant?.mapsUrl) : ''
+  const rating = ok ? Number(tenant?.googleRating) || 0 : 0
+  const count = ok ? Number(tenant?.googleReviewCount) || 0 : 0
+  const list = ok && Array.isArray(tenant?.googleReviews) ? tenant.googleReviews.filter(r => r?.text) : []
+  return { show: ok && !!(rating || list.length || writeUrl), writeUrl, viewUrl, rating, count, list }
+}
+
+export function WriteGoogleReview({ className = '' }) {
+  const { writeUrl } = useGoogleReviews()
+  if (!writeUrl) return null
+  return (
+    <a className={`mk-greview ${className}`} href={writeUrl} target="_blank" rel="noopener noreferrer">
+      <Icon name="star" size={16} /> Escribir una reseña en Google
+    </a>
+  )
+}
+
+export function GoogleReviews() {
+  const g = useGoogleReviews()
+  if (!g.show) return null
+  return (
+    <section className="mk-reviews mk-greviews" aria-label="Opiniones en Google">
+      <header className="mk-head">
+        <p className="mk-eyebrow">Opiniones en Google</p>
+        <h3>Lo que dicen de nosotros</h3>
+        {g.rating > 0 && (
+          <p className="mk-greviews__score">
+            <b className="num">{g.rating.toFixed(1).replace('.', ',')}</b>
+            <Stars n={Math.round(g.rating)} />
+            {g.count > 0 && <span>{g.count} {g.count === 1 ? 'reseña' : 'reseñas'} en Google</span>}
+          </p>
+        )}
+      </header>
+      {g.list.length > 0 && (
+        <div className="mk-rail mk-rail--reviews">
+          {g.list.map(r => (
+            <figure key={r.id} className="mk-review">
+              <Stars n={Number(r.stars) || 5} />
+              <blockquote>“{r.text}”</blockquote>
+              <figcaption>
+                <span className="mk-review__av" aria-hidden="true">{(r.name || '?').slice(0, 1).toUpperCase()}</span>
+                <span>{r.name}<small className="mk-greviews__src">Google{r.when ? ` · ${r.when}` : ''}</small></span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
+      <div className="mk-greviews__cta">
+        {g.writeUrl && <a className="mk-cta" href={g.writeUrl} target="_blank" rel="noopener noreferrer"><Icon name="star" size={17} /> Escribir una reseña</a>}
+        {g.viewUrl && <a className="mk-greview" href={g.viewUrl} target="_blank" rel="noopener noreferrer">Ver todas en Google <Icon name="arrow" size={15} /></a>}
+      </div>
+    </section>
+  )
+}
+
 /* ── Ficha de producto ── */
 export function ProductBoost({ p, showSuggestions = true }) {
   const { marketing } = useSettingsCtx()
@@ -307,7 +374,8 @@ export function MarketingSections() {
   const compares = marketing.compares.filter(c => compareInfo(c, visibleProducts).items.length >= 2)
   const combos = marketing.combos.filter(c => comboInfo(c, visibleProducts).items.length >= 2)
   const reviews = marketing.reviews.filter(r => r.text)
-  if (!compares.length && !combos.length && !reviews.length) {
+  const google = useGoogleReviews()
+  if (!compares.length && !combos.length && !reviews.length && !google.show) {
     return isAdmin ? <p className="mk-adminhint">🚀 Agrega comparadores, combos y opiniones en <b>Panel → Vender más</b> y aparecerán aquí.</p> : null
   }
   return (
@@ -319,7 +387,9 @@ export function MarketingSections() {
           <div className="mk-combos__grid">{combos.map(c => <ComboCard key={c.id} combo={c} />)}</div>
         </section>
       )}
+      <GoogleReviews />
       <Reviews list={reviews} />
+      {reviews.length > 0 && !google.list.length && !google.rating && <WriteGoogleReview className="mk-greview--solo" />}
     </div>
   )
 }

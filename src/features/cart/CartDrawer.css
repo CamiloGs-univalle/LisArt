@@ -121,3 +121,20 @@
 .cart__empty .btn { margin-top: 14px; }
 .ci__opts { font-size: var(--fs-label); color: var(--ink-2); font-weight: 600; }
 .ci__img--empty { display: grid; place-items: center; color: var(--ink-3); background: linear-gradient(135deg, var(--paper-2), var(--blush)); }
+.cart__review { display: flex; gap: 10px; align-items: center; margin-top: 10px; padding: 10px 12px; border-radius: 14px; background: color-mix(in srgb, #f5b301 14%, var(--paper, #fff)); color: var(--ink); font-size: 13.5px; line-height: 1.4; text-decoration: none; animation: cart-rv .4s ease both; }
+.cart__review > span:first-child { font-size: 20px; }
+.cart__review:hover strong { text-decoration: underline; }
+@keyframes cart-rv { from { opacity: 0; transform: translateY(6px); } }
+
+/* Pedido enviado */
+.cart__sent { flex: 1; display: grid; align-content: center; justify-items: center; gap: 12px; padding: 28px 22px; text-align: center; overflow-y: auto; animation: cart-rv .45s ease both; }
+.cart__sent-icon { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; background: #25d366; color: #fff; box-shadow: 0 14px 30px -12px rgba(37,211,102,.7); animation: cart-pop .55s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes cart-pop { from { transform: scale(.3); opacity: 0; } }
+.cart__sent .display { font-size: 26px; }
+.cart__sent > span:not(.cart__sent-icon) { color: var(--ink-2); line-height: 1.5; max-width: 34ch; }
+.cart__sent .btn { max-width: 340px; }
+.cart__undo { min-height: 40px; font-size: 13.5px; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; }
+.cart__sent .cart__review { max-width: 340px; text-align: left; }
+.cart__last { display: grid; gap: 6px; margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: var(--paper-2); font-size: 13.5px; }
+.cart__last a, .cart__last button { font-weight: 700; color: var(--rose-deep); text-decoration: underline; text-underline-offset: 3px; justify-self: center; min-height: 32px; }
+@media (prefers-reduced-motion: reduce) { .cart__sent, .cart__sent-icon { animation: none; } }

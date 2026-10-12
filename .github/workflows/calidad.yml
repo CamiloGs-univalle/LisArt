@@ -1,0 +1,41 @@
+# Revisión automática en cada push y pull request:
+# 1) estilo de código (eslint) · 2) que construya · 3) presupuesto de rendimiento.
+# Si algo hace la página más pesada de lo permitido, el check falla en GitHub.
+name: Calidad y rendimiento
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: calidad-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Estilo de código
+        run: npx eslint . --quiet
+      - name: Construir
+        run: npx vite build
+      - name: Presupuesto de rendimiento
+        run: node scripts/perf-budget.mjs
+      - name: Resumen
+        if: always()
+        run: |
+          echo '### Presupuesto de rendimiento' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          node scripts/perf-budget.mjs >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

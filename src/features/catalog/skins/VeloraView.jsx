@@ -11,6 +11,7 @@ import { useAddToCart } from '@/features/cart/useAddToCart'
 import SectionBlock from './SectionBlock'
 import { useSkin, useSearch, Price, ProductOptions, ThumbGallery } from './shared'
 import './Velora.css'
+import { optimizeImg } from '@/lib/images'
 
 const ICONS = ['truck', 'card', 'chat', 'gift']
 
@@ -193,7 +194,7 @@ function Grid({ items, openProduct }) {
           <article key={p.id} className="vl-card">
             <div className="vl-card__media">
             <button className="vl-card__img" onClick={() => openProduct(p)} aria-label={`Ver ${p.name}`}>
-              <img src={p.image} alt="" loading="lazy" />
+              <img src={optimizeImg(p.image, 600)} alt="" loading="lazy" decoding="async" />
               {second && <img className="vl-card__alt" src={second} alt="" loading="lazy" />}
               {p.badge && <span className="vl-card__badge">{p.badge}</span>}
             </button>

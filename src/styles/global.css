@@ -121,6 +121,8 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  background: var(--page-bg, var(--paper));   /* al estirar la página en el celular no aparece blanco */
+  overflow-x: clip;           /* nada se sale de lado (sin romper los encabezados fijos) */
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--top-h) + 64px);
 }
@@ -129,9 +131,9 @@ body {
   font-family: var(--font-ui);
   font-size: var(--fs-body);
   line-height: 1.55;
-  background: var(--paper);
+  background: var(--page-bg, var(--paper));
   color: var(--ink);
-  overflow-x: hidden;
+  overflow-x: clip;            /* clip (no hidden): hidden convierte el body en contenedor de scroll y rompe los encabezados fijos */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -399,3 +401,6 @@ body:has(.eb) .to-top { bottom: calc(150px + env(safe-area-inset-bottom)); }
   .mz-brand { font-size: 22px; }
 }
 @media (max-width: 820px) { .lj-head__in { grid-template-columns: minmax(0, 1fr) auto; } }
+
+/* Textos que se ajustan al ancho: se miden sin transiciones */
+.is-fitting, .is-fitting * { transition: none !important; }

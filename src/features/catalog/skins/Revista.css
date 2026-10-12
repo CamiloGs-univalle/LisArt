@@ -102,3 +102,4 @@
 .ch-faq { padding: clamp(48px, 7vw, 90px) 0 0; max-width: 900px; }
 .ch-faq h2 { font: 500 clamp(28px, 3.6vw, 44px)/1.05 var(--font-display); }
 .ch-faq h2 em { font-style: italic; color: var(--rose); }
+.ch-mast { word-spacing: .14em; }

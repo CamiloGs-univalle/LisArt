@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTenant } from '@/features/tenant/TenantProvider'
 import { useBillingSettings } from '@/features/billing/useBilling'
 import { watchTenantPayments, watchAccount, startCheckout } from '@/services/billing.service'
-import { billingState, quote, monthlyFor, MODELS, PAY_MONTHS, formatCOP, formatDay } from '@/lib/billingCore'
+import { billingState, quote, monthlyTotal, MODELS, PLANS, planOf, PAY_MONTHS, formatCOP, formatDay } from '@/lib/billingCore'
 import { waLink } from '@/lib/format'
 import PaymentReturn from './PaymentReturn'
 
@@ -16,7 +16,7 @@ const STATE_COPY = {
 }
 const STATUS_LABEL = { approved: 'Aprobado', pending: 'Pendiente', declined: 'Rechazado', review: 'En revisión' }
 
-export default function PlanTab() {
+export default function PlanTab({ wantPlan }) {
   const { tenant, tenantId } = useTenant()
   const settings = useBillingSettings()
   const [account, setAccount] = useState(null)
@@ -25,10 +25,13 @@ export default function PlanTab() {
   const billing = useMemo(() => (tenant?.billing || account?.billing ? { ...(tenant?.billing || {}), ...(account?.billing || {}) } : null), [tenant?.billing, account?.billing])
   const st = billingState(billing, settings)
   const [months, setMonths] = useState(1)
+  const current = planOf(tenant)
+  const [plan, setPlan] = useState(wantPlan || current)
+  useEffect(() => { if (wantPlan) setPlan(wantPlan) }, [wantPlan])
   const [payments, setPayments] = useState([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const q = useMemo(() => quote(billing || {}, settings, months), [billing, settings, months])
+  const q = useMemo(() => quote(billing || {}, settings, months, plan), [billing, settings, months, plan])
 
   useEffect(() => watchTenantPayments(tenantId, (list) => setPayments(
     [...list].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
@@ -37,14 +40,14 @@ export default function PlanTab() {
   const payOnline = async () => {
     setError(''); setBusy(true)
     try {
-      const r = await startCheckout(tenantId, months)
+      const r = await startCheckout(tenantId, months, plan)
       if (r.demo) { setError('Modo demostración: aquí se abriría el pago seguro de Wompi.'); return }
       window.location.assign(r.url)
     } catch (e) { setError(e.message || 'No se pudo iniciar el pago.') }
     finally { setBusy(false) }
   }
 
-  const receiptMsg = `Hola 👋 Te envío el comprobante de pago del catálogo *${tenant?.name || tenantId}* (/${tenantId}).\nValor: ${formatCOP(q.total)} · ${q.months} ${q.months === 1 ? 'mes' : 'meses'}.`
+  const receiptMsg = `Hola 👋 Te envío el comprobante de pago del catálogo *${tenant?.name || tenantId}* (/${tenantId}).\nPlan: ${PLANS[plan].label}.\nValor: ${formatCOP(q.total)} · ${q.months} ${q.months === 1 ? 'mes' : 'meses'}.`
   const [title, text] = STATE_COPY[st.state]
 
   return (
@@ -60,16 +63,34 @@ export default function PlanTab() {
           </div>
         </div>
         <dl className="pl-facts">
-          <div><dt>Plan</dt><dd>{MODELS[billing?.model]?.label || '—'}</dd></div>
+          <div><dt>Plan</dt><dd>{PLANS[current].label}{billing?.model ? ` · ${MODELS[billing.model]?.short || ''}` : ''}</dd></div>
           <div><dt>Estado</dt><dd>{st.label}</dd></div>
           <div><dt>Pagado hasta</dt><dd className="num">{formatDay(billing?.paidUntil)}</dd></div>
-          <div><dt>Cuota mensual</dt><dd className="num">{formatCOP(monthlyFor(billing || {}, settings))}</dd></div>
+          <div><dt>Cuota mensual</dt><dd className="num">{formatCOP(monthlyTotal(billing || {}, settings, current))}</dd></div>
         </dl>
+      </section>
+
+      <section className="ad-card">
+        <h2>Tu plan</h2>
+        <div className="pl-plans" role="radiogroup" aria-label="Plan">
+          {Object.entries(PLANS).map(([id, p]) => (
+            <button key={id} type="button" role="radio" aria-checked={plan === id} className={`pl-plan ${plan === id ? 'is-on' : ''} pl-plan--${id}`} onClick={() => setPlan(id)}>
+              <span className="pl-plan__head">
+                <strong>{p.label}</strong>
+                {p.tag && <em>{p.tag}</em>}
+                {current === id && <small>Tu plan actual</small>}
+              </span>
+              <span className="pl-plan__price num">{formatCOP(monthlyTotal(billing || {}, settings, id))}<small>/mes</small></span>
+              <ul>{(id === 'premium' ? ['Todo lo del Básico', ...p.features] : p.features).map(f => <li key={f}>{f}</li>)}</ul>
+            </button>
+          ))}
+        </div>
+        {plan !== current && <p className="ad-hint pl-plan__note">{plan === 'premium' ? 'Premium se activa apenas se confirme el pago.' : 'Al pagar en Básico, las herramientas de Google se apagan.'}</p>}
       </section>
 
       {st.state !== 'none' && (
         <section className="ad-card">
-          <h2>Renovar o adelantar pago</h2>
+          <h2>{plan !== current ? `Pagar plan ${PLANS[plan].label}` : 'Renovar o adelantar pago'}</h2>
           <p className="ad-hint">Elige cuántos meses quieres pagar. Los meses se suman a tu fecha actual de vencimiento.</p>
           <div className="pl-months" role="radiogroup" aria-label="Meses a pagar">
             {PAY_MONTHS.map(m => (

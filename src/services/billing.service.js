@@ -24,14 +24,14 @@ export const watchAccounts = (cb, onError) => watchCollection(P.accounts(), cb, 
 export const watchAccount = (tenantId, cb, onError) => watchDoc(P.account(tenantId), cb, onError)
 
 // Pago recibido por transferencia, Nequi, efectivo… (solo super)
-export async function recordManualPayment(tenant, { amount, months, method, concepts, note }) {
+export async function recordManualPayment(tenant, { amount, months, method, concepts, note, plan }) {
   const id = `${tenant.id}_m${Date.now().toString(36)}`
   const billing = tenant.billing || {}
   const lines = concepts.map(c => ({ concept: c.concept, label: c.label, amount: c.amount }))
   await writeDoc(P.payment(id), {
     tenantId: tenant.id, tenantName: tenant.name || tenant.id, reference: id,
     amount: Number(amount) || 0, currency: 'COP', months: Number(months) || 1, lines,
-    method, status: 'approved', note: note || '', createdAt: new Date().toISOString(), approvedAt: new Date().toISOString(), manual: true,
+    method, status: 'approved', note: note || '', ...(plan ? { plan } : {}), createdAt: new Date().toISOString(), approvedAt: new Date().toISOString(), manual: true,
   }, { merge: false })
   const next = {
     ...billing,
@@ -42,13 +42,17 @@ export async function recordManualPayment(tenant, { amount, months, method, conc
   }
   await writeDoc(P.account(tenant.id), { billing: next, updatedAt: now() })
   const patch = { billing: publicBilling(next), updatedAt: now() }
+  if (plan) patch.plan = plan
   if (tenant.status === 'suspended' && tenant.suspendedReason === 'pago') { patch.status = 'active'; patch.suspendedReason = '' }
   await patchDoc(`tenants/${tenant.id}`, patch)
   return id
 }
 
 // Pago en línea (Wompi): el servidor crea el pago y devuelve el enlace seguro
-export const startCheckout = (tenantId, months) => callApi('billing/checkout', { tenantId, months })
+export const startCheckout = (tenantId, months, plan) => callApi('billing/checkout', { tenantId, months, plan })
+
+// Cambiar el plan de un negocio sin pago (solo super)
+export const setTenantPlan = (tenantId, plan) => patchDoc(P.tenant(tenantId), { plan, updatedAt: now() })
 
 // Al volver de Wompi: el servidor confirma la transacción directamente con Wompi
 export const verifyPayment = (transactionId, reference) => callApi('billing/verify', { transactionId, reference })

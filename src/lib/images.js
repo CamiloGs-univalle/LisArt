@@ -15,3 +15,12 @@ export const optimizeImg = (url, width = 800) => {
   if (/\/upload\/[^/]*(w_|q_auto|f_auto)/.test(url)) return url
   return url.replace('/upload/', `/upload/f_auto,q_auto,c_limit,w_${width}/`)
 }
+
+// Versiones de varios anchos para que el navegador elija la justa según la
+// pantalla (celular → liviana; computador grande → nítida). Solo Cloudinary.
+const WIDTHS = [400, 700, 1000, 1400]
+export const srcSetFor = (url) => {
+  if (!url || typeof url !== 'string' || !url.includes('res.cloudinary.com') || !url.includes('/upload/')) return undefined
+  if (/\/upload\/[^/]*(w_|q_auto|f_auto)/.test(url)) return undefined
+  return WIDTHS.map(w => `${optimizeImg(url, w)} ${w}w`).join(', ')
+}

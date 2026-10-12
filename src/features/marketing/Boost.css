@@ -62,7 +62,7 @@
 .mk-add.is-ok { background: #1f9d55; color: #fff; box-shadow: none; }
 
 /* Secciones del catálogo */
-.mk-sections { max-width: 1240px; margin: 0 auto; padding: clamp(36px, 6vw, 80px) clamp(16px, 4vw, 40px); display: grid; gap: clamp(48px, 7vw, 96px); }
+.mk-sections { max-width: 1240px; margin: 0 auto; padding: clamp(36px, 6vw, 80px) clamp(16px, 4vw, 40px); display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(48px, 7vw, 96px); }
 .mk-boost { display: grid; gap: 22px; margin-top: 22px; }
 .mk-boost .mk-head h3 { font-size: clamp(20px, 2.6vw, 26px); }
 .mk-boost .mk-compare__grid { --gap: 10px; }
@@ -136,3 +136,17 @@
 .price-tag__off { padding: 2px 6px; border-radius: var(--r-pill, 999px); background: var(--rose); color: #fff; font: 800 10.5px/1.3 var(--font-ui); font-style: normal; }
 .sk-add:disabled, .sheet__add:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
 @media (prefers-reduced-motion: reduce) { .mk-stock__dot { animation: none; } .mk-plan.is-rec { transform: none; } }
+
+/* Opiniones de Google */
+.mk-greviews__score { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; font-size: 14px; color: var(--ink-2); }
+.mk-greviews__score b { font: 700 30px/1 var(--font-ui); color: var(--ink); }
+.mk-greviews__src { display: block; margin-top: 3px; font: 500 11.5px/1.2 var(--font-ui); color: var(--ink-3, #888); }
+.mk-greviews__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 14px; }
+.mk-greviews__cta .mk-cta { width: auto; padding-inline: 18px; text-decoration: none; }
+.mk-greview { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; font: 700 14px/1 var(--font-ui); color: var(--rose-deep); text-decoration: underline; text-underline-offset: 4px; }
+.mk-greview--solo { margin: 4px 0 0; }
+
+/* Celular: menos aire entre bloques de ventas (sin huecos grandes) */
+@media (max-width: 640px) {
+  .mk-sections { padding: 28px 16px 36px; gap: 40px; }
+}

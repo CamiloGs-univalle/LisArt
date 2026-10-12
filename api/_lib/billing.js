@@ -2,7 +2,7 @@
 import { createHash } from 'node:crypto'
 import { getDoc, setFields } from './firestore.js'
 import { httpError } from './firebaseAdmin.js'
-import { withBillingDefaults, extendDate, publicBilling } from '../../src/lib/billingCore.js'
+import { withBillingDefaults, extendDate, publicBilling, PLANS } from '../../src/lib/billingCore.js'
 
 export const sha256 = (s) => createHash('sha256').update(s).digest('hex')
 
@@ -60,6 +60,8 @@ export async function applyApprovedPayment(payment, extra = {}) {
   }
   await setFields(`accounts/${payment.tenantId}`, { billing: nextBilling })
   const patch = { billing: publicBilling(nextBilling) }
+  // El pago define el plan (ej. pagó Premium → se activa Premium)
+  if (PLANS[payment.plan]) patch.plan = payment.plan
   // Si estaba pausado por falta de pago, se reactiva solo
   if (tenant.status === 'suspended' && tenant.suspendedReason === 'pago') { patch.status = 'active'; patch.suspendedReason = '' }
   await setFields(`tenants/${payment.tenantId}`, patch)

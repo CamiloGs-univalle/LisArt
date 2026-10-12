@@ -14,7 +14,7 @@ import { useAddToCart } from '@/features/cart/useAddToCart'
 import { useUI } from '@/features/catalog/UIProvider'
 import { formatPrice } from '@/lib/format'
 import { productSizes, productColors, productDiscount } from '@/lib/catalog'
-import { getImages } from '@/lib/images'
+import { getImages, optimizeImg } from '@/lib/images'
 import Icon from '@/shared/ui/Icon'
 import Lightbox, { useHoverZoom } from '@/shared/ui/Lightbox'
 import { StockNote } from '@/features/marketing/Boost'
@@ -172,7 +172,7 @@ export function ThumbGallery({ p }) {
           if (Math.abs(d) > 50 && list.length > 1) go(i + (d < 0 ? 1 : -1))
           else if (list[i]) setBox(true)
         }}>
-        {list[i] && <img key={list[i]} src={list[i]} alt={p.name} draggable="false" />}
+        {list[i] && <img key={list[i]} src={optimizeImg(list[i], 1200)} alt={p.name} draggable="false" decoding="async" />}
         {p.badge && <span className="sk-badge">{p.badge}</span>}
         {list.length > 1 && <span className="sk-gal__count" aria-hidden="true">{i + 1} / {list.length}</span>}
         <span className="sk-gal__hint" aria-hidden="true"><Icon name="search" size={15} /></span>

@@ -103,9 +103,10 @@ export default function ProductsTab() {
                           onChange={e => handleImage(product.id, e.target.files[0])}
                         />
                       </td>
-                      <td>
+                      <td data-label="Nombre">
                         <input
                           className="ad-input"
+                          aria-label="Nombre"
                           defaultValue={product.name}
                           onBlur={e => {
                             const v = e.target.value.trim()
@@ -113,9 +114,11 @@ export default function ProductsTab() {
                           }}
                         />
                       </td>
-                      <td>
+                      <td data-label="Categoría">
                         <input
                           className="ad-input"
+                          aria-label="Categoría"
+                          placeholder="Ej: Regalos"
                           defaultValue={product.category || ''}
                           onBlur={e => {
                             const v = e.target.value.trim()
@@ -123,9 +126,11 @@ export default function ProductsTab() {
                           }}
                         />
                       </td>
-                      <td>
+                      <td data-label="Etiqueta">
                         <input
                           className="ad-input"
+                          aria-label="Etiqueta"
+                          placeholder="Ej: Nuevo"
                           defaultValue={product.badge || ''}
                           onBlur={e => {
                             const v = e.target.value.trim()
@@ -133,9 +138,10 @@ export default function ProductsTab() {
                           }}
                         />
                       </td>
-                      <td>
+                      <td data-label="Precio">
                         <input
                           className="ad-input ad-input-price"
+                          aria-label="Precio"
                           type="number"
                           defaultValue={product.price}
                           onBlur={e => {

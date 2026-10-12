@@ -2,7 +2,7 @@
 // Página pública del catálogo de un negocio (tusitio.com/<negocio>)
 // Orden de proveedores: negocio → datos (tiempo real) → edición → carrito → interfaz
 // ─────────────────────────────────────────────────────────────
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react'
 import { useBillingSettings } from '@/features/billing/useBilling'
 import { billingState } from '@/lib/billingCore'
 import { TenantProvider, useTenant } from '@/features/tenant/TenantProvider'
@@ -22,9 +22,6 @@ import { Highlights, HowToOrder, Story, Faq } from '@/features/catalog/component
 import CatalogSections from '@/features/catalog/layouts/CatalogSections'
 import StoryViewer from '@/features/catalog/layouts/StoryViewer'
 import { useCatalog, GALLERY_ID } from '@/features/catalog/layouts/useCatalog'
-import EditorPanel from '@/features/editor/panel/EditorPanel'
-import EditorBar from '@/features/editor/EditorBar'
-import { PhotoManager, SectionsPicker } from '@/features/editor/AdminTools'
 import CartDrawer from '@/features/cart/CartDrawer'
 import CartBar from '@/features/cart/CartBar'
 import StatusScreen from '@/shared/ui/StatusScreen'
@@ -33,20 +30,27 @@ import ScrollProgress from '@/shared/ui/ScrollProgress'
 import { initFx } from '@/lib/fx'
 import '@/styles/fx.css'
 import '@/styles/cardstyles.css'
-import VeloraView from '@/features/catalog/skins/VeloraView'
-import TerrainView from '@/features/catalog/skins/TerrainView'
-import EditorialView from '@/features/catalog/skins/EditorialView'
+
+// Rendimiento: cada estructura se descarga solo cuando el negocio la usa,
+// y las herramientas del dueño solo cuando quien entra puede editar.
+const OwnerTools = lazy(() => import('@/features/editor/OwnerTools'))
+const SKIN_LOADERS = {
+  velora: () => import('@/features/catalog/skins/VeloraView'),
+  terrain: () => import('@/features/catalog/skins/TerrainView'),
+  editorial: () => import('@/features/catalog/skins/EditorialView'),
+  menu: () => import('@/features/catalog/skins/MenuView'),
+  servicios: () => import('@/features/catalog/skins/ServiciosView'),
+  bento: () => import('@/features/catalog/skins/BentoView'),
+  lookbook: () => import('@/features/catalog/skins/LookbookView'),
+  tienda: () => import('@/features/catalog/skins/TiendaView'),
+  lujo: () => import('@/features/catalog/skins/LujoView'),
+  historias: () => import('@/features/catalog/skins/HistoriasView'),
+  escaparate: () => import('@/features/catalog/skins/EscaparateView'),
+  revista: () => import('@/features/catalog/skins/RevistaView'),
+  mesa: () => import('@/features/catalog/skins/MesaView'),
+}
+const SKINS = Object.fromEntries(Object.entries(SKIN_LOADERS).map(([k, load]) => [k, lazy(load)]))
 import ProductView from '@/features/catalog/skins/ProductView'
-import MenuView from '@/features/catalog/skins/MenuView'
-import ServiciosView from '@/features/catalog/skins/ServiciosView'
-import BentoView from '@/features/catalog/skins/BentoView'
-import LookbookView from '@/features/catalog/skins/LookbookView'
-import TiendaView from '@/features/catalog/skins/TiendaView'
-import LujoView from '@/features/catalog/skins/LujoView'
-import HistoriasView from '@/features/catalog/skins/HistoriasView'
-import EscaparateView from '@/features/catalog/skins/EscaparateView'
-import RevistaView from '@/features/catalog/skins/RevistaView'
-import MesaView from '@/features/catalog/skins/MesaView'
 
 // Panel del dueño: false = cerrado · true = abierto · 'plan' | … = abierto en esa pestaña.
 // Al volver de un pago en línea (?pago=REF) se abre solo en «Mi plan».
@@ -60,20 +64,43 @@ function usePanel() {
 }
 
 // Estructuras de página alternativas (el negocio elige una en Panel → Diseño)
-const SKINS = { velora: VeloraView, terrain: TerrainView, editorial: EditorialView, menu: MenuView, servicios: ServiciosView, bento: BentoView, lookbook: LookbookView, tienda: TiendaView, lujo: LujoView, historias: HistoriasView, escaparate: EscaparateView, revista: RevistaView, mesa: MesaView }
+
+// Herramientas del dueño (panel, fotos, secciones, barra): nunca se descargan para clientes
+function Owner({ panel, openPanel, closePanel }) {
+  const { canEdit } = useAdmin()
+  if (!canEdit) return null
+  return <Suspense fallback={null}><OwnerTools panel={panel} openPanel={openPanel} closePanel={closePanel} /></Suspense>
+}
 
 function SkinView({ layout }) {
   const { panel, openPanel, closePanel } = usePanel()
   const { cardStyle } = useSettingsCtx()
   const Skin = SKINS[layout]
+  const pageRef = useRef(null)
+  // El fondo de la página (y lo que se ve al estirar en el celular) toma el color de la estructura
+  useEffect(() => {
+    const root = document.documentElement
+    const pick = () => {
+      const page = pageRef.current
+      // Mientras la estructura se descarga solo está el aviso de carga: esperar
+      if (!page || page.querySelector(':scope > .status')) return false
+      for (const sel of [':scope > .kt', ':scope > * > .kt', ':scope > [class]']) {
+        const el = page.querySelector(sel)
+        const c = el && getComputedStyle(el).backgroundColor
+        if (c && !/rgba\(0, 0, 0, 0\)|transparent/.test(c)) { root.style.setProperty('--page-bg', c); return true }
+      }
+      return false
+    }
+    // La estructura se descarga aparte: reintenta hasta que esté pintada (máx. ~3 s)
+    let tries = 0
+    const t = setInterval(() => { if (pick() || ++tries > 30) clearInterval(t) }, 100)
+    return () => { clearInterval(t); root.style.removeProperty('--page-bg') }
+  }, [layout])
   return (
-    <div className={`page page--${layout} cs-${cardStyle}`}>
-      <Skin onOpenDashboard={openPanel} />
-      <EditorPanel open={!!panel} initialTab={typeof panel === 'string' ? panel : undefined} onClose={closePanel} />
+    <div className={`page page--${layout} cs-${cardStyle}`} ref={pageRef}>
+      <Suspense fallback={<StatusScreen loading />}><Skin onOpenDashboard={openPanel} /></Suspense>
       <ProductView variant={layout} />
-      <PhotoManager />
-      <SectionsPicker />
-      <EditorBar onOpenPanel={openPanel} />
+      <Owner panel={panel} openPanel={openPanel} closePanel={closePanel} />
       <CartDrawer />
       <CartBar />
       <BackToTop />
@@ -220,13 +247,9 @@ function CatalogView() {
       <MarketingSections />
       <Footer />
 
-      <EditorPanel open={!!panel} initialTab={typeof panel === 'string' ? panel : undefined} onClose={closePanel} />
-
       <ProductSheet />
       <StoryViewer />
-      <PhotoManager />
-      <SectionsPicker />
-      <EditorBar onOpenPanel={openPanel} />
+      <Owner panel={panel} openPanel={openPanel} closePanel={closePanel} />
       <CartDrawer />
       <CartBar />
       <BackToTop />

@@ -16,6 +16,8 @@ import { DEMO_SLUG } from './demoCafe'
 import TicketsPanel from './TicketsPanel'
 import PasswordDialog from './PasswordDialog'
 import PortfolioEditor from './PortfolioEditor'
+import LeadsPanel from './LeadsPanel'
+import { watchLeads } from '@/services/leads.service'
 import BillingPanel from './BillingPanel'
 import { useBillingSettings } from '@/features/billing/useBilling'
 import { billingState, withAccount } from '@/lib/billingCore'
@@ -64,6 +66,14 @@ export default function SuperAdminPage() {
     if (!rawTenants || !accounts) return
     rawTenants.filter(needsAccountMove).forEach(t => moveToAccount(t, accounts[t.id]).catch(e => console.warn('[cuentas]', t.id, e)))
   }, [rawTenants, accounts])
+
+  // Solicitudes de la página GS Solutions
+  const [leads, setLeads] = useState([])
+  useEffect(() => {
+    if (!isSuper) return
+    return watchLeads((list) => setLeads(list.sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt))), () => {})
+  }, [isSuper])
+  const newLeads = leads.filter(l => (l.status || 'new') === 'new').length
 
   // Solicitudes de ayuda, en tiempo real
   useEffect(() => {
@@ -121,7 +131,7 @@ export default function SuperAdminPage() {
         <div className="sa-wrap sa-top__in">
           <div>
             <p className="sa-kicker">{PLATFORM.name}</p>
-            <h1 className="display sa-title">{{ portfolio: 'Mi portafolio', billing: 'Cobros' }[view] || 'Mis clientes'}</h1>
+            <h1 className="display sa-title">{{ portfolio: 'Mi página · GS Solutions', billing: 'Cobros' }[view] || 'Mis clientes'}</h1>
           </div>
           <div className="sa-top__actions">
             <span className="sa-user" title={user?.email}>{user?.email}</span>
@@ -129,7 +139,7 @@ export default function SuperAdminPage() {
           </div>
         </div>
         <nav className="sa-wrap sa-tabs" role="tablist" aria-label="Secciones">
-          {[['clients', 'Clientes', openTickets], ['billing', 'Cobros', lateCount], ['portfolio', 'Mi portafolio', 0]].map(([id, label, n]) => (
+          {[['clients', 'Clientes', openTickets], ['billing', 'Cobros', lateCount], ['portfolio', 'Mi página', newLeads]].map(([id, label, n]) => (
             <button key={id} role="tab" aria-selected={view === id} className={`sa-tab ${view === id ? 'is-on' : ''}`}
               onClick={() => { setView(id); history.replaceState(null, '', { portfolio: '#portafolio', billing: '#cobros' }[id] || '#') }}>
               {label}{n > 0 && <span className="sa-count">{n}</span>}
@@ -139,7 +149,7 @@ export default function SuperAdminPage() {
       </header>
 
       {view === 'portfolio' ? (
-        <main className="sa-wrap sa-main"><PortfolioEditor tenants={tenants} onToast={setToast} /></main>
+        <main className="sa-wrap sa-main"><LeadsPanel leads={leads} onToast={setToast} /><PortfolioEditor tenants={tenants} onToast={setToast} /></main>
       ) : view === 'billing' ? (
         <main className="sa-wrap sa-main"><BillingPanel tenants={tenants} onToast={setToast} /></main>
       ) : (

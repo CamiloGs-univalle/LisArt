@@ -13,6 +13,7 @@ import { productSizes, productColors } from '@/lib/catalog'
 import { stockInfo } from '@/lib/marketing'
 import Icon from '@/shared/ui/Icon'
 import './Kit.css'
+import { optimizeImg, srcSetFor } from '@/lib/images'
 
 const reduced = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
@@ -132,11 +133,14 @@ export function QuickAdd({ p, openProduct, className = '', label, icon = 'plus',
 }
 
 /* ── Imagen con carga suave ── */
-export function Img({ src, alt = '', className = '', eager = false, ...rest }) {
+export function Img({ src, alt = '', className = '', eager = false, w = 800, sizes, ...rest }) {
   const [ok, setOk] = useState(false)
   if (!src) return <span className={`kt-img kt-img--empty ${className}`} aria-hidden="true" />
+  // Rendimiento: tamaño justo (srcset), carga diferida y prioridad alta solo para la foto principal
+  const set = srcSetFor(src)
   return (
-    <img src={src} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async"
+    <img src={optimizeImg(src, w)} srcSet={set} sizes={set ? (sizes || (eager ? '(max-width: 700px) 100vw, 60vw' : '(max-width: 560px) 50vw, (max-width: 1100px) 33vw, 360px')) : undefined}
+      alt={alt} loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : undefined} decoding="async"
       className={`kt-img ${ok ? 'is-ok' : ''} ${className}`} onLoad={() => setOk(true)} onError={() => setOk(true)} {...rest} />
   )
 }

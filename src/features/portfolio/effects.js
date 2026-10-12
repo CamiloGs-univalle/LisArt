@@ -19,16 +19,28 @@ export function useFitText(text) {
   useLayoutEffect(() => {
     const el = box.current, span = inner.current
     if (!el || !span) return
+    let last = ''
     const fit = () => {
+      const prev = span.style.fontSize
+      span.classList.add('is-fitting') // medir sin transiciones (si no, mide el tamaño anterior)
       span.style.fontSize = '100px'
       const ratio = el.clientWidth / Math.max(1, span.scrollWidth)
-      span.style.fontSize = `${Math.max(24, Math.floor(100 * ratio * 0.995))}px`
+      const next = `${Math.max(24, Math.floor(100 * ratio * 0.985))}px`
+      span.style.fontSize = next
+      void span.offsetWidth
+      span.classList.remove('is-fitting')
+      if (next === prev && next === last) return
+      last = next
     }
     fit()
-    const ro = new ResizeObserver(fit)
+    const ro = new ResizeObserver(() => requestAnimationFrame(fit))
     ro.observe(el)
+    // Cuando termina de cargar la letra real (más ancha que la provisional), se vuelve a medir
+    const onFonts = () => fit()
     document.fonts?.ready.then(fit)
-    return () => ro.disconnect()
+    document.fonts?.addEventListener?.('loadingdone', onFonts)
+    const t1 = setTimeout(fit, 400), t2 = setTimeout(fit, 1500)
+    return () => { ro.disconnect(); document.fonts?.removeEventListener?.('loadingdone', onFonts); clearTimeout(t1); clearTimeout(t2) }
   }, [text])
   return [box, inner]
 }

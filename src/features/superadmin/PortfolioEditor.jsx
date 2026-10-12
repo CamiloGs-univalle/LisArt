@@ -6,6 +6,7 @@ import { THEME_PRESETS } from '@/features/tenant/themes'
 import { uploadImage } from '@/lib/cloudinary'
 import { normalizePhone } from '@/lib/format'
 import { friendlyError } from '@/services/auth.service'
+import { SOLUTIONS, withEstimator } from '@/features/portfolio/gs/data'
 
 const PRESET_OPTIONS = Object.entries(THEME_PRESETS).map(([id, t]) => [id, t.label])
 const ICON_LABELS = { monitor: 'Pantalla', code: 'Código', phone: 'Celular', rocket: 'Cohete', palette: 'Paleta', bolt: 'Rayo', chat: 'Chat', mail: 'Correo', globe: 'Mundo', pin: 'Ubicación', cart: 'Carrito', chart: 'Gráfica', star: 'Estrella' }
@@ -91,10 +92,29 @@ export default function PortfolioEditor({ tenants, onToast }) {
     <div className="pe">
       <div className="pe-intro">
         <p>Lo que cambies aquí se publica en la página principal al presionar <strong>Guardar</strong>.</p>
-        <a className="btn btn--ghost" href="/" target="_blank" rel="noopener noreferrer">Ver portafolio ↗</a>
+        <a className="btn btn--ghost" href="/" target="_blank" rel="noopener noreferrer">Ver mi página ↗</a>
       </div>
 
-      <Group title="Portada" open>
+      <Group title="Marca GS Solutions" open>
+        <div className="sa-row">
+          <Field label="Nombre de la empresa"><input {...bind('brand')} /></Field>
+          <Field label="Qué significa (debajo del logo)"><input {...bind('brandLong')} /></Field>
+        </div>
+        <Field label="Frase pequeña de arriba"><input {...bind('heroKicker')} /></Field>
+        <div className="sa-row">
+          <Field label="Título principal"><input {...bind('heroTitleA')} /></Field>
+          <Field label="Final del título (en color)"><input {...bind('heroTitleB')} /></Field>
+        </div>
+        <Field label="Texto de la portada"><textarea rows={3} {...bind('heroText')} /></Field>
+        <Field label="Tu cargo (junto a tu nombre y foto)"><input {...bind('founderRole')} /></Field>
+        <p className="pf-muted">El WhatsApp y el correo donde llegan las citas se configuran abajo, en «Contacto». Sin WhatsApp, las solicitudes llegan solo a este panel.</p>
+      </Group>
+
+      <AboutGroup draft={draft} set={set} />
+
+      <EstimatorGroup value={draft.estimator} onChange={(v) => set('estimator', v)} />
+
+      <Group title="Portada (textos anteriores)">
         <div className="sa-row">
           <Field label="Tu nombre"><input {...bind('firstName')} /></Field>
           <Field label="Apellido (opcional)"><input {...bind('lastName')} /></Field>
@@ -239,6 +259,96 @@ export default function PortfolioEditor({ tenants, onToast }) {
         <button type="button" className="btn btn--primary" disabled={busy || !dirty} onClick={save}>{busy ? 'Guardando…' : 'Guardar'}</button>
       </div>
     </div>
+  )
+}
+
+/* ── Quién está detrás (sobre mí) ─────────────────────────── */
+const toLines = (list, keys) => (list || []).map(it => keys.map(k => it[k] || '').join(' | ')).join('\n')
+const fromLines = (text, keys) => text.split('\n').map(l => l.split('|').map(x => x.trim())).filter(parts => parts.some(Boolean))
+  .map(parts => Object.fromEntries(keys.map((k, i) => [k, parts[i] || ''])))
+const toList = (text) => text.split(',').map(x => x.trim()).filter(Boolean)
+
+function AboutGroup({ draft, set }) {
+  const a = draft.about
+  const up = (k, v) => set('about', { ...a, [k]: v })
+  return (
+    <Group title="Quién está detrás (sobre mí)">
+      <p className="pf-muted">Tu presentación personal en la página: foto, hoja de vida, herramientas e idiomas. En las listas, escribe un elemento por línea y separa las partes con «|».</p>
+      <ImageField label="Tu foto" hint="Se muestra dentro del arco. Si es un PNG sin fondo, marca la casilla para que quede sobre el círculo." value={draft.photo} onChange={(v) => set('photo', v)} folder="portafolio" />
+      {draft.photo && (
+        <label className="pe-check"><input type="checkbox" checked={!!draft.photoCutout} onChange={(e) => set('photoCutout', e.target.checked)} /> Mi foto es un PNG sin fondo</label>
+      )}
+      <div className="sa-row">
+        <Field label="Saludo"><input value={a.hello || ''} onChange={(e) => up('hello', e.target.value)} /></Field>
+        <Field label="Ubicación"><input value={a.location || ''} onChange={(e) => up('location', e.target.value)} /></Field>
+      </div>
+      <Field label="Sobre mí"><textarea rows={4} value={a.bio || ''} onChange={(e) => up('bio', e.target.value)} /></Field>
+      <Field label="Frase (cita)"><input value={a.tagline || ''} onChange={(e) => up('tagline', e.target.value)} /></Field>
+      <Field label="Etiquetas sobre la foto (máx. 2, separadas por coma)" hint="Ej: Desarrollador de software, Colombia"><input value={(a.chips || []).join(', ')} onChange={(e) => up('chips', toList(e.target.value))} /></Field>
+      <Field label="Formación" hint="Una por línea: Años | Institución | Programa. Ej: 2019 – 2024 | Universidad del Valle | Ingeniería de Sistemas">
+        <textarea rows={3} defaultValue={toLines(a.education, ['years', 'title', 'place'])} onBlur={(e) => up('education', fromLines(e.target.value, ['years', 'title', 'place']))} />
+      </Field>
+      <Field label="Experiencia" hint="Una por línea: Años | Cargo · Empresa | Qué hiciste">
+        <textarea rows={4} defaultValue={toLines(a.experience, ['years', 'title', 'text'])} onBlur={(e) => up('experience', fromLines(e.target.value, ['years', 'title', 'text']))} />
+      </Field>
+      <Field label="Cualidades (separadas por coma)"><input value={(a.tags || []).join(', ')} onChange={(e) => up('tags', toList(e.target.value))} /></Field>
+      <Field label="Herramientas que manejas (separadas por coma)"><input value={(a.tools || []).join(', ')} onChange={(e) => up('tools', toList(e.target.value))} /></Field>
+      <Field label="Idiomas" hint="Uno por línea: Idioma | Nivel. Ej: Inglés | Intermedio">
+        <textarea rows={2} defaultValue={toLines(a.languages, ['name', 'level'])} onBlur={(e) => up('languages', fromLines(e.target.value, ['name', 'level']))} />
+      </Field>
+      <Field label="Gustos e intereses (opcional, separados por coma)" hint="Si lo dejas vacío, no aparece."><input value={(a.hobbies || []).join(', ')} onChange={(e) => up('hobbies', toList(e.target.value))} /></Field>
+      <p className="pf-muted">Tus redes (GitHub, LinkedIn, Instagram) se toman de la sección «Contacto».</p>
+    </Group>
+  )
+}
+
+/* ── Precios del cotizador ────────────────────────────────── */
+function EstimatorGroup({ value, onChange }) {
+  const cfg = withEstimator(value)
+  const num = (v) => Math.max(0, Number(v) || 0)
+  const setSys = (id, k, v) => onChange({ ...cfg, systems: { ...cfg.systems, [id]: { ...cfg.systems[id], [k]: v } } })
+  const setExtra = (id, k, v) => onChange({ ...cfg, extras: cfg.extras.map(x => (x.id === id ? { ...x, [k]: num(v) } : x)) })
+  const setSize = (id, v) => onChange({ ...cfg, sizes: cfg.sizes.map(x => (x.id === id ? { ...x, factor: Math.max(0.5, Number(v) || 1) } : x)) })
+  return (
+    <Group title="Cotizador (precios en pesos)">
+      <p className="pf-muted">Rangos que ve el cliente al armar su sistema. Los 3 primeros módulos vienen incluidos; cada módulo extra suma el valor de abajo.</p>
+      <div className="pe-est">
+        <div className="pe-est__row pe-est__row--head"><span>Sistema</span><span>Desde</span><span>Hasta</span><span>Semanas</span></div>
+        {SOLUTIONS.map(s => {
+          const v = cfg.systems[s.id]
+          return (
+            <div key={s.id} className="pe-est__row">
+              <span>{s.name}</span>
+              <input type="number" min={0} step={100000} value={v.min} onChange={(e) => setSys(s.id, 'min', num(e.target.value))} aria-label={`${s.name} desde`} />
+              <input type="number" min={0} step={100000} value={v.max} onChange={(e) => setSys(s.id, 'max', num(e.target.value))} aria-label={`${s.name} hasta`} />
+              <span className="pe-est__weeks">
+                <input type="number" min={1} value={v.weeks[0]} onChange={(e) => setSys(s.id, 'weeks', [Math.max(1, num(e.target.value)), v.weeks[1]])} aria-label="Semanas mínimo" />
+                <input type="number" min={1} value={v.weeks[1]} onChange={(e) => setSys(s.id, 'weeks', [v.weeks[0], Math.max(1, num(e.target.value))])} aria-label="Semanas máximo" />
+              </span>
+            </div>
+          )
+        })}
+      </div>
+      <div className="sa-row">
+        <Field label="Módulo extra · desde"><input type="number" min={0} step={50000} value={cfg.moduleMin} onChange={(e) => onChange({ ...cfg, moduleMin: num(e.target.value) })} /></Field>
+        <Field label="Módulo extra · hasta"><input type="number" min={0} step={50000} value={cfg.moduleMax} onChange={(e) => onChange({ ...cfg, moduleMax: num(e.target.value) })} /></Field>
+        <Field label="Soporte mensual desde"><input type="number" min={0} step={50000} value={cfg.supportFrom} onChange={(e) => onChange({ ...cfg, supportFrom: num(e.target.value) })} /></Field>
+      </div>
+      <div className="sa-row">
+        {cfg.sizes.map(z => <Field key={z.id} label={`${z.label} (multiplica ×)`}><input type="number" min={0.5} step={0.05} value={z.factor} onChange={(e) => setSize(z.id, e.target.value)} /></Field>)}
+      </div>
+      <div className="pe-est">
+        <div className="pe-est__row pe-est__row--head pe-est__row--x"><span>Extra</span><span>Desde</span><span>Hasta</span></div>
+        {cfg.extras.map(x => (
+          <div key={x.id} className="pe-est__row pe-est__row--x">
+            <span>{x.label}</span>
+            <input type="number" min={0} step={100000} value={x.min} onChange={(e) => setExtra(x.id, 'min', e.target.value)} aria-label={`${x.label} desde`} />
+            <input type="number" min={0} step={100000} value={x.max} onChange={(e) => setExtra(x.id, 'max', e.target.value)} aria-label={`${x.label} hasta`} />
+          </div>
+        ))}
+      </div>
+      <button type="button" className="btn btn--ghost" onClick={() => onChange(null)}>Volver a los precios iniciales</button>
+    </Group>
   )
 }
 

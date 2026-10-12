@@ -10,6 +10,7 @@ import { useFitText, useReveal } from '@/features/portfolio/effects'
 import SectionBlock from './SectionBlock'
 import { useSkin, useSearch, Price } from './shared'
 import './Editorial.css'
+import { optimizeImg } from '@/lib/images'
 
 const ICONS = ['truck', 'card', 'chat', 'gift']
 
@@ -79,7 +80,7 @@ export default function EditorialView({ onOpenDashboard }) {
                   <div className="ed-circle" />
                   {s.heroImage && (
                     <button className="ed-photo" onClick={() => s.featured && s.openProduct(s.featured)} aria-label={s.featured ? `Ver ${s.featured.name}` : 'Producto destacado'}>
-                      <img src={s.heroImage} alt="" />
+                      <img src={optimizeImg(s.heroImage, 1400)} alt="" fetchPriority="high" decoding="async" />
                     </button>
                   )}
                   <Seal text={`${H.sticker || s.brand.name} · `} />
@@ -190,7 +191,7 @@ function Cards({ items, openProduct }) {
       {items.map((p, i) => (
         <button key={p.id} className="ed-card" data-reveal style={{ '--d': `${(i % 4) * 0.07}s` }} onClick={() => openProduct(p)}>
           <span className="ed-card__img">
-            <img src={p.image} alt="" loading="lazy" />
+            <img src={optimizeImg(p.image, 600)} alt="" loading="lazy" decoding="async" />
             <span className="ed-card__go" aria-hidden="true"><Icon name="arrow" size={18} /></span>
             {p.badge && <span className="ed-card__badge">{p.badge}</span>}
           </span>

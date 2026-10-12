@@ -57,3 +57,9 @@ img[data-fx] { transition: filter .7s ease, transform .9s cubic-bezier(.16, 1, .
 
 /* Durante la transición tarjeta → ficha no se anima la entrada de la ficha */
 .fx-vt .pv, .fx-vt .sheet, .fx-vt .sheet__panel { animation: none !important; }
+
+/* Producto estirado para llenar la última fila (celular): foto más ancha y baja */
+@media (max-width: 760px) {
+  .fx-fill :is(.pc__img-wrap, .vl-card__img, .tr-card__img, .ed-card__img, .tg-item__img, .lj-card__img, .es-card__img, .bn-card__img, .lx-media) { aspect-ratio: 16 / 9 !important; height: auto !important; }
+  .fx-fill :is(.pc__img-wrap, .vl-card__img, .tr-card__img, .ed-card__img, .tg-item__img, .lj-card__img, .es-card__img, .bn-card__img, .lx-media) img { width: 100%; height: 100%; object-fit: cover; }
+}
