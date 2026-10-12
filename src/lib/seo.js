@@ -109,6 +109,9 @@ export function buildSeo(t, products = [], { origin, slug, productId } = {}) {
       image: real(one.image) ? one.image : real(t.logo) ? t.logo : firstImage || '',
       url: `${base}?p=${encodeURIComponent(one.id)}`,
       type: 'product',
+      siteName: t.name,
+      imageAlt: one.name,
+      price: priceOf(one) > 0 ? priceOf(one) : 0,
       noindex,
       jsonLd: { '@context': 'https://schema.org', '@graph': [business, product(one)] },
     }
@@ -119,6 +122,7 @@ export function buildSeo(t, products = [], { origin, slug, productId } = {}) {
     image: firstImage || (real(t.logo) ? t.logo : ''),
     url: base,
     type: 'website',
+    siteName: t.name,
     noindex,
     jsonLd: {
       '@context': 'https://schema.org',
@@ -130,7 +134,32 @@ export function buildSeo(t, products = [], { origin, slug, productId } = {}) {
   }
 }
 
+// Foto para la vista previa de WhatsApp/Facebook: WhatsApp descarta imágenes pesadas
+// (más de ~600 KB). Con Cloudinary pedimos una JPG de 1200×630 liviana.
+export function shareImage(url) {
+  if (!real(url)) return null
+  if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {
+    const clean = url.replace(/\/upload\/(?:[a-z]{1,3}_[^/]+\/)+/, '/upload/') // quita transformaciones previas
+    return { url: clean.replace('/upload/', '/upload/c_fill,g_auto,w_1200,h_630,f_jpg,q_auto:eco/'), width: 1200, height: 630, type: 'image/jpeg' }
+  }
+  return { url }
+}
+
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+function imageTags(seo) {
+  const img = shareImage(seo.image)
+  if (!img) return []
+  return [
+    `<meta property="og:image" content="${esc(img.url)}" />`,
+    `<meta property="og:image:secure_url" content="${esc(img.url)}" />`,
+    img.type ? `<meta property="og:image:type" content="${img.type}" />` : '',
+    img.width ? `<meta property="og:image:width" content="${img.width}" />` : '',
+    img.height ? `<meta property="og:image:height" content="${img.height}" />` : '',
+    `<meta property="og:image:alt" content="${esc(seo.imageAlt || seo.title)}" />`,
+    `<meta name="twitter:image" content="${esc(img.url)}" />`,
+  ]
+}
 
 // Etiquetas para el <head> (el servidor las pone antes de que cargue la app)
 export function headTags(seo) {
@@ -143,7 +172,11 @@ export function headTags(seo) {
     `<meta property="og:title" content="${esc(seo.title)}" />`,
     `<meta property="og:description" content="${esc(seo.description)}" />`,
     `<meta property="og:url" content="${esc(seo.url)}" />`,
-    seo.image ? `<meta property="og:image" content="${esc(seo.image)}" />` : '',
+    seo.siteName ? `<meta property="og:site_name" content="${esc(seo.siteName)}" />` : '',
+    '<meta property="og:locale" content="es_CO" />',
+    ...imageTags(seo),
+    seo.price ? `<meta property="product:price:amount" content="${seo.price}" />` : '',
+    seo.price ? '<meta property="product:price:currency" content="COP" />' : '',
     `<meta name="twitter:card" content="${seo.image ? 'summary_large_image' : 'summary'}" />`,
     seo.jsonLd ? `<script type="application/ld+json">${JSON.stringify(seo.jsonLd).replace(/</g, '\\u003c')}</script>` : '',
   ].filter(Boolean).join('\n    ')

@@ -26,16 +26,27 @@ export default function ContactForm({ prefill, whatsapp, brand }) {
     if (phone.length < 7 && !/^\S+@\S+\.\S+$/.test(f.email)) return setErr('Déjanos tu WhatsApp o tu correo para contactarte.')
     if (f.type === 'cita' && !f.date) return setErr('Elige el día que prefieres.')
     setState('sending')
+    const what = f.type === 'cita' ? 'Quiero agendar una charla 📅' : f.type === 'cotizacion' ? 'Quiero recibir una propuesta 💡' : 'Quiero más información ℹ️'
     const lines = [
-      `Hola ${brand} 👋 ${f.type === 'cita' ? 'Quiero agendar una charla.' : f.type === 'cotizacion' ? 'Quiero recibir una propuesta.' : 'Quiero más información.'}`,
-      `Nombre: ${f.name}${f.company ? ` · ${f.company}` : ''}`,
-      f.type === 'cita' ? `Fecha: ${f.date} · ${f.slot}` : '',
-      f.summary ? `\n${f.summary}` : '',
-      f.message ? `\nMensaje: ${f.message}` : '',
+      `¡Hola ${brand}! 👋`,
+      what,
+      '',
+      `👤 *Nombre:* ${f.name.trim()}`,
+      f.company ? `🏢 *Empresa:* ${f.company.trim()}` : '',
+      phone ? `📱 *WhatsApp:* ${f.phone.trim()}` : '',
+      f.email ? `✉️ *Correo:* ${f.email.trim()}` : '',
+      f.type === 'cita' ? `📅 *Fecha:* ${f.date} · ${f.slot}` : '',
+      f.summary ? `\n━━━━━━━━━━━━━━\n${f.summary}\n━━━━━━━━━━━━━━` : '',
+      f.message ? `\n💬 ${f.message.trim()}` : '',
     ].filter(Boolean).join('\n')
+    // La ventana se abre YA (en el clic): si se abre después de guardar, iPhone/Safari la bloquea
+    const win = whatsapp ? window.open('', '_blank') : null
     let saved = true
     try { await createLead({ ...f, phone }) } catch { saved = false }
-    if (whatsapp) window.open(waLink(whatsapp, lines), '_blank', 'noopener')
+    if (whatsapp) {
+      const url = waLink(whatsapp, lines)
+      if (win) { win.opener = null; win.location.href = url } else window.location.href = url
+    }
     if (!saved && !whatsapp) { setState(''); return setErr('No se pudo enviar. Revisa tu conexión e intenta de nuevo.') }
     setState('done')
   }

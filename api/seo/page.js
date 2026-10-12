@@ -22,7 +22,7 @@ async function indexHtml(origin) {
 // Quita las etiquetas genéricas que se reemplazan
 const strip = (html) => html
   .replace(/<title>[\s\S]*?<\/title>/i, '')
-  .replace(/<meta\s+(name="description"|property="og:(title|description|type|image|url)")[^>]*>\s*/gi, '')
+  .replace(/<meta\s+(name="description"|property="og:(title|description|type|image|url|locale|site_name)")[^>]*>\s*/gi, '')
 
 export default async function handler(req, res) {
   const origin = originOf(req)

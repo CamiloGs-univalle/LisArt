@@ -304,7 +304,7 @@ export default function PortfolioPage() {
               <h2 className="gsp-serif">¿Trabajamos <span className="gsp-script">juntos?</span></h2>
               <p>¿Tienes un proyecto en mente? En una charla gratis de 30 minutos entendemos tu negocio y te decimos qué sistema te conviene, cuánto cuesta y cuánto tarda.</p>
               <ul className="gsp-together__list">
-                {whatsapp && <li><a href={waLink(whatsapp, `Hola ${p.brand} 👋 Quiero información.`)} target="_blank" rel="noopener noreferrer"><GsIcon name="whatsapp" /> Escríbenos por WhatsApp</a></li>}
+                {whatsapp && <li><a href={waLink(whatsapp, `¡Hola ${p.brand}! 👋 Vi tu página y quiero información sobre un sistema para mi negocio.`)} target="_blank" rel="noopener noreferrer"><GsIcon name="whatsapp" /> Escríbenos por WhatsApp</a></li>}
                 {p.contact.email && <li><a href={`mailto:${p.contact.email}`}><GsIcon name="mail" /> {p.contact.email}</a></li>}
                 {p.contact.location && <li><span><GsIcon name="pin" /> {p.contact.location}</span></li>}
               </ul>

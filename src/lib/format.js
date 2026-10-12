@@ -19,9 +19,6 @@ export const waLink = (phone, text = '') => {
 
 export const openWhatsApp = (phone, text) => window.open(waLink(phone, text), '_blank', 'noopener')
 
-export const productQuestion = (product, businessName = '') =>
-  `Hola ${businessName} 👋 Me interesa este producto:\n\n*${product.name}*\nPrecio: ${formatPrice(product.price)}\n\n¿Me cuentas disponibilidad y cómo personalizarlo?`
-
 // "Flores Ana" → "flores-ana"
 export const slugify = (s = '') =>
   s.toString().normalize('NFD').replace(/[̀-ͯ]/g, '')

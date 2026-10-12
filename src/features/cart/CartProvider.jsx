@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 // Pedido del cliente (se guarda en su navegador, separado por negocio)
-import { formatPrice, waLink } from '@/lib/format'
+import { waLink } from '@/lib/format'
+import { orderMessage, orderCode } from '@/lib/waMessages'
 import { useTenant } from '@/features/tenant/TenantProvider'
 import { useSettingsCtx } from '@/features/catalog/data/SettingsProvider'
 import { goalProgress, goalDiscount, goalLabel, stockInfo } from '@/lib/marketing'
@@ -125,37 +126,12 @@ export function CartProvider({ children }) {
   const rewards = (progress?.won || []).map(goalLabel)
   const finalTotal = total - discount
 
-  const buildMessage = () => {
-    const lines = items.map(
-      (i, n) => {
-        const opts = [i.size && `Talla ${i.size}`, i.color && `Color ${i.color}`].filter(Boolean).join(' · ')
-        return `${n + 1}. *${i.name}*${opts ? ` (${opts})` : ''} × ${i.qty} — ${formatPrice(i.price * i.qty)}${i.detail ? `\n    Incluye: ${i.detail}` : ''}`
-      }
-    )
-    const photos = items
-      .filter(i => i.image && !String(i.image).includes('placehold.co'))
-      .map(i => `• ${i.name}: ${i.image}`)
-
-    const extra = []
-    if (info.name?.trim()) extra.push(`👤 Mi nombre: ${info.name.trim()}`)
-    if (info.date?.trim()) extra.push(`📅 Fecha de entrega: ${info.date.trim()}`)
-    if (info.note?.trim()) extra.push(`💌 Detalles / dedicatoria: ${info.note.trim()}`)
-
-    return [
-      `Hola ${brand.name} 👋 Quiero hacer este pedido:`,
-      '',
-      ...lines,
-      '',
-      ...(discount > 0
-        ? [`Subtotal: ${formatPrice(total)}`, `Descuento por meta de compra: −${formatPrice(discount)}`, `*Total productos: ${formatPrice(finalTotal)}*`]
-        : [`*Total productos: ${formatPrice(total)}*`]),
-      ...(rewards.length ? [`🎁 Premio ganado: ${rewards.join(' + ')}`] : []),
-      ...(extra.length ? ['', ...extra] : []),
-      ...(photos.length ? ['', '📷 Fotos de referencia:', ...photos] : []),
-      '',
-      (progress?.won || []).some(g => g.type === 'shipping') ? '¿Me confirmas disponibilidad? ¡Gracias!' : '¿Me confirmas disponibilidad y costo de envío? ¡Gracias!',
-    ].join('\n')
-  }
+  // Código del pedido: estable mientras se arma, nuevo después de enviarlo
+  const [code, setCode] = useState(orderCode)
+  const buildMessage = () => orderMessage({
+    brand, slug: tenantId, items, total, discount, finalTotal, rewards, info, code,
+    freeShipping: (progress?.won || []).some(g => g.type === 'shipping'),
+  })
 
   const checkoutUrl = () =>
     waLink(brand.whatsapp, buildMessage())
@@ -174,6 +150,7 @@ export function CartProvider({ children }) {
     setLastOrder(order)
     setItems([])
     setInfo(prev => ({ ...prev, date: '', note: '' }))
+    setCode(orderCode())
     return order
   }
   // «No lo envié»: el pedido vuelve al carrito

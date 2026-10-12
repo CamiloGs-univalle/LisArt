@@ -99,10 +99,7 @@ export function ProductOptions({ p, compact = false, onAdded }) {
     if (add(p, qty, { size, color })) onAdded?.()
   }
 
-  const ask = () => {
-    const opts = [size && `talla ${size}`, color && `color ${color}`].filter(Boolean).join(', ')
-    wa.open(`Hola {negocio} 👋 Me interesa *${p.name}*${opts ? ` (${opts})` : ''}. ¿Está disponible?`)
-  }
+  const ask = () => wa.askProduct(p, { size, color })
 
   return (
     <div className={`sk-opts ${compact ? 'sk-opts--compact' : ''}`}>
